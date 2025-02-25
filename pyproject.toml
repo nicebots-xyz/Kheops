@@ -36,6 +36,7 @@ export = "pdm export -o requirements.txt --prod"
 tests = "pytest tests"
 start = "python src"
 check-listings = {call = "scripts:check_listings.main"}
+convert-config = { call = "scripts.convert_config:main" }
 
 [tool.pdm]
 distribution = false
@@ -80,7 +81,7 @@ docstring-code-line-length = "dynamic"
 
 [tool.ruff.lint]
 select = ["ALL"]
-per-file-ignores = { "src/database/migrations/*"= ["INP001", "ARG001"] }
+per-file-ignores = { "src/database/migrations/*"= ["INP001", "ARG001"], "tests/*"= ["S101"], "scripts/**" = ["T201"]  }
 extend-ignore = [
     "N999",
     "D104",
