@@ -188,7 +188,9 @@ properly. These are:
   - `bot`: The Discord bot instance.
   - `config`: The configuration dictionary for the extension.
 
-> [!NOTE] Either `setup` or `setup_webserver` is required for the extension to work
+<!-- prettier-ignore -->
+> [!NOTE]
+> Either `setup` or `setup_webserver` is required for the extension to work
 > properly. You can also provide both.
 
 - `on_startup` (optional): An asynchronous function that is called when the bot starts.
@@ -271,7 +273,9 @@ strings:
   # ... other general strings
 ```
 
-> [!NOTE] The top-level `strings` section (outside of `commands`) is what gets mapped to
+<!-- prettier-ignore -->
+> [!NOTE]
+>The top-level `strings` section (outside of `commands`) is what gets mapped to
 > `config["translations"]`. This section is for general strings not directly tied to
 > specific commands.
 
@@ -331,7 +335,9 @@ async def ping(self, ctx: custom.ApplicationContext):
     await ctx.respond(response)
 ```
 
-> [!NOTE] The translations available under `ctx.translations` are the ones set under
+<!-- prettier-ignore -->
+> [!NOTE]
+> The translations available under `ctx.translations` are the ones set under
 > `strings` in the command's translation.
 
 ### Best Practices
