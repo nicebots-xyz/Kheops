@@ -519,6 +519,26 @@ to ensure your code adheres to the style guidelines. We provide a command to lin
 code using `pdm run lint`. For this to work you have to install the development
 dependencies using `pdm install -d` if you haven't already.
 
+## Copyright Headers Management
+
+This project uses HashiCorp's [Copywrite](https://github.com/hashicorp/copywrite) tool to manage copyright headers across all source files. Copywrite automatically ensures consistent copyright headers and license information across the codebase.
+
+The project includes a `.copywrite.hcl` file that configures how copyright headers are managed:
+
+### Usage
+
+To check if any files are missing copyright headers:
+
+```bash
+copywrite headers --plan
+```
+
+To automatically add missing copyright headers:
+
+```bash
+copywrite headers
+```
+
 ## Deployment
 
 Botkit is designed to be deployed on various platforms, including cloud services like
