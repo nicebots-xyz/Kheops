@@ -62,10 +62,11 @@ elif os.path.exists("config.yml"):
     path = "config.yml"
 
 _config: Any
+config: Config
 if path:
     with open(path, encoding="utf-8") as f:
         _config = yaml.safe_load(f)
 else:
     _config = load_from_env()
 
-config: Config = Config(**_config)
+config = Config(**_config) if _config else Config()

@@ -45,7 +45,7 @@ class BotConfig(BaseModel):
     public_key: str | None = None
     prefix: PrefixConfig | str = PrefixConfig(prefix="!", enabled=False)
     slash: SlashConfig = SlashConfig(enabled=False)
-    cache: CacheConfig
+    cache: CacheConfig = CacheConfig()
     rest: bool = False
 
 
@@ -65,7 +65,7 @@ class DbConfig(BaseModel):
 
 class Config(BaseModel):
     db: DbConfig = DbConfig(url="", enabled=False)
-    bot: BotConfig
+    bot: BotConfig = BotConfig(token="")
     logging: LoggingConfig = LoggingConfig()
     use: UseConfig = UseConfig()
     extensions: dict[str, Extension] = {}
