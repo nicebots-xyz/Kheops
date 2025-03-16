@@ -521,9 +521,12 @@ dependencies using `pdm install -d` if you haven't already.
 
 ## Copyright Headers Management
 
-This project uses HashiCorp's [Copywrite](https://github.com/hashicorp/copywrite) tool to manage copyright headers across all source files. Copywrite automatically ensures consistent copyright headers and license information across the codebase.
+This project uses HashiCorp's [Copywrite](https://github.com/hashicorp/copywrite) tool
+to manage copyright headers across all source files. Copywrite automatically ensures
+consistent copyright headers and license information across the codebase.
 
-The project includes a `.copywrite.hcl` file that configures how copyright headers are managed:
+The project includes a `.copywrite.hcl` file that configures how copyright headers are
+managed:
 
 ### Usage
 
