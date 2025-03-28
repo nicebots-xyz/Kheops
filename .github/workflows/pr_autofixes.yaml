@@ -23,7 +23,6 @@ jobs:
         with:
           fetch-depth: 0  # We need the full history for comparing branches
           ref: ${{ github.head_ref }}  # Check out the PR branch
-          persist-credentials: false
 
       - name: Check if PR targets default branch
         id: check-target
