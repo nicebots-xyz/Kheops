@@ -13,7 +13,6 @@ dependencies = [
     "orjson>=3.10.7",
     "pytz>=2024.1",
     "typing-extensions>=4.12.2",
-    "schema>=0.7.7",
     "hypercorn>=0.17.3",
     "quart>=0.19.6",
     "pydantic>=2.10.6",

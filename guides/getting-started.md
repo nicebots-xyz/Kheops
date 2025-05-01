@@ -108,6 +108,8 @@ pdm install
 ```yaml
 bot:
   token: "YOUR_BOT_TOKEN_HERE"
+  slash:
+    enabled: true # Required for slash commands to work
 ```
 
 Replace `YOUR_BOT_TOKEN_HERE` with the actual token of your Discord bot.
@@ -139,9 +141,9 @@ touch src/extensions/my_first_extension/__init__.py
 2. Open `__init__.py` in your preferred text editor and add the following content:
 
 ```python
-from .main import setup, default, schema
+from .main import setup, default
 
-__all__ = ["setup", "default", "schema"]
+__all__ = ["setup", "default"]
 ```
 
 > [!NOTE] This file imports and exposes the necessary components from our `main.py` file
@@ -175,10 +177,6 @@ def setup(bot: discord.Bot):
 default = {
     "enabled": True
 }
-
-schema = {
-    "enabled": bool
-}
 ```
 
 Let's break down what we've done here:
@@ -189,7 +187,7 @@ Let's break down what we've done here:
 - We define a `MyFirstExtension` class that inherits from `commands.Cog`. This class
   will contain our commands and listeners.
 - The `setup` function is required by Botkit to add our cog to the bot.
-- We define `default` and `schema` dictionaries for the extension's configuration.
+- We define a `default` dictionary for the extension's configuration.
 
 > [!TIP] Using type hints (like `bot: discord.Bot`) helps catch errors early and
 > improves code readability. It's a good practice to use them consistently in your code.
@@ -302,10 +300,6 @@ def setup(bot: discord.Bot):
 
 default = {
     "enabled": True
-}
-
-schema = {
-    "enabled": bool
 }
 ```
 

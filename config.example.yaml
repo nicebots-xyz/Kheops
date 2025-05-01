@@ -36,6 +36,8 @@ extensions:
       every: 300 # 300 seconds = 5 minutes
 bot:
   token: "bot token here" # Your bot token
+  slash:
+    enabled: true # Enable slash commands
   cache:
     type: "memory" # Cache type. Possible values: "memory" or "redis"
     redis: # Redis configuration (only used if type is "redis")
