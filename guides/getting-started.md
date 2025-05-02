@@ -57,31 +57,7 @@ cd botkit
 > [!NOTE] Cloning the repository creates a local copy of Botkit on your machine,
 > allowing you to build your bot using the Botkit framework.
 
-## Step 3: Set Up a Virtual Environment (Optional but Recommended)
-
-It's a good practice to use a virtual environment for your Python projects. This keeps
-your project dependencies isolated from your system-wide Python installation.
-
-1. Create a virtual environment:
-
-```bash
-python -m venv venv
-```
-
-2. Activate the virtual environment:
-   - On Windows:
-     ```
-     venv\Scripts\activate
-     ```
-   - On macOS and Linux:
-     ```
-     source venv/bin/activate
-     ```
-
-> [!TIP] You'll know the virtual environment is active when you see `(venv)` at the
-> beginning of your terminal prompt.
-
-## Step 4: Install Dependencies
+## Step 3: Install Dependencies
 
 Install the required dependencies using PDM (Python Dependency Manager):
 
@@ -100,7 +76,7 @@ pdm install
 > [!NOTE] PDM will read the `pyproject.toml` file and install all necessary dependencies
 > for Botkit.
 
-## Step 5: Configure Your Bot
+## Step 4: Configure Your Bot
 
 1. In the root directory of your Botkit project, create a file named `config.yml`.
 2. Open `config.yml` in a text editor and add the following content:
@@ -117,7 +93,7 @@ Replace `YOUR_BOT_TOKEN_HERE` with the actual token of your Discord bot.
 > [!CAUTION] Never share your bot token publicly or commit it to version control. Treat
 > it like a password.
 
-## Step 6: Create a New Extension Folder
+## Step 5: Create a New Extension Folder
 
 Now, let's create a new folder for our extension:
 
@@ -128,7 +104,7 @@ Now, let's create a new folder for our extension:
 mkdir src/extensions/my_first_extension
 ```
 
-## Step 7: Create the `__init__.py` File
+## Step 6: Create the `__init__.py` File
 
 The `__init__.py` file is crucial for Python to recognize the directory as a package:
 
@@ -150,7 +126,7 @@ __all__ = ["setup", "default"]
 > (which we'll create next). It allows Botkit to access these components when loading
 > the extension.
 
-## Step 8: Create the `main.py` File
+## Step 7: Create the `main.py` File
 
 The `main.py` file will contain the main logic for our extension:
 
@@ -192,7 +168,7 @@ Let's break down what we've done here:
 > [!TIP] Using type hints (like `bot: discord.Bot`) helps catch errors early and
 > improves code readability. It's a good practice to use them consistently in your code.
 
-## Step 9: Adding Commands
+## Step 8: Adding Commands
 
 Now, let's add some commands to our extension. We'll create a simple "hello" command and
 a more complex "userinfo" command.
@@ -240,7 +216,7 @@ Let's explain these commands:
 > better user experience and are easier to discover than traditional prefix-based
 > commands.
 
-## Step 10: Adding an Event Listener
+## Step 9: Adding an Event Listener
 
 Let's add an event listener to our extension to demonstrate how to respond to Discord
 events. We'll add a simple listener that logs when the bot is ready.
@@ -259,7 +235,7 @@ connected to Discord.
 > [!TIP] Event listeners are great for performing actions based on Discord events, such
 > as when a member joins a server or when a message is deleted.
 
-## Step 11: Final `main.py` File
+## Step 10: Final `main.py` File
 
 Your complete `main.py` file should now look like this:
 
@@ -303,7 +279,7 @@ default = {
 }
 ```
 
-## Step 12: Running Your Bot
+## Step 11: Running Your Bot
 
 Now that we've created our extension, let's run the bot:
 
