@@ -100,7 +100,7 @@ class HelpView(View):
         self.bot = bot
         self.categories_data = categories_data
         self.ui_translations = ui_translations
-        self.current_category = next(list(categories_data.keys()))
+        self.current_category = next(iter(categories_data.keys()))
         self.current_page = 0
         self.total_pages = len(categories_data[self.current_category])
 
