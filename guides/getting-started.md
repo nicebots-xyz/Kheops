@@ -12,7 +12,9 @@ Before we begin, ensure you have the following:
 2. Basic understanding of Python and Discord concepts
 3. A Discord account and access to the Discord Developer Portal
 
-> [!IMPORTANT] If you haven't already, create a Discord application and bot user in the
+<!-- prettier-ignore -->
+> [!TIP]
+> If you haven't already, create a Discord application and bot user in the
 > [Discord Developer Portal](https://discord.com/developers/applications). You'll need
 > the bot token for later steps.
 
@@ -25,7 +27,9 @@ repository.
    version for your operating system.
 2. Follow the installation instructions for your OS.
 
-> [!TIP] On Windows, you can use the Git Bash terminal that comes with Git for a
+<!-- prettier-ignore -->
+> [!TIP]
+> On Windows, you can use the Git Bash terminal that comes with Git for a
 > Unix-like command-line experience.
 
 To verify Git is installed correctly, open a terminal or command prompt and run:
@@ -54,7 +58,9 @@ git clone https://github.com/nicebots-xyz/botkit
 cd botkit
 ```
 
-> [!NOTE] Cloning the repository creates a local copy of Botkit on your machine,
+<!-- prettier-ignore -->
+> [!INFO]
+> Cloning the repository creates a local copy of Botkit on your machine,
 > allowing you to build your bot using the Botkit framework.
 
 ## Step 3: Install Dependencies
@@ -73,7 +79,9 @@ pip install pdm
 pdm install
 ```
 
-> [!NOTE] PDM will read the `pyproject.toml` file and install all necessary dependencies
+<!-- prettier-ignore -->
+> [!NOTE]
+> PDM will read the `pyproject.toml` file and install all necessary dependencies
 > for Botkit.
 
 ## Step 4: Configure Your Bot
@@ -90,7 +98,9 @@ bot:
 
 Replace `YOUR_BOT_TOKEN_HERE` with the actual token of your Discord bot.
 
-> [!CAUTION] Never share your bot token publicly or commit it to version control. Treat
+<!-- prettier-ignore -->
+> [!CAUTION]
+> Never share your bot token publicly or commit it to version control. Treat
 > it like a password.
 
 ## Step 5: Create a New Extension Folder
@@ -122,7 +132,9 @@ from .main import setup, default
 __all__ = ["setup", "default"]
 ```
 
-> [!NOTE] This file imports and exposes the necessary components from our `main.py` file
+<!-- prettier-ignore -->
+> [!NOTE]
+> This file imports and exposes the necessary components from our `main.py` file
 > (which we'll create next). It allows Botkit to access these components when loading
 > the extension.
 
@@ -165,7 +177,9 @@ Let's break down what we've done here:
 - The `setup` function is required by Botkit to add our cog to the bot.
 - We define a `default` dictionary for the extension's configuration.
 
-> [!TIP] Using type hints (like `bot: discord.Bot`) helps catch errors early and
+<!-- prettier-ignore -->
+> [!TIP]
+> Using type hints (like `bot: discord.Bot`) helps catch errors early and
 > improves code readability. It's a good practice to use them consistently in your code.
 
 ## Step 8: Adding Commands
@@ -212,7 +226,9 @@ Let's explain these commands:
    - Creates an embed with various pieces of information about the user.
    - Responds with the created embed.
 
-> [!NOTE] Slash commands are the modern way to create Discord bot commands. They provide
+<!-- prettier-ignore -->
+> [!NOTE]
+> Slash commands are the modern way to create Discord bot commands. They provide
 > better user experience and are easier to discover than traditional prefix-based
 > commands.
 
@@ -232,7 +248,9 @@ async def on_ready(self):
 This listener will print a message to the console when the bot has successfully
 connected to Discord.
 
-> [!TIP] Event listeners are great for performing actions based on Discord events, such
+<!-- prettier-ignore -->
+> [!TIP]
+> Event listeners are great for performing actions based on Discord events, such
 > as when a member joins a server or when a message is deleted.
 
 ## Step 10: Final `main.py` File
@@ -290,7 +308,9 @@ Now that we've created our extension, let's run the bot:
 pdm run start
 ```
 
-> [!IMPORTANT] Ensure your bot token is correctly set in the `config.yml` file before
+<!-- prettier-ignore -->
+> [!IMPORTANT]
+> Ensure your bot token is correctly set in the `config.yml` file before
 > running the bot.
 
 If everything is set up correctly, you should see the "Bot is ready!" message in your
@@ -305,10 +325,14 @@ This extension includes:
 2. A more complex "userinfo" slash command that creates an embed
 3. An event listener for the "on_ready" event
 
-> [!TIP] To continue improving your bot, consider adding more commands, implementing
+<!-- prettier-ignore -->
+> [!TIP]
+> To continue improving your bot, consider adding more commands, implementing
 > additional event listeners, or integrating with external APIs or databases.
 
-> [!WARNING] Always be cautious when handling user data and permissions in your bot.
+<!-- prettier-ignore -->
+> [!WARNING]
+> Always be cautious when handling user data and permissions in your bot.
 > Ensure you're following Discord's Terms of Service and Developer Policy.
 
 Remember to always use type hinting in your code. It helps with code readability,
