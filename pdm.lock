@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:035e9a6802f05b537cc1627f108f6314f3d32cd9fba185160c94695c98c0e336"
+content_hash = "sha256:6d9f1c9a73f0f867038fb3996afb867692ce2ab36c617f59a11c505b512695d4"
 
 [[metadata.targets]]
 requires_python = "==3.12.*"
@@ -809,17 +809,16 @@ files = [
 
 [[package]]
 name = "py-cord"
-version = "2.6.1"
-requires_python = ">=3.8"
+version = "2.6.1.dev403"
+requires_python = ">=3.9"
+git = "https://github.com/Pycord-Development/pycord.git"
+ref = "refs/pull/2707/head"
+revision = "08faba35fe5672344d9250657a6bec07631fede9"
 summary = "A Python wrapper for the Discord API"
 groups = ["default"]
 dependencies = [
     "aiohttp<4.0,>=3.6.0",
-    "typing-extensions<5,>=4; python_version < \"3.11\"",
-]
-files = [
-    {file = "py_cord-2.6.1-py3-none-any.whl", hash = "sha256:e3d3b528c5e37b0e0825f5b884cbb9267860976c1e4878e28b55da8fd3af834b"},
-    {file = "py_cord-2.6.1.tar.gz", hash = "sha256:36064f225f2c7bbddfe542d5ed581f2a5744f618e039093cf7cd2659a58bc79b"},
+    "typing-extensions<5,>=4",
 ]
 
 [[package]]

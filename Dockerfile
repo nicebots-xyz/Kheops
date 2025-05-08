@@ -14,7 +14,7 @@ ENV PDM_CHECK_UPDATE=false
 WORKDIR /app
 COPY src pyproject.toml pdm.lock ./
 
-RUN pdm export --prod -o requirements.txt
+    && pip install -r requirements.txt
 
 FROM python:${PYTHON_VERSION}-slim-bookworm AS app
 
@@ -29,7 +29,9 @@ COPY --from=python-base --chown=appuser /app/requirements.txt ./
 COPY src/ ./src
 COPY LICENSE ./
 
-RUN pip install -r requirements.txt --require-hashes
+RUN pip install $(grep '^pycord-rest-bot==' requirements.txt | tr -d '\\') \
+    && sed -i '/pycord-rest-bot/d' requirements.txt \
+    && pip install -r requirements.txt
 USER appuser
 
 CMD ["python", "src"]

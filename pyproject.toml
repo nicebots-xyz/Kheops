@@ -6,7 +6,7 @@ authors = [
     {name = "Paillat-dev", email = "me@paillat.dev"},
 ]
 dependencies = [
-    "py-cord>=2.5.0",
+    "py-cord @ git+https://github.com/Pycord-Development/pycord.git@refs/pull/2707/head",
     "aiohttp>=3.9.5",
     "pyyaml>=6.0.1",
     "python-dotenv>=1.0.1",
@@ -23,6 +23,7 @@ dependencies = [
     "tortoise-orm[asyncpg]>=0.23.0",
     "aerich[toml]>=0.8.1",
     "pycord-rest-bot>=0.1.0a7",
+    "git+https://github.com/Pycord-Development/pycord.git@refs/pull/2707/head",
 ]
 requires-python = "==3.12.*"
 readme = "README.md"
