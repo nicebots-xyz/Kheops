@@ -168,7 +168,7 @@ class Help(commands.Cog):
         self.locales = locales
 
     @cached_property
-    async def embeds(self) -> dict[str, dict[str, list[discord.Embed]]]:
+    def embeds(self) -> dict[str, dict[str, list[discord.Embed]]]:
         embeds: defaultdict[str, dict[str, list[discord.Embed]]] = defaultdict(dict)
         for locale in self.locales:
             t = help_translation.get_for_locale(locale)
