@@ -14,7 +14,7 @@ ENV PDM_CHECK_UPDATE=false
 WORKDIR /app
 COPY src pyproject.toml pdm.lock ./
 
-    && pip install -r requirements.txt
+RUN pdm export --prod -o requirements.txt --no-hashes
 
 FROM python:${PYTHON_VERSION}-slim-bookworm AS app
 
@@ -28,6 +28,12 @@ RUN adduser -u 6392 --disabled-password --gecos "" appuser && chown -R appuser /
 COPY --from=python-base --chown=appuser /app/requirements.txt ./
 COPY src/ ./src
 COPY LICENSE ./
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+    git \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
 
 RUN pip install $(grep '^pycord-rest-bot==' requirements.txt | tr -d '\\') \
     && sed -i '/pycord-rest-bot/d' requirements.txt \
