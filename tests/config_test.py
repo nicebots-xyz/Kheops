@@ -1,7 +1,7 @@
 # Copyright (c) NiceBots.xyz
 # SPDX-License-Identifier: MIT
 
-# ruff: noqa: S101, S105
+# ruff: noqa: S105
 
 import os
 from typing import Any

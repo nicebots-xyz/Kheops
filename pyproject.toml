@@ -6,7 +6,6 @@ authors = [
     {name = "Paillat-dev", email = "me@paillat.dev"},
 ]
 dependencies = [
-    "py-cord @ git+https://github.com/Pycord-Development/pycord.git@refs/pull/2707/head",
     "aiohttp>=3.9.5",
     "pyyaml>=6.0.1",
     "python-dotenv>=1.0.1",
@@ -108,7 +107,8 @@ extend-ignore = [
     "FBT002",
     "PLR2004",
     "PLR0913",
-    "C901"
+    "C901",
+    "RUF200"
 ]
 
 [tool.aerich]
