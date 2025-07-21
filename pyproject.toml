@@ -22,7 +22,7 @@ dependencies = [
     "tortoise-orm[asyncpg]>=0.23.0",
     "aerich[toml]>=0.8.1",
     "pycord-rest-bot>=0.1.0a7",
-    "git+https://github.com/Pycord-Development/pycord.git@refs/pull/2707/head",
+    "paillcord>=2.7.0a3",
 ]
 requires-python = "==3.12.*"
 readme = "README.md"
