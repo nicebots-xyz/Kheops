@@ -32,7 +32,7 @@ COPY --from=python-base --chown=appuser /app/requirements.txt ./
 RUN pip install $(grep '^pycord-rest-bot==' requirements.txt | tr -d '\\') \
     && sed -i '/pycord-rest-bot/d' requirements.txt \
     && pip uninstall py-cord -y \
-    && pip install -r requirements.txt \
+    && pip install -r requirements.txt
 
 COPY --chown=appuser src/ ./src
 COPY --chown=appuser LICENSE ./
