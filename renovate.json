@@ -1,25 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended"],
+  "extends": [
+    "local>nicebots-xyz/renovate-config",
+    ":semanticPrefixFixDepsChoreOthers",
+    ":dependencyDashboard"
+  ],
+  "forkProcessing": "enabled",
   "baseBranches": ["dev"],
-  "labels": ["deps"],
-  "ignorePaths": ["requirements.txt"],
-  "commitMessagePrefix": "⬆️",
-  "commitMessageAction": "Upgrade",
-  "packageRules": [
-    {
-      "updateTypes": ["pin"],
-      "commitMessagePrefix": "📌",
-      "commitMessageAction": "Pin"
-    },
-    {
-      "updateTypes": ["rollback"],
-      "commitMessagePrefix": "⬇️",
-      "commitMessageAction": "Downgrade"
-    },
-    {
-      "matchDatasources": ["pypi"],
-      "addLabels": ["pypi"]
-    }
-  ]
+  "lockFileMaintenance": {
+    "enabled": true
+  }
 }
