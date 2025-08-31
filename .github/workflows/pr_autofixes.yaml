@@ -61,7 +61,7 @@ jobs:
 
       - name: Export requirements
         if: steps.check-target.outputs.should_run == 'true'
-        run: pdm run export --no-hashes
+        run: pdm run export
 
       - name: Add license headers
         if: steps.check-target.outputs.should_run == 'true'
