@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:c643fbeaef4b7011ce33797ee67bade0f81ed158f0773acc9858cf4256580e7c"
+content_hash = "sha256:1c0a1e2ac5f9f89ba4ad85a26a295abee716b209d7e5858d1b06473482a6e8fe"
 
 [[metadata.targets]]
 requires_python = "==3.12.*"
@@ -758,21 +758,6 @@ files = [
 ]
 
 [[package]]
-name = "paillcord"
-version = "2.7.0a3"
-requires_python = ">=3.9"
-summary = "A Python wrapper for the Discord API"
-groups = ["default"]
-dependencies = [
-    "aiohttp<4.0,>=3.6.0",
-    "typing-extensions<5,>=4",
-]
-files = [
-    {file = "paillcord-2.7.0a3-py3-none-any.whl", hash = "sha256:76f553b48075ff633b7f6182e6238ff374bb7c55e512c9384dfea7bd546dd609"},
-    {file = "paillcord-2.7.0a3.tar.gz", hash = "sha256:32e46935a72ef4df1619f551b1464ba21c59db9b524dfe87177c8003510caec1"},
-]
-
-[[package]]
 name = "pluggy"
 version = "1.6.0"
 requires_python = ">=3.9"
@@ -823,34 +808,35 @@ files = [
 
 [[package]]
 name = "py-cord"
-version = "2.6.1.dev314"
+version = "2.7.0rc1"
 requires_python = ">=3.9"
-git = "https://github.com/Pycord-Development/pycord.git"
-ref = "master"
-revision = "ff628eee595c2e07f04921de4abb89f29f268407"
 summary = "A Python wrapper for the Discord API"
 groups = ["default"]
 dependencies = [
     "aiohttp<4.0,>=3.6.0",
-    "typing-extensions<5,>=4",
+    "typing-extensions<5,>=4.5.0",
+]
+files = [
+    {file = "py_cord-2.7.0rc1-py3-none-any.whl", hash = "sha256:c4c3b930ad3572ebf5827c5f473942a577841d19281bdf5a8383cfee210ec202"},
+    {file = "py_cord-2.7.0rc1.tar.gz", hash = "sha256:cca759ebb0537cd3b69cd16e26287e667338a5283411c73ce61fa8f9892a7b40"},
 ]
 
 [[package]]
 name = "pycord-rest-bot"
-version = "0.1.2"
+version = "0.1.3"
 requires_python = "==3.12.*"
 summary = "A lightweight wrapper for Discord's HTTP interactions and webhook events using py-cord and FastAPI"
 groups = ["default"]
 dependencies = [
     "fastapi>=0.115.11",
     "orjson>=3.10.15",
-    "paillcord>=2.7.0a3",
+    "py-cord>=2.7.0rc1",
     "pynacl>=1.5.0",
     "uvicorn>=0.34.0",
 ]
 files = [
-    {file = "pycord_rest_bot-0.1.2-py3-none-any.whl", hash = "sha256:4fe34686ef1d5cf464304c58a22d60f3bb42908944880b7fa52f32f1372e6ced"},
-    {file = "pycord_rest_bot-0.1.2.tar.gz", hash = "sha256:5b3b5eb4cadd35f0a2210ff952223234ee2b05a2e1c06811a7900a0116f4ad88"},
+    {file = "pycord_rest_bot-0.1.3-py3-none-any.whl", hash = "sha256:03125c63e5dbe63aba027d51ee1355a9f54ed8146eb3c2a1b515c1beb2b66206"},
+    {file = "pycord_rest_bot-0.1.3.tar.gz", hash = "sha256:057d06bb6b692c1a84845dcecf194bfbf0fea92c59de1622e3419a9fb5cd8902"},
 ]
 
 [[package]]
