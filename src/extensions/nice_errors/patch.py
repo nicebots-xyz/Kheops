@@ -12,7 +12,7 @@ logger = base_logger.getChild("nice_errors")
 
 async def patch(config: dict[str, Any]) -> None:
     sentry_sdk = None
-    if config.get("sentry", {}).get("dsn"):
+    if (sentry_config := config.get("sentry", {})).get("dsn"):
         import sentry_sdk  # noqa: PLC0415
         from sentry_sdk.integrations.asyncio import AsyncioIntegration  # noqa: PLC0415
         from sentry_sdk.integrations.logging import LoggingIntegration  # noqa: PLC0415
@@ -23,7 +23,8 @@ async def patch(config: dict[str, Any]) -> None:
         )
 
         sentry_sdk.init(
-            dsn=config["sentry"]["dsn"],
+            dsn=sentry_config["dsn"],
+            environment=sentry_config.get("environment", "production"),
             integrations=[
                 AsyncioIntegration(),
                 LoggingIntegration(),
