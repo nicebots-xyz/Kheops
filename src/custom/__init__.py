@@ -7,12 +7,22 @@ from typing import TYPE_CHECKING, Any, override
 
 import aiocache
 import discord
+
 try:
     from pycord_rest import Bot as PycordRestBot
 except ImportError:
+
     class PycordRestBot: ...
 
-import uvicorn
+
+try:
+    from uvicorn import Config as BaseUvicornConfig
+except ImportError:
+
+    class BaseUvicornConfig:
+        def configure_logging(self) -> None: ...
+
+
 from discord import Interaction, Message, WebhookMessage
 from discord.ext import bridge
 from discord.ext.bridge import (
@@ -187,7 +197,7 @@ class CustomBot(bridge.Bot):
         self._connection._intents.value = value.value  # noqa: SLF001  # pyright: ignore [reportPrivateUsage]
 
 
-class CustomUvicornConfig(uvicorn.Config):
+class CustomUvicornConfig(BaseUvicornConfig):
     @override
     def configure_logging(self) -> None:
         super().configure_logging()
@@ -196,10 +206,11 @@ class CustomUvicornConfig(uvicorn.Config):
         log.patch("uvicorn.error")
         log.patch("uvicorn.access")
 
+
 class CustomRestBot(PycordRestBot, CustomBot):  # pyright: ignore[reportIncompatibleMethodOverride,reportUnsafeMultipleInheritance]
     __rest__: bool = True
 
-    _UvicornConfig: type[uvicorn.Config] = CustomUvicornConfig
+    _UvicornConfig: type[BaseUvicornConfig] = CustomUvicornConfig
 
     def __init__(
         self, *args: Any, cache_type: str = "memory", cache_config: RedisConfig | None = None, **options: Any
