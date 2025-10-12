@@ -225,11 +225,6 @@ class CustomRestBot(PycordRestBot, CustomBot):  # pyright: ignore[reportIncompat
 
 type Bot = CustomBot | CustomRestBot
 
-if not TYPE_CHECKING:
-    Context: ApplicationContext = ApplicationContext
-
-if TYPE_CHECKING:  # temp fix for https://github.com/Pycord-Development/pycord/pull/2611
-    type Context = ExtContext | ApplicationContext
-    ...  # for some reason, this makes pycharm happy
+type Context = ExtContext | ApplicationContext
 
 __all__ = ["ApplicationContext", "Bot", "Context", "CustomBot", "CustomRestBot", "ExtContext"]
