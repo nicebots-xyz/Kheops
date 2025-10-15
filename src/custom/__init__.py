@@ -225,6 +225,6 @@ class CustomRestBot(PycordRestBot, CustomBot):  # pyright: ignore[reportIncompat
 
 type Bot = CustomBot | CustomRestBot
 
-Context: TypeAlias = ExtContext | ApplicationContext # noqa: UP040
+Context: TypeAlias = ExtContext | ApplicationContext  # noqa: UP040
 
 __all__ = ["ApplicationContext", "Bot", "Context", "CustomBot", "CustomRestBot", "ExtContext"]
