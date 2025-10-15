@@ -3,7 +3,7 @@
 
 import contextlib
 from logging import getLogger
-from typing import TYPE_CHECKING, Any, override
+from typing import TYPE_CHECKING, Any, TypeAlias, override
 
 import aiocache
 import discord
@@ -225,6 +225,6 @@ class CustomRestBot(PycordRestBot, CustomBot):  # pyright: ignore[reportIncompat
 
 type Bot = CustomBot | CustomRestBot
 
-type Context = ExtContext | ApplicationContext
+Context: TypeAlias = ExtContext | ApplicationContext # noqa: UP040
 
 __all__ = ["ApplicationContext", "Bot", "Context", "CustomBot", "CustomRestBot", "ExtContext"]
