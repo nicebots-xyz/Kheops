@@ -3,7 +3,7 @@
 
 from typing import Any, Literal, overload, override
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel
 
 type Extension = dict[str, Any]
 
@@ -68,28 +68,16 @@ class UseConfig(BaseModel):
     backend: bool = False
 
 
-class DbParams(BaseModel):
-    model_config = ConfigDict(serialize_by_alias=True)
-    minsize: int | None = None
-    maxsize: int | None = None
-    max_queries: int | None = None
-    max_inactive_connection_lifetime: float | None = None
-    schema_name: str | None = Field(
-        alias="schema", validation_alias="schema", serialization_alias="schema", default=None
-    )
-    ssl: bool | None = None
-
-
 class DbExtraApp(BaseModel):
     url: str | None = None
-    params: DbParams | None = None
+    params: dict[str, Any] | None = None
     models: list[str] = []
 
 
 class DbConfig(BaseModel):
     url: str
     enabled: bool = True
-    params: DbParams | None = None
+    params: dict[str, Any] | None = None
     extra_apps: dict[str, DbExtraApp] = {}
 
 

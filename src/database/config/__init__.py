@@ -3,22 +3,22 @@
 
 from collections import defaultdict
 from logging import getLogger
+from typing import Any
 
 import aerich
 from tortoise import Tortoise
 
 from src.config import config
-from src.config.models import DbParams
 
 logger = getLogger("bot").getChild("database")
 
 
-def apply_params(uri: str, params: DbParams | None) -> str:
+def apply_params(uri: str, params: dict[str, Any] | None) -> str:
     if params is None:
         return uri
 
     first: bool = True
-    for param, value in params.model_dump().items():
+    for param, value in params.items():
         if value is not None:
             uri += f"{'?' if first else '&'}{param}={value}"
             first = False
