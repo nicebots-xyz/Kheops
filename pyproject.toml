@@ -1,7 +1,7 @@
 [project]
-name = "botkit"
+name = "khéops"
 version = "0.1.0"
-description = "Botkit: An Advanced Framework for Crafting Sophisticated Discord Bots with py-cord"
+description = "Khéops: Bot communautaire Les Frères Poulain"
 authors = [
     {name = "Paillat-dev", email = "me@paillat.dev"},
 ]
