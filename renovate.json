@@ -1,0 +1,15 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "local>nicebots-xyz/renovate-config",
+    ":semanticPrefixFixDepsChoreOthers",
+    ":dependencyDashboard"
+  ],
+  "forkProcessing": "enabled",
+  "baseBranchPatterns": [
+    "dev"
+  ],
+  "lockFileMaintenance": {
+    "enabled": true
+  }
+}
