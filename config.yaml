@@ -5,7 +5,7 @@ extensions:
   topgg:
     enabled: false
   ping:
-    enabled: true1
+    enabled: true
   branding:
     enabled: false
   nice_errors:
