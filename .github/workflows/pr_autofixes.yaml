@@ -89,7 +89,7 @@ jobs:
 
       - name: Push changes
         if: steps.check-target.outputs.should_run == 'true' && steps.check-changes.outputs.has_changes == 'true'
-        uses: ad-m/github-push-action@77c5b412c50b723d2a4fbc6d71fb5723bcd439aa
+        uses: ad-m/github-push-action@57116acb309081ee57864270b0e3c4cedbe45452
         with:
           # use PAT if available, otherwise use GITHUB_TOKEN
           github_token: ${{ secrets.PAT || secrets.GITHUB_TOKEN }}
