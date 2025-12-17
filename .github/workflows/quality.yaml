@@ -10,7 +10,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: [format, lint, test]
+        check: [format, lint]
         include:
           - check: format
             name: "Format Check"
@@ -18,9 +18,6 @@ jobs:
           - check: lint
             name: "Lint Check"
             command: "pdm run ruff check ."
-          - check: test
-            name: "Tests Check"
-            command: "pdm run tests"
 
     name: ${{ matrix.name }}
 

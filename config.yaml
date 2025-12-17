@@ -1,0 +1,22 @@
+# Copyright (c) NiceBots.xyz
+# SPDX-License-Identifier: MIT
+
+extensions:
+  topgg:
+    enabled: false
+  ping:
+    enabled: true1
+  branding:
+    enabled: false
+  nice_errors:
+    enabled: true
+  help:
+    enabled: false
+  add-dm:
+    enabled: false
+bot:
+  slash:
+    enabled: true
+use:
+  bot: true
+  backend: false
