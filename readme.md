@@ -548,11 +548,11 @@ Botkit is designed to be deployed on various platforms, including cloud services
 [Heroku](https://www.heroku.com/) or [DigitalOcean](https://www.digitalocean.com/).
 Refer to the documentation of your preferred hosting platform for deployment
 instructions. A `Dockerfile` is included in the project for containerized deployments,
-as well as a GitHub action including tests and linting. You can export the requirements
-to a `requirements.txt` file using `pdm run export`, run the tests using `pdm run tests`
-and lint the code using `pdm run lint`. In order for the GitHub tests to pass, you need
-to make sure you linted your code, that the tests pass and that you exported the
-requirements if you made changes to the dependencies.
+as well as a GitHub action including tests and linting. You can run the tests using
+`pdm run tests`, lint the code using `pdm run lint` and format it using
+`pdm run format`. In order for the GitHub tests to pass, you need to make sure you
+linted your code, that the tests pass and that you exported the requirements if you made
+changes to the dependencies.
 
 ## Support and Resources
 
