@@ -1,0 +1,228 @@
+# Copyright (c) bryan1993-HA
+# SPDX-License-Identifier: MIT
+
+commands:
+  bienvenue:
+    name:
+      en-US: welcome
+      fr: bienvenue
+      de: willkommen
+      es-ES: bienvenida
+      ru: приветствие
+      nl: welkom
+    description:
+      en-US: Configure the welcome message when a member joins
+      fr: Configurer le message de bienvenue à l’arrivée d’un membre
+      de: Willkommensnachricht beim Beitritt konfigurieren
+      es-ES: Configurar el mensaje de bienvenida al unirse un miembro
+      ru: Настроить приветственное сообщение при входе участника
+      nl: Welkomstbericht instellen wanneer een lid toetreedt
+    options:
+      salon:
+        name:
+          en-US: channel
+          fr: salon
+          de: kanal
+          es-ES: canal
+          ru: канал
+          nl: kanaal
+        description:
+          en-US: Channel where the welcome message will be sent
+          fr: Salon où envoyer le message de bienvenue
+          de: Kanal, in dem die Willkommensnachricht gesendet wird
+          es-ES: Canal donde se enviará el mensaje de bienvenida
+          ru: Канал для отправки приветственного сообщения
+          nl: Kanaal waar het welkomstbericht wordt verzonden
+
+  bienvenue_off:
+    name:
+      en-US: welcome_off
+      fr: bienvenue_off
+      de: willkommen_aus
+      es-ES: bienvenida_off
+      ru: приветствие_выкл
+      nl: welkom_uit
+    description:
+      en-US: Disable the welcome message
+      fr: Désactiver le message de bienvenue
+      de: Willkommensnachricht deaktivieren
+      es-ES: Desactivar el mensaje de bienvenida
+      ru: Отключить приветственное сообщение
+      nl: Welkomstbericht uitschakelen
+
+  bienvenue_vars:
+    name:
+      en-US: welcome_vars
+      fr: bienvenue_vars
+      de: willkommen_variablen
+      es-ES: variables_bienvenida
+      ru: переменные_приветствия
+      nl: welkom_variabelen
+    description:
+      en-US: Show available variables for the welcome message
+      fr: Afficher les variables utilisables dans le message de bienvenue
+      de: Verfügbare Variablen für die Willkommensnachricht anzeigen
+      es-ES: Mostrar las variables disponibles para el mensaje de bienvenida
+      ru: Показать доступные переменные для приветственного сообщения
+      nl: Beschikbare variabelen voor het welkomstbericht tonen
+
+strings:
+  # --- Modal UI ---
+  modal_title:
+    en-US: Configure the welcome message
+    fr: Configurer le message de bienvenue
+    de: Willkommensnachricht konfigurieren
+    es-ES: Configurar el mensaje de bienvenida
+    ru: Настроить приветственное сообщение
+    nl: Welkomstbericht instellen
+
+  modal_label:
+    en-US: Welcome message
+    fr: Message de bienvenue
+    de: Willkommensnachricht
+    es-ES: Mensaje de bienvenida
+    ru: Приветственное сообщение
+    nl: Welkomstbericht
+
+  modal_placeholder:
+    en-US: "Example: Welcome {mention} to {server}!"
+    fr: "Ex: Bienvenue {mention} sur {server} !"
+    de: "Beispiel: Willkommen {mention} auf {server}!"
+    es-ES: "Ej: ¡Bienvenido {mention} a {server}!"
+    ru: "Пример: Добро пожаловать {mention} на {server}!"
+    nl: "Voorbeeld: Welkom {mention} op {server}!"
+
+  # --- Generic / errors ---
+  only_guild:
+    en-US: Server-only command.
+    fr: Commande serveur uniquement.
+    de: Nur auf Servern verfügbar.
+    es-ES: Comando solo para servidor.
+    ru: Команда доступна только на сервере.
+    nl: Alleen voor servers.
+
+  # --- Responses ---
+  configured:
+    en-US: "✅ Welcome configured!"
+    fr: "✅ Bienvenue configuré !"
+    de: "✅ Willkommen eingerichtet!"
+    es-ES: "✅ ¡Bienvenida configurada!"
+    ru: "✅ Приветствие настроено!"
+    nl: "✅ Welkom ingesteld!"
+
+  disabled:
+    en-US: "✅ Welcome message disabled."
+    fr: "✅ Message de bienvenue désactivé."
+    de: "✅ Willkommensnachricht deaktiviert."
+    es-ES: "✅ Mensaje de bienvenida desactivado."
+    ru: "✅ Приветственное сообщение отключено."
+    nl: "✅ Welkomstbericht uitgeschakeld."
+
+  channel_line:
+    en-US: "📌 Channel: <#{channel_id}>"
+    fr: "📌 Salon : <#{channel_id}>"
+    de: "📌 Kanal: <#{channel_id}>"
+    es-ES: "📌 Canal: <#{channel_id}>"
+    ru: "📌 Канал: <#{channel_id}>"
+    nl: "📌 Kanaal: <#{channel_id}>"
+
+  preview_title:
+    en-US: "🧪 Preview:"
+    fr: "🧪 Aperçu :"
+    de: "🧪 Vorschau:"
+    es-ES: "🧪 Vista previa:"
+    ru: "🧪 Предпросмотр:"
+    nl: "🧪 Voorbeeld:"
+
+  # --- Vars helper ---
+  vars_title:
+    en-US: "**Available variables**"
+    fr: "**Variables disponibles**"
+    de: "**Verfügbare Variablen**"
+    es-ES: "**Variables disponibles**"
+    ru: "**Доступные переменные**"
+    nl: "**Beschikbare variabelen**"
+
+  vars_user:
+    en-US: "• `{user}` → Display name on the server (nickname if set)"
+    fr: "• `{user}` → Nom affiché sur le serveur (surnom si défini)"
+    de: "• `{user}` → Anzeigename auf dem Server (Spitzname falls gesetzt)"
+    es-ES: "• `{user}` → Nombre mostrado en el servidor (apodo si existe)"
+    ru: "• `{user}` → Отображаемое имя на сервере (ник, если задан)"
+    nl: "• `{user}` → Weergavenaam op de server (bijnaam indien ingesteld)"
+
+  vars_mention:
+    en-US: "• `{mention}` → Mentions the member (@user)"
+    fr: "• `{mention}` → Mentionne le membre (@utilisateur)"
+    de: "• `{mention}` → Erwähnt das Mitglied (@user)"
+    es-ES: "• `{mention}` → Menciona al miembro (@usuario)"
+    ru: "• `{mention}` → Упоминает участника (@user)"
+    nl: "• `{mention}` → Vermeldt het lid (@user)"
+
+  vars_username:
+    en-US: "• `{username}` → Discord account username"
+    fr: "• `{username}` → Nom de compte Discord (username)"
+    de: "• `{username}` → Discord-Kontoname (Username)"
+    es-ES: "• `{username}` → Nombre de cuenta de Discord (username)"
+    ru: "• `{username}` → Имя аккаунта Discord (username)"
+    nl: "• `{username}` → Discord-accountnaam (username)"
+
+  vars_server:
+    en-US: "• `{server}` → Server name"
+    fr: "• `{server}` → Nom du serveur"
+    de: "• `{server}` → Servername"
+    es-ES: "• `{server}` → Nombre del servidor"
+    ru: "• `{server}` → Название сервера"
+    nl: "• `{server}` → Servernaam"
+
+  vars_member_count:
+    en-US: "• `{member_count}` → Total member count (including bots)"
+    fr: "• `{member_count}` → Nombre total de membres (bots inclus)"
+    de: "• `{member_count}` → Gesamtzahl der Mitglieder (inkl. Bots)"
+    es-ES: "• `{member_count}` → Total de miembros (incluye bots)"
+    ru: "• `{member_count}` → Общее число участников (вкл. ботов)"
+    nl: "• `{member_count}` → Totaal aantal leden (incl. bots)"
+
+  vars_created_at:
+    en-US: "• `{created_at}` → Account creation date (YYYY-MM-DD)"
+    fr: "• `{created_at}` → Date de création du compte (YYYY-MM-DD)"
+    de: "• `{created_at}` → Konto-Erstellungsdatum (JJJJ-MM-TT)"
+    es-ES: "• `{created_at}` → Fecha de creación de la cuenta (YYYY-MM-DD)"
+    ru: "• `{created_at}` → Дата создания аккаунта (YYYY-MM-DD)"
+    nl: "• `{created_at}` → Account aanmaakdatum (YYYY-MM-DD)"
+
+  vars_joined_at:
+    en-US: "• `{joined_at}` → Date the member joined the server (YYYY-MM-DD)"
+    fr: "• `{joined_at}` → Date d’arrivée sur le serveur (YYYY-MM-DD)"
+    de: "• `{joined_at}` → Beitrittsdatum zum Server (JJJJ-MM-TT)"
+    es-ES: "• `{joined_at}` → Fecha de entrada al servidor (YYYY-MM-DD)"
+    ru: "• `{joined_at}` → Дата входа на сервер (YYYY-MM-DD)"
+    nl: "• `{joined_at}` → Datum van toetreding (YYYY-MM-DD)"
+
+  vars_example_title:
+    en-US: "**Example**"
+    fr: "**Exemple**"
+    de: "**Beispiel**"
+    es-ES: "**Ejemplo**"
+    ru: "**Пример**"
+    nl: "**Voorbeeld**"
+
+  vars_example:
+    en-US: |
+      Welcome {mention} to **{server}** 🎉
+      You are member #{member_count}.
+    fr: |
+      Bienvenue {mention} sur **{server}** 🎉
+      Tu es le membre n°{member_count}.
+    de: |
+      Willkommen {mention} auf **{server}** 🎉
+      Du bist Mitglied Nr. {member_count}.
+    es-ES: |
+      ¡Bienvenido {mention} a **{server}** 🎉
+      Eres el miembro n.º {member_count}.
+    ru: |
+      Добро пожаловать {mention} на **{server}** 🎉
+      Ты участник №{member_count}.
+    nl: |
+      Welkom {mention} op **{server}** 🎉
+      Jij bent lid #{member_count}.
