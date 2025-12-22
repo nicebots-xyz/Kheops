@@ -23,7 +23,7 @@ dependencies = [
     "aerich[toml]>=0.8.1",
     "py-cord>=2.7.0rc2",
 ]
-requires-python = "==3.12.*"
+requires-python = "==3.14.*"
 readme = "README.md"
 license = {text = "MIT"}
 
