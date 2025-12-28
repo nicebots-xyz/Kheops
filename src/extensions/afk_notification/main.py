@@ -61,7 +61,6 @@ class NotifyView(discord.ui.DesignerView):
         self.add_item(container)
         self.task: asyncio.Task[None] = asyncio.create_task(self.disconnect_member())
 
-
     async def disconnect_member(self) -> None:
         await asyncio.sleep(self.config.afk_reminder_timeout)
         if self.member.voice and self.member.voice.channel:
@@ -74,8 +73,10 @@ class NotifyView(discord.ui.DesignerView):
                 logger.exception(f"Error disconnecting {self.member} ({self.member.id})")
             else:
                 if self.message:
-                    await self.message.reply(f"{self.member.mention}, tu as été AFK pendant trop longtemps." +
-                                              " Je t'ai déconnecté du salon vocal.")
+                    await self.message.reply(
+                        f"{self.member.mention}, tu as été AFK pendant trop longtemps."
+                        + " Je t'ai déconnecté du salon vocal."
+                    )
         else:
             logger.debug(f"Member {self.member} ({self.member.id}) already left voice, skipping disconnect")
 
@@ -167,10 +168,10 @@ class AfkNotif(discord.Cog):
 
     @discord.Cog.listener("on_voice_state_update")
     async def on_voice_state_update(
-            self,
-            member: discord.Member,
-            before: discord.VoiceState,  # noqa: ARG002
-            after: discord.VoiceState,
+        self,
+        member: discord.Member,
+        before: discord.VoiceState,  # noqa: ARG002
+        after: discord.VoiceState,
     ) -> None:
         if not is_time_between(self.config.start_time, self.config.stop_time, datetime.now(tz=EUROPE_PARIS)):
             logger.debug(f"Voice state update for {member} ({member.id}) outside time window, ignoring")
@@ -179,7 +180,7 @@ class AfkNotif(discord.Cog):
         if member.bot:
             return
 
-        if member.guild_permissions.administrator and False:
+        if False:
             logger.debug(f"Administrator {member} ({member.id}) exempt from AFK notifications")
             return
 

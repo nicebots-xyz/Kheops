@@ -1,12 +1,10 @@
 from datetime import time
-from logging import getLogger
 from typing import Any
 from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, field_validator
 
 EUROPE_PARIS = ZoneInfo("Europe/Paris")
-
 
 
 class AfkNotifConfig(BaseModel):

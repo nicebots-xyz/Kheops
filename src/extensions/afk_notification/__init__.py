@@ -11,6 +11,8 @@ logger = getLogger("bot").getChild("afk_notification")
 default = {
     "enabled": False,
 }
+
+
 def setup(bot: custom.Bot, config: dict[Any, Any]) -> None:
     bot.intents.members = True
 
