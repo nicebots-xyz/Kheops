@@ -1,3 +1,6 @@
+# Copyright (c) Communauté Les Frères Poulain
+# SPDX-License-Identifier: MIT
+
 from datetime import time
 from typing import Any
 from zoneinfo import ZoneInfo

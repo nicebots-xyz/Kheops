@@ -1,3 +1,6 @@
+# Copyright (c) Communauté Les Frères Poulain
+# SPDX-License-Identifier: MIT
+
 import asyncio
 from datetime import datetime, time, timedelta
 from logging import getLogger
