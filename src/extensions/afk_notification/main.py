@@ -28,7 +28,7 @@ def is_time_between(start: time, end: time, current: datetime) -> bool:
         current (datetime): The current datetime to check.
 
     """
-    current_time = current.time()
+    current_time = current.timetz()
 
     if start <= end:
         # Normal case: 09:00 to 17:00
@@ -86,9 +86,13 @@ class NotifyView(discord.ui.DesignerView):
     async def button_callback(self, interaction: discord.Interaction) -> None:
         if interaction.user != self.member:
             logger.debug(f"Wrong user {interaction.user} clicked button for {self.member}")
+            await interaction.response.send_message("Ce bouton n'est pas pour toi !", ephemeral=True)
             return
         logger.info(f"Member {self.member} ({self.member.id}) confirmed they are awake")
-        await interaction.response.defer()
+        try:
+            await interaction.response.defer()
+        except discord.HTTPException:
+            logger.exception(f"Failed to defer interaction for {self.member} ({self.member.id})")
         self.task.cancel()
         await self.on_timeout()
         self.stop()
@@ -105,22 +109,26 @@ class AfkNotif(discord.Cog):
 
     async def notify_member(self, member: discord.Member) -> None:
         try:
-            logger.debug(f"Starting {self.config.afk_reminder_every}s sleep for {member} ({member.id})")
-            await asyncio.sleep(self.config.afk_reminder_every)
+            while True:
+                logger.debug(f"Starting {self.config.afk_reminder_every}s sleep for {member} ({member.id})")
+                await asyncio.sleep(self.config.afk_reminder_every)
 
-            if not member.voice or not member.voice.channel:
-                logger.debug(f"Member {member} ({member.id}) no longer in voice, stopping notifications")
-                return
+                if not member.voice or not member.voice.channel:
+                    logger.debug(f"Member {member} ({member.id}) no longer in voice, stopping notifications")
+                    return
 
-            if not is_time_between(self.config.start_time, self.config.stop_time, datetime.now(tz=EUROPE_PARIS)):
-                logger.debug(f"Outside time window for {member} ({member.id}), stopping notifications")
-                return
+                if not is_time_between(self.config.start_time, self.config.stop_time, datetime.now(tz=EUROPE_PARIS)):
+                    logger.debug(f"Outside time window for {member} ({member.id}), stopping notifications")
+                    return
 
-            logger.info(f"Sending AFK notification to {member} ({member.id}) in {member.voice.channel}")
-            await member.voice.channel.send(view=NotifyView(member, self.config))
-
-            logger.debug(f"Creating next notification task for {member} ({member.id})")
-            self.tasks[member.id] = asyncio.create_task(self.notify_member(member))
+                logger.info(f"Sending AFK notification to {member} ({member.id}) in {member.voice.channel}")
+                try:
+                    await member.voice.channel.send(view=NotifyView(member, self.config))
+                except discord.Forbidden:
+                    logger.warning(f"Missing permission to send message in {member.voice.channel}")
+                    return
+                except discord.HTTPException:
+                    logger.exception(f"Failed to send AFK notification to {member} ({member.id})")
 
         except asyncio.CancelledError:
             logger.debug(f"Notification task cancelled for {member} ({member.id})")
@@ -128,9 +136,8 @@ class AfkNotif(discord.Cog):
         except Exception:
             logger.exception(f"Error in notify_member for {member} ({member.id})")
         finally:
-            if member.id in self.tasks and self.tasks[member.id].done():
-                logger.debug(f"Cleaning up completed task for {member} ({member.id})")
-                self.tasks.pop(member.id, None)
+            logger.debug(f"Cleaning up task for {member} ({member.id})")
+            self.tasks.pop(member.id, None)
 
     async def register_all(self) -> None:
         logger.info("Registering all members in voice channels")
@@ -140,18 +147,9 @@ class AfkNotif(discord.Cog):
             return
 
         count = 0
-        for channel in guild.channels:
-            if isinstance(channel, discord.VoiceChannel):
-                for member in channel.members:
-                    await self.register_new_member(member)
-                    count += 1
-
-                    if member.id in self.tasks:
-                        continue
-
-                    if not member.voice or not member.voice.channel:
-                        continue
-
+        for channel in guild.voice_channels:
+            for member in channel.members:
+                if member.id not in self.tasks:
                     await self.register_new_member(member)
                     count += 1
 
@@ -160,6 +158,9 @@ class AfkNotif(discord.Cog):
     async def register_new_member(self, member: discord.Member) -> None:
         if member.bot:
             return
+        if self.config.role_id and self.config.role_id not in [role.id for role in member.roles]:
+            logger.debug(f"Member {member} ({member.id}) does not have required role {self.config.role_id}")
+            return
         logger.info(f"Registering new member for AFK notifications: {member} ({member.id})")
         self.tasks[member.id] = asyncio.create_task(self.notify_member(member))
 
@@ -167,7 +168,6 @@ class AfkNotif(discord.Cog):
     async def on_ready(self) -> None:
         logger.info("AfkNotif cog ready, starting daily registration loop")
         self.loop.start()
-        await self.register_all()
 
     @discord.Cog.listener("on_voice_state_update")
     async def on_voice_state_update(
@@ -181,10 +181,6 @@ class AfkNotif(discord.Cog):
             return
 
         if member.bot:
-            return
-
-        if False:
-            logger.debug(f"Administrator {member} ({member.id}) exempt from AFK notifications")
             return
 
         if after.channel is None:
