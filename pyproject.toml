@@ -22,6 +22,7 @@ dependencies = [
     "tortoise-orm[asyncpg]>=0.23.0",
     "aerich[toml]>=0.8.1",
     "py-cord>=2.7.0rc2",
+    "tzdata>=2025.3",
 ]
 requires-python = "==3.12.*"
 readme = "README.md"
@@ -110,7 +111,8 @@ extend-ignore = [
     "PLR2004",
     "PLR0913",
     "C901",
-    "RUF200"
+    "RUF200",
+    "ISC003"# Conflicts with basedpyright reportImplicitStringConcatenation
 ]
 
 [tool.ruff.lint.per-file-ignores]

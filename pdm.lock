@@ -5,7 +5,7 @@
 groups = ["default", "dev"]
 strategy = ["inherit_metadata"]
 lock_version = "4.5.0"
-content_hash = "sha256:7a9c7eac6fc982fb8883d6f10ffa52ce38ddc6547cff1df32e54087a8b8c241f"
+content_hash = "sha256:047eed57588d60ba254ab5b4204b345d3c392316e3e4dfe24aa9d2ad41c8447a"
 
 [[metadata.targets]]
 requires_python = "==3.12.*"
@@ -1085,6 +1085,17 @@ dependencies = [
 files = [
     {file = "typing_inspection-0.4.2-py3-none-any.whl", hash = "sha256:4ed1cacbdc298c220f1bd249ed5287caa16f34d44ef4e9c3d0cbad5b521545e7"},
     {file = "typing_inspection-0.4.2.tar.gz", hash = "sha256:ba561c48a67c5958007083d386c3295464928b01faa735ab8547c5692e87f464"},
+]
+
+[[package]]
+name = "tzdata"
+version = "2025.3"
+requires_python = ">=2"
+summary = "Provider of IANA time zone data"
+groups = ["default"]
+files = [
+    {file = "tzdata-2025.3-py2.py3-none-any.whl", hash = "sha256:06a47e5700f3081aab02b2e513160914ff0694bce9947d6b76ebd6bf57cfc5d1"},
+    {file = "tzdata-2025.3.tar.gz", hash = "sha256:de39c2ca5dc7b0344f2eba86f49d614019d29f060fc4ebc8a417896a620b56a7"},
 ]
 
 [[package]]
