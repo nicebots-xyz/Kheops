@@ -1,4 +1,4 @@
-# Copyright (c) bryan1993-HA
+# Copyright (c) Communauté Les Frères Poulain
 # SPDX-License-Identifier: MIT
 
 from .welcome import default, setup

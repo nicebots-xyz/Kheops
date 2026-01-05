@@ -1,3 +1,6 @@
+# Copyright (c) Communauté Les Frères Poulain
+# SPDX-License-Identifier: MIT
+
 # Welcome Extension
 
 The Welcome extension automatically sends a welcome message when a new member joins a

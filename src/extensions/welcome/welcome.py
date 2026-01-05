@@ -1,4 +1,4 @@
-# Copyright (c) NiceBots.xyz
+# Copyright (c) Communauté Les Frères Poulain
 # SPDX-License-Identifier: MIT
 
 from __future__ import annotations
