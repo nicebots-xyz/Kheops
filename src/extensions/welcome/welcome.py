@@ -1,4 +1,4 @@
-# Copyright (c) 2025 Bryan Thoury
+# Copyright (c) NiceBots.xyz
 # SPDX-License-Identifier: MIT
 
 from __future__ import annotations
@@ -12,7 +12,6 @@ default: dict[str, Any] = {
     "enabled": True,
     "channel_id": None,
     "message": "Bienvenue {mention} sur {server} !",
-    "debug": False,
 }
 
 
@@ -63,71 +62,25 @@ class WelcomeCog(commands.Cog):
         self.enabled: bool = bool(config.get("enabled", default["enabled"]))
         self.channel_id: int | None = config.get("channel_id", default["channel_id"])
         self.message: str = str(config.get("message") or default["message"])
-        self.debug: bool = bool(config.get("debug", default["debug"]))
 
         self.translations: dict[str, dict[str, str]] = config.get("translations") or {}
 
-        if self.debug:
-            # Intents utiles à diagnostiquer (members doit être True pour on_member_join)
-            intents = getattr(self.bot, "intents", None)
-            members_intent = getattr(intents, "members", None) if intents else None
-            print(
-                "[welcome] DEBUG init | enabled=",
-                self.enabled,
-                "| channel_id=",
-                self.channel_id,
-                "| members_intent=",
-                members_intent,
-            )
-
-    def _dbg(self, *parts: Any) -> None:
-        if self.debug:
-            print("[welcome] DEBUG", *parts)
-
     @commands.Cog.listener()
     async def on_member_join(self, member: discord.Member) -> None:
-        self._dbg("on_member_join fired | user=", member.name, "| guild=", member.guild.name, member.guild.id)
-
-        if not self.enabled:
-            self._dbg("disabled => exit")
-            return
-        if not self.channel_id:
-            self._dbg("channel_id missing => exit")
-            return
-        if not self.message:
-            self._dbg("message empty => exit")
+        if not self.enabled or not self.channel_id or not self.message:
             return
 
         channel = member.guild.get_channel(int(self.channel_id))
         if channel is None:
-            self._dbg("get_channel returned None | channel_id=", self.channel_id)
             return
-
-        # Vérif perms (ça aide énormément)
-        me = member.guild.me
-        if me:
-            perms = channel.permissions_for(me)
-            self._dbg(
-                "perms",
-                "| view_channel=",
-                perms.view_channel,
-                "| send_messages=",
-                perms.send_messages,
-            )
-            if not perms.view_channel or not perms.send_messages:
-                self._dbg("missing perms => exit")
-                return
 
         content = render_template(self.message, member)
         allowed = discord.AllowedMentions(users=True, roles=False, everyone=False)
 
         try:
             await channel.send(content, allowed_mentions=allowed)
-            self._dbg("message sent ✅")
-        except discord.Forbidden as e:
-            self._dbg("discord.Forbidden while sending", repr(e))
-        except discord.HTTPException as e:
-            self._dbg("discord.HTTPException while sending", repr(e))
+        except (discord.Forbidden, discord.HTTPException):
+            return
 
     @discord.slash_command(name="bienvenue", description="Afficher la configuration du welcome.")
     @discord.default_permissions(manage_guild=True)
@@ -159,7 +112,10 @@ class WelcomeCog(commands.Cog):
             ephemeral=True,
         )
 
-    @discord.slash_command(name="bienvenue_vars", description="Variables utilisables dans le message de bienvenue.")
+    @discord.slash_command(
+        name="bienvenue_vars",
+        description="Variables utilisables dans le message de bienvenue.",
+    )
     async def bienvenue_vars(self, ctx: discord.ApplicationContext) -> None:
         locale = getattr(ctx, "locale", None)
         await ctx.respond(tr(self.translations, "vars", locale), ephemeral=True)
