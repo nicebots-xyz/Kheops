@@ -1,4 +1,4 @@
-# Copyright (c) NiceBots.xyz
+# Copyright (c) NiceBots.xyz, Communauté Les Frères Poulain
 # SPDX-License-Identifier: MIT
 
 extensions:
@@ -14,9 +14,15 @@ extensions:
     enabled: false
   add-dm:
     enabled: false
+  welcome:
+    enabled: true
+    channel_id: 563776770210398212
+    message: "Hey {mention}, bienvenue sur le discord {server} 🎉🤗 ! passe lire le <#563836837043372033> avant de t'amuser ici !! Passe par <#763454034203377745>  et <#697045814450585620> aussi pour t'y retrouver !"
+
 bot:
   slash:
     enabled: true
+
 use:
   bot: true
   backend: false
