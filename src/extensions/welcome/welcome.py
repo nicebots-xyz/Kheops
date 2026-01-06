@@ -3,35 +3,23 @@
 
 from __future__ import annotations
 
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import discord
 from discord.ext import commands
+
+from src.log import logger as base_logger
+
+if TYPE_CHECKING:
+    from src import custom
+
+logger = base_logger.getChild("kheops.welcome")
 
 default: dict[str, Any] = {
     "enabled": True,
     "channel_id": None,
     "message": "Bienvenue {mention} sur {server} !",
 }
-
-
-def tr(
-    translations: dict[str, dict[str, str]],
-    key: str,
-    locale: str | None,
-    **fmt: Any,
-) -> str:
-    entry = translations.get(key, {})
-    loc = locale or "fr"
-    base = loc.split("-", 1)[0]
-
-    text = entry.get(loc) or entry.get(base) or entry.get("en-US") or entry.get("fr") or ""
-    if fmt:
-        try:
-            return text.format(**fmt)
-        except (KeyError, ValueError):
-            return text
-    return text
 
 
 def render_template(template: str, member: discord.Member) -> str:
@@ -70,9 +58,7 @@ class WelcomeCog(commands.Cog):
         if not self.enabled or not self.channel_id or not self.message:
             return
 
-        channel = member.guild.get_channel(int(self.channel_id))
-        if channel is None:
-            return
+        channel = self.bot.get_partial_messageable(int(self.channel_id))
 
         content = render_template(self.message, member)
         allowed = discord.AllowedMentions(users=True, roles=False, everyone=False)
@@ -80,46 +66,9 @@ class WelcomeCog(commands.Cog):
         try:
             await channel.send(content, allowed_mentions=allowed)
         except (discord.Forbidden, discord.HTTPException):
-            return
-
-    @discord.slash_command(name="bienvenue", description="Afficher la configuration du welcome.")
-    @discord.default_permissions(manage_guild=True)
-    async def bienvenue(self, ctx: discord.ApplicationContext) -> None:
-        locale = getattr(ctx, "locale", None)
-
-        if not ctx.guild:
-            await ctx.respond(tr(self.translations, "only_guild", locale), ephemeral=True)
-            return
-
-        if not self.channel_id:
-            await ctx.respond(tr(self.translations, "not_configured", locale), ephemeral=True)
-            return
-
-        preview = self.message
-        if isinstance(ctx.user, discord.Member):
-            preview = render_template(self.message, ctx.user)
-
-        await ctx.respond(
-            tr(
-                self.translations,
-                "status",
-                locale,
-                enabled=self.enabled,
-                channel_id=int(self.channel_id),
-                message=self.message,
-                preview=preview,
-            ),
-            ephemeral=True,
-        )
-
-    @discord.slash_command(
-        name="bienvenue_vars",
-        description="Variables utilisables dans le message de bienvenue.",
-    )
-    async def bienvenue_vars(self, ctx: discord.ApplicationContext) -> None:
-        locale = getattr(ctx, "locale", None)
-        await ctx.respond(tr(self.translations, "vars", locale), ephemeral=True)
+            logger.exception("Impossible d'envoyer un message dans le salon")
 
 
-def setup(bot: discord.Bot, config: dict[str, Any]) -> None:
+def setup(bot: custom.Bot, config: dict[str, Any]) -> None:
+    bot.intents.members = True
     bot.add_cog(WelcomeCog(bot, config))

@@ -4,6 +4,7 @@ version = "0.1.0"
 description = "Khéops: Bot communautaire Les Frères Poulain"
 authors = [
     {name = "Paillat-dev", email = "me@paillat.dev"},
+    {name = "bryan1993-HA", email = "bryan@bthoury.fr"},
 ]
 dependencies = [
     "aiohttp>=3.9.5",

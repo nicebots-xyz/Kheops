@@ -170,7 +170,6 @@ async def setup_and_start_bot(
     config: BotConfig,
 ) -> None:
     intents = discord.Intents.default()
-    intents.members = True  # ✅ nécessaire pour on_member_join
     if config.prefix:
         intents.message_content = True
     cls = custom.CustomRestBot if config.rest else custom.CustomBot
