@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: MIT
 
 extensions:
-  toppg:
+  topgg:
     enabled: false
   ping:
     enabled: true
