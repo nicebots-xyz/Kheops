@@ -213,6 +213,7 @@ async def userinfo(
 Let's explain these commands:
 
 1. The `hello` command:
+
    - Uses the `@discord.slash_command` decorator to create a slash command.
    - Takes only the `ctx` (context) parameter, which is automatically provided by
      Discord.
