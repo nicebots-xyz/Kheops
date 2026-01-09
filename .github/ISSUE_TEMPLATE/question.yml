@@ -1,3 +1,6 @@
+# Copyright (c) Communauté Les Frères Poulain
+# SPDX-License-Identifier: MIT
+
 name: ❓ Question
 description: Poser une question sur Khéops
 title: "[Question] : "

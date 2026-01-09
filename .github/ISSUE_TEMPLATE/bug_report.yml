@@ -1,3 +1,6 @@
+# Copyright (c) Communauté Les Frères Poulain
+# SPDX-License-Identifier: MIT
+
 name: 🐛 Rapport de bug
 description: Signaler un bug ou un comportement inattendu
 title: "[Bug] : "
