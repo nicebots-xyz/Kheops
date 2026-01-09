@@ -1,4 +1,4 @@
-``# Politique de Sécurité
+# Politique de Sécurité
 
 ## Versions supportées
 
