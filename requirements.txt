@@ -268,9 +268,9 @@ sentry-sdk==2.48.0 \
 tomli-w==1.2.0; python_version >= "3.11" \
     --hash=sha256:188306098d013b691fcadc011abd66727d3c414c571bb01b1a174ba8c983cf90 \
     --hash=sha256:2dd14fac5a47c27be9cd4c976af5a12d87fb1f0b4512f81d69cce3b35ae25021
-tortoise-orm[asyncpg]==0.25.2 \
-    --hash=sha256:7e09547846eb27664b402a3b095e1d15ab6406ba56641fad260cf2877ca8d4c5 \
-    --hash=sha256:cf0c9148cb83134a8b2299c30658bd0d9f757a7aef9699e0125a151d58e4f9c4
+tortoise-orm[asyncpg]==0.25.3 \
+    --hash=sha256:3c52a53c41f4137aee9ffb3f3de01f30b52ad7767157f9bd9586a910fe839ca3 \
+    --hash=sha256:b6dedd388393624628ec46228c93df361533ceb3925986fa2d1d22debc838a7d
 typing-extensions==4.15.0 \
     --hash=sha256:0cea48d173cc12fa28ecabc3b837ea3cf6f38c6d1136f85cbaaf598984861466 \
     --hash=sha256:f0fa19c6845758ab08074a0cfa8b7aecb71c999ca73d62883bc25cc018c4e548
