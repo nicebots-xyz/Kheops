@@ -1,0 +1,17 @@
+# Copyright (c) Communauté Les Frères Poulain
+# SPDX-License-Identifier: MIT
+
+blank_issues_enabled: true
+contact_links:
+  - name: 📚 Documentation
+    url: https://github.com/nicebots-xyz/Kheops/blob/master/README.md
+    about: Consultez le README pour plus d'informations sur Khéops
+  - name: 🤝 Guide de contribution
+    url: https://github.com/nicebots-xyz/Kheops/blob/master/CONTRIBUTING.md
+    about: Apprenez comment contribuer au projet
+  - name: 📖 Documentation Pycord
+    url: https://docs.pycord.dev
+    about: Documentation officielle de la bibliothèque Pycord
+  - name: 🔧 Botkit Framework
+    url: https://github.com/nicebots-xyz/botkit
+    about: Documentation du framework Botkit utilisé par Khéops
