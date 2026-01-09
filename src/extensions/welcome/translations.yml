@@ -1,0 +1,72 @@
+# Copyright (c) Communauté Les Frères Poulain
+# SPDX-License-Identifier: MIT
+
+commands:
+  bienvenue:
+    name:
+      en-US: welcome
+      fr: bienvenue
+    description:
+      en-US: Show welcome configuration and preview
+      fr: Affiche la configuration du message de bienvenue et un aperçu
+
+  bienvenue_vars:
+    name:
+      en-US: welcome_vars
+      fr: bienvenue_vars
+    description:
+      en-US: List available welcome variables
+      fr: Liste les variables disponibles pour le message de bienvenue
+
+strings:
+  only_guild:
+    en-US: This command can only be used in a server.
+    fr: Commande serveur uniquement.
+
+  not_configured:
+    en-US: Welcome is not configured yet. Please set `welcome.channel_id` in config.
+    fr: Le welcome n'est pas configuré. Renseigne `welcome.channel_id` dans la config.
+
+  status:
+    en-US: |
+      **Welcome status**
+      - enabled: `{enabled}`
+      - channel: <#{channel_id}>
+      - message: `{message}`
+
+      **Preview**
+      {preview}
+    fr: |
+      **Statut du welcome**
+      - activé : `{enabled}`
+      - salon : <#{channel_id}>
+      - message : `{message}`
+
+      **Aperçu**
+      {preview}
+
+  vars:
+    en-US: |
+      **Available variables**
+      - `{user}`: display name of the user
+      - `{mention}`: mention the user
+      - `{username}`: username (no nickname)
+      - `{server}`: server name
+      - `{member_count}`: number of members
+      - `{created_at}`: account creation date (YYYY-MM-DD)
+      - `{joined_at}`: join date (YYYY-MM-DD)
+
+      **Example**
+      `Welcome {mention} to {server}! You are member #{member_count}.`
+    fr: |
+      **Variables disponibles**
+      - `{user}` : pseudo affiché (avec surnom si présent)
+      - `{mention}` : mention de la personne
+      - `{username}` : nom du compte (sans surnom)
+      - `{server}` : nom du serveur
+      - `{member_count}` : nombre de membres du serveur
+      - `{created_at}` : date de création du compte (YYYY-MM-DD)
+      - `{joined_at}` : date d'arrivée sur le serveur (YYYY-MM-DD)
+
+      **Exemple**
+      `Bienvenue {mention} sur {server} ! Tu es le membre #{member_count}.`

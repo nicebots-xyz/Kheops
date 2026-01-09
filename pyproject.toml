@@ -1,9 +1,9 @@
 [project]
-name = "khéops"
 version = "0.1.0"
 description = "Khéops: Bot communautaire Les Frères Poulain"
 authors = [
     {name = "Paillat-dev", email = "me@paillat.dev"},
+    {name = "bryan1993-HA", email = "bryan@bthoury.fr"},
 ]
 dependencies = [
     "aiohttp>=3.9.5",
@@ -32,7 +32,6 @@ license = {text = "MIT"}
 [tool.pdm.scripts]
 format = "ruff format ."
 lint = "ruff check --fix ."
-export = "pdm export -o requirements.txt --prod"
 tests = "pytest tests"
 start = "python src"
 check-listings = {call = "scripts:check_listings.main"}

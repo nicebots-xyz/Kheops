@@ -1,0 +1,108 @@
+# Copyright (c) Communauté Les Frères Poulain
+# SPDX-License-Identifier: MIT
+
+name: ✨ Proposition de fonctionnalité
+description: Proposer une nouvelle extension ou fonctionnalité
+title: "[Feature] : "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de proposer une nouvelle fonctionnalité ! Avant de commencer, vérifiez qu'une issue similaire n'existe pas déjà.
+
+  - type: dropdown
+    id: type
+    attributes:
+      label: Type de proposition
+      description: De quel type de fonctionnalité s'agit-il ?
+      options:
+        - Nouvelle extension complète
+        - Nouvelle commande dans une extension existante
+        - Amélioration d'une commande existante
+        - Autre amélioration
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problème ou besoin
+      description: Quel problème cette fonctionnalité résout-elle ?
+      placeholder: "Il serait utile de pouvoir... parce que..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Solution proposée
+      description: Comment imaginez-vous cette fonctionnalité ?
+      placeholder: |
+        Une commande /... qui permettrait de...
+        Elle fonctionnerait comme suit :
+        1. L'utilisateur tape /...
+        2. Le bot répond avec...
+    validations:
+      required: true
+
+  - type: textarea
+    id: examples
+    attributes:
+      label: Exemples d'utilisation
+      description: Montrez comment cette fonctionnalité serait utilisée
+      placeholder: |
+        Exemple 1: /stats affiche les statistiques du serveur
+        Exemple 2: /poll "Question?" "Option 1" "Option 2"
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives envisagées
+      description: Avez-vous pensé à d'autres façons d'implémenter cela ?
+      placeholder: "Une autre approche serait de..."
+
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priorité (selon vous)
+      description: Quelle importance a cette fonctionnalité ?
+      options:
+        - Critique (le bot ne peut pas fonctionner sans)
+        - Haute (très utile pour la communauté)
+        - Moyenne (serait bien d'avoir)
+        - Basse (nice to have)
+    validations:
+      required: true
+
+  - type: textarea
+    id: inspiration
+    attributes:
+      label: Inspiration
+      description: Connaissez-vous d'autres bots qui ont cette fonctionnalité ?
+      placeholder: "Le bot X a une fonctionnalité similaire..."
+
+  - type: dropdown
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Seriez-vous prêt à contribuer à l'implémentation ?
+      options:
+        - Oui, je peux l'implémenter moi-même
+        - Oui, mais j'aurais besoin d'aide
+        - Non, je ne sais pas coder
+        - Non, je n'ai pas le temps
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: J'ai vérifié qu'il n'y a pas déjà une issue similaire
+          required: true
+        - label: Cette fonctionnalité est en lien avec les besoins de la communauté
+          required: true
+        - label: J'ai fourni assez de détails sur la fonctionnalité proposée
+          required: true

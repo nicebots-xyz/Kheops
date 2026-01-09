@@ -1,0 +1,75 @@
+# Copyright (c) Communauté Les Frères Poulain
+# SPDX-License-Identifier: MIT
+
+name: ❓ Question
+description: Poser une question sur Khéops
+title: "[Question] : "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Vous avez une question ? Nous sommes là pour vous aider !
+
+        **Avant de poser votre question** :
+        - Consultez le [README.md](https://github.com/nicebots-xyz/Kheops/blob/master/README.md)
+        - Consultez le [CONTRIBUTING.md](https://github.com/nicebots-xyz/Kheops/blob/master/CONTRIBUTING.md)
+        - Consultez la [documentation Pycord](https://docs.pycord.dev)
+
+  - type: dropdown
+    id: category
+    attributes:
+      label: Catégorie
+      description: De quel type de question s'agit-il ?
+      options:
+        - Utilisation du bot
+        - Développement / Contribution
+        - Configuration
+        - Installation
+        - Autre
+    validations:
+      required: true
+
+  - type: textarea
+    id: question
+    attributes:
+      label: Votre question
+      description: Posez votre question de manière claire et détaillée
+      placeholder: "Comment puis-je..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexte
+      description: Donnez plus de contexte sur votre situation
+      placeholder: |
+        Je suis en train de...
+        J'ai essayé de...
+
+  - type: textarea
+    id: tried
+    attributes:
+      label: Ce que vous avez déjà essayé
+      description: Quelles solutions avez-vous tenté ?
+      placeholder: |
+        - J'ai regardé dans la documentation...
+        - J'ai essayé de...
+
+  - type: textarea
+    id: errors
+    attributes:
+      label: Messages d'erreur
+      description: Si vous avez des messages d'erreur, copiez-les ici
+      render: shell
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: J'ai cherché dans les issues existantes
+          required: true
+        - label: J'ai consulté la documentation
+          required: true
