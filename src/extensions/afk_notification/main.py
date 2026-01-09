@@ -11,6 +11,7 @@ from discord.ext import tasks
 from discord.utils import format_dt
 
 from src import custom
+from src.database.models import Dormeur
 
 from .config import EUROPE_PARIS, AfkNotifConfig
 
@@ -161,6 +162,11 @@ class AfkNotif(discord.Cog):
         if self.config.role_id and self.config.role_id not in [role.id for role in member.roles]:
             logger.debug(f"Member {member} ({member.id}) does not have required role {self.config.role_id}")
             return
+
+        if not await Dormeur.filter(discord_id=member.id).exists():
+            logger.debug(f"Member {member} ({member.id}) is not a dormeur")
+            return
+
         logger.info(f"Registering new member for AFK notifications: {member} ({member.id})")
         self.tasks[member.id] = asyncio.create_task(self.notify_member(member))
 
@@ -192,3 +198,47 @@ class AfkNotif(discord.Cog):
         elif member.id not in self.tasks:
             logger.debug(f"Member {member} ({member.id}) joined voice channel: {after.channel}")
             await self.register_new_member(member)
+
+    dormeurs = discord.SlashCommandGroup(
+        "dormeurs",
+        "Commandes concernant les dormeurs",
+        default_member_permissions=discord.Permissions(administrator=True),
+    )
+
+    @dormeurs.command(name="ajouter", description="Ajouter un dormeur")
+    async def ajouter(self, ctx: custom.ApplicationContext, member: discord.Member) -> None:
+        if await Dormeur.filter(discord_id=member.id).exists():
+            await ctx.respond(f"{member.mention} est déjà un dormeur.", ephemeral=True)
+            return
+        await Dormeur.create(discord_id=member.id)
+        if is_time_between(self.config.start_time, self.config.stop_time, datetime.now(tz=EUROPE_PARIS)):
+            await self.register_new_member(member)
+            logger.debug(f"Registered new member {member} ({member.id}) for AFK notifications")
+
+        await ctx.respond(f"{member.mention} a été ajouté en tant que dormeur.", ephemeral=True)
+
+    @dormeurs.command(name="supprimer", description="Supprimer un dormeur")
+    async def supprimer(self, ctx: custom.ApplicationContext, member: discord.Member) -> None:
+        if not await Dormeur.filter(discord_id=member.id).exists():
+            await ctx.respond(f"{member.mention} n'est pas un dormeur.", ephemeral=True)
+            return
+        await Dormeur.filter(discord_id=member.id).delete()
+        if task := self.tasks.get(member.id):
+            logger.debug(f"Cancelling notification task for removed dormeur {member} ({member.id})")
+            task.cancel()
+            self.tasks.pop(member.id)
+
+        await ctx.respond(f"{member.mention} a été supprimé en tant que dormeur.", ephemeral=True)
+
+    @dormeurs.command(name="lister", description="Lister les dormeurs")
+    async def lister(self, ctx: custom.ApplicationContext) -> None:
+        dormeurs = await Dormeur.all()
+        if not dormeurs:
+            await ctx.respond("Aucun dormeur enregistré.", ephemeral=True)
+            return
+        dormeurs_str = "\n".join(f"- <@{dormeur.discord_id}>" for dormeur in dormeurs)
+        await ctx.respond(
+            view=discord.ui.DesignerView(
+                discord.ui.Container(discord.ui.TextDisplay(f"## Liste des dormeurs\n{dormeurs_str}"))  # pyright: ignore[reportUnknownArgumentType]
+            )
+        )

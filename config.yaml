@@ -16,10 +16,10 @@ extensions:
     enabled: false
   afk_notification:
     enabled: true
-    start_time: "22:00"
+    start_time: "15:12"
     stop_time: "06:00"
-    afk_reminder_every: 1800
-    afk_reminder_timeout: 300
+    afk_reminder_every: 60
+    afk_reminder_timeout: 15
 
 bot:
   slash:
