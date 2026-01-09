@@ -1,4 +1,5 @@
 # Copyright (c) Communauté Les Frères Poulain
+
 # SPDX-License-Identifier: MIT
 
 # Welcome Extension

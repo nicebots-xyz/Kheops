@@ -1,0 +1,114 @@
+name: 🐛 Rapport de bug
+description: Signaler un bug ou un comportement inattendu
+title: "[Bug] : "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de prendre le temps de signaler ce bug ! Plus vous fournissez de détails, plus il sera facile de le corriger.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Description du bug
+      description: Décrivez clairement le problème que vous rencontrez
+      placeholder: "Quand j'utilise la commande /hello, le bot..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Étapes pour reproduire
+      description: Comment reproduire le bug ?
+      placeholder: |
+        1. Utilisez la commande /...
+        2. Entrez les paramètres ...
+        3. Le bot répond avec ...
+        4. L'erreur se produit
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Comportement attendu
+      description: Que devrait-il se passer normalement ?
+      placeholder: "Le bot devrait répondre avec..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Comportement observé
+      description: Que se passe-t-il réellement ?
+      placeholder: "Le bot répond avec une erreur..."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: extension
+    attributes:
+      label: Extension concernée
+      description: Quelle extension est affectée ?
+      options:
+        - welcome
+        - ping
+        - help
+        - branding
+        - nice_errors
+        - listings
+        - add-dm
+        - Autre extension
+        - Je ne sais pas
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / Messages d'erreur
+      description: Copiez-collez les messages d'erreur ou logs pertinents
+      placeholder: |
+        Traceback (most recent call last):
+          File "...", line ...
+        ...
+      render: shell
+
+  - type: textarea
+    id: screenshots
+    attributes:
+      label: Captures d'écran
+      description: Ajoutez des captures d'écran si cela aide à comprendre le problème
+
+  - type: dropdown
+    id: frequency
+    attributes:
+      label: Fréquence
+      description: À quelle fréquence ce bug se produit-il ?
+      options:
+        - À chaque fois
+        - Souvent
+        - Parfois
+        - Rarement
+    validations:
+      required: true
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Contexte supplémentaire
+      description: Y a-t-il d'autres informations utiles ?
+      placeholder: "Ce bug a commencé après..."
+
+  - type: checkboxes
+    id: checklist
+    attributes:
+      label: Checklist
+      options:
+        - label: J'ai vérifié qu'il n'y a pas déjà une issue similaire
+          required: true
+        - label: J'ai fourni assez de détails pour reproduire le bug
+          required: true
