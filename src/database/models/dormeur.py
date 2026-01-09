@@ -1,3 +1,6 @@
+# Copyright (c) Communauté Les Frères Poulain
+# SPDX-License-Identifier: MIT
+
 from uuid import UUID
 
 from tortoise import fields

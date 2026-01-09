@@ -1,3 +1,6 @@
+# Copyright (c) Communauté Les Frères Poulain
+# SPDX-License-Identifier: MIT
+
 from tortoise import BaseDBAsyncClient
 
 RUN_IN_TRANSACTION = True
