@@ -1,56 +1,49 @@
-# Copyright (c) Communauté Les Frères Poulain
+<!--
+Copyright (c) Communauté Les Frères Poulain
+SPDX-License-Identifier: MIT
+-->
 
-# SPDX-License-Identifier: MIT
+# Extension Welcome
 
-# Welcome Extension
+L'extension Welcome envoie automatiquement un message de bienvenue lorsqu'un nouveau membre rejoint un serveur Discord. Elle est conçue pour être simple à configurer et facile à utiliser.
 
-The Welcome extension automatically sends a welcome message when a new member joins a
-Discord server. It is designed to be simple to configure and easy to use.
+## Fonctionnalités
 
-## Features
+- Message de bienvenue automatique lors de l'arrivée d'un membre
+- Message personnalisable avec variables
 
-- Automatic welcome message on member join
-- Configurable via slash commands
-- Customizable message with variables
-- Multi-language support
-- Per-server configuration
+## Utilisation
 
-## Usage
+Pour utiliser l'extension Welcome, activez-la dans le fichier de configuration et configurez le message de bienvenue ainsi que le salon de destination.
 
-To use the Welcome extension, enable it in the configuration file and configure the
-welcome message using the `/bienvenue` slash command.
-
-The message will be sent automatically in the selected channel whenever a new member
-joins the server.
-
-## Commands
-
-- `/bienvenue`  
-  Configure the welcome message and select the channel.
-
-- `/bienvenue_off`  
-  Disable the welcome message for the server.
-
-- `/bienvenue_vars`  
-  Display the list of available variables with explanations and examples.
+Le message sera envoyé automatiquement dans le salon configuré chaque fois qu'un nouveau membre rejoint le serveur.
 
 ## Variables
 
-The welcome message supports the following variables:
+Le message de bienvenue supporte les variables suivantes :
 
-- `{user}`: Member display name (nickname if set)
-- `{mention}`: Member mention
-- `{username}`: Discord username
-- `{server}`: Server name
-- `{member_count}`: Total number of members
-- `{created_at}`: Account creation date
-- `{joined_at}`: Join date
+- `{user}` : Nom d'affichage du membre (surnom si défini)
+- `{mention}` : Mention du membre
+- `{username}` : Nom d'utilisateur Discord
+- `{server}` : Nom du serveur
+- `{member_count}` : Nombre total de membres
+- `{created_at}` : Date de création du compte (format YYYY-MM-DD)
+- `{joined_at}` : Date d'arrivée (format YYYY-MM-DD)
 
 ## Configuration
 
-Example configuration in `config.yml`:
+Exemple de configuration dans `config.yml` :
 
 ```yaml
-welcome:
-  enabled: true
+extensions:
+  welcome:
+    enabled: true
+    channel_id: 123456789  # ID du salon où envoyer le message
+    message: "Bienvenue {mention} sur {server} !"
 ```
+
+### Paramètres de configuration
+
+- `enabled` : Activer ou désactiver l'extension (par défaut : `true`)
+- `channel_id` : L'ID du salon Discord où envoyer le message de bienvenue
+- `message` : Le message de bienvenue à envoyer (par défaut : `"Bienvenue {mention} sur {server} !"`)
