@@ -125,7 +125,7 @@ class AfkNotif(discord.Cog):
                 logger.info(f"Sending AFK notification to {member} ({member.id}) in {member.voice.channel}")
                 view = NotifyView(member, self.config)
                 try:
-                    await member.voice.channel.send(view=view)
+                    await member.voice.channel.send(view=view, delete_after=self.config.afk_reminder_timeout * 2)
                 except discord.Forbidden:
                     logger.exception(f"Missing permission to send message in {member.voice.channel}")
                     view.task.cancel()
@@ -246,5 +246,6 @@ class AfkNotif(discord.Cog):
         await ctx.respond(
             view=discord.ui.DesignerView(
                 discord.ui.Container(discord.ui.TextDisplay(f"## Liste des dormeurs\n{dormeurs_str}"))  # pyright: ignore[reportUnknownArgumentType]
-            )
+            ),
+            ephemeral=True,
         )
