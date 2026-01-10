@@ -28,11 +28,11 @@ Khéops offre actuellement les fonctionnalités suivantes :
 
 Les fonctionnalités sont organisées en extensions modulaires dans `src/extensions/` :
 
-| Extension          | Description                                              |
-|--------------------|----------------------------------------------------------|
-| `welcome`          | Messages de bienvenue                                    |
-| `afk_notification` | Notifications et déconnexion automatique des membres AFK |
-| `ping`             | Commande de test de latence                              |
+| Extension          | Description                                              | Documentation                                          |
+|--------------------|----------------------------------------------------------|--------------------------------------------------------|
+| `welcome`          | Messages de bienvenue                                    | [README](src/extensions/welcome/readme.md)             |
+| `afk_notification` | Notifications et déconnexion automatique des membres AFK | [README](src/extensions/afk_notification/readme.md)    |
+| `ping`             | Commande de test de latence                              | [README](src/extensions/ping/readme.md)                |
 
 ## Fonctionnement
 
@@ -118,32 +118,7 @@ BOTKIT__BOT__TOKEN=my_secret_token
 
 Le fichier `.env` est prioritaire sur le fichier `config.yaml`. Cela signifie que si une même clé est définie dans les deux fichiers, la valeur du fichier `.env` sera utilisée.
 
-### Configuration de l'extension AFK Notification
-
-L'extension `afk_notification` permet de détecter et gérer automatiquement les membres AFK dans les salons vocaux. Voici un exemple de configuration :
-
-```yaml
-extensions:
-  afk_notification:
-    enabled: true
-    start_time: "09:00"  # Heure de début (format HH:MM)
-    stop_time: "23:00"   # Heure de fin (format HH:MM)
-    afk_reminder_every: 3600  # Intervalle entre les rappels (en secondes)
-    afk_reminder_timeout: 300  # Délai avant déconnexion (en secondes)
-    guild_id: 123456789  # ID du serveur Discord
-    role_id: 987654321   # ID du rôle requis (optionnel)
-```
-
-**Fonctionnement** :
-- Le bot surveille les membres dans les salons vocaux pendant la plage horaire définie
-- À intervalles réguliers, il envoie un message de rappel aux membres enregistrés comme "dormeurs"
-- Si le membre ne répond pas en cliquant sur le bouton dans le délai imparti, il est déconnecté automatiquement
-- Les membres peuvent être enregistrés via les commandes `/dormeurs` par les administrateurs
-
-**Commandes disponibles** (réservées aux administrateurs) :
-- `/dormeurs ajouter <membre>` : Ajouter un membre à la liste des dormeurs
-- `/dormeurs supprimer <membre>` : Retirer un membre de la liste des dormeurs
-- `/dormeurs lister` : Afficher la liste des dormeurs enregistrés
+Pour plus de détails sur la configuration de chaque extension, consultez leur documentation respective dans le tableau des [extensions disponibles](#extensions-disponibles).
 
 ### Obtenir un token Discord
 
