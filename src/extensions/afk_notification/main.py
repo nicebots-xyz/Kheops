@@ -123,13 +123,19 @@ class AfkNotif(discord.Cog):
                     return
 
                 logger.info(f"Sending AFK notification to {member} ({member.id}) in {member.voice.channel}")
+                view = NotifyView(member, self.config)
                 try:
-                    await member.voice.channel.send(view=NotifyView(member, self.config))
+                    await member.voice.channel.send(view=view)
                 except discord.Forbidden:
-                    logger.warning(f"Missing permission to send message in {member.voice.channel}")
+                    logger.exception(f"Missing permission to send message in {member.voice.channel}")
+                    view.task.cancel()
                     return
                 except discord.HTTPException:
+                    view.task.cancel()
                     logger.exception(f"Failed to send AFK notification to {member} ({member.id})")
+                except Exception:
+                    view.task.cancel()
+                    raise
 
         except asyncio.CancelledError:
             logger.debug(f"Notification task cancelled for {member} ({member.id})")
