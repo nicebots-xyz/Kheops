@@ -16,14 +16,14 @@ extensions:
     enabled: false
   afk_notification:
     enabled: true
-    start_time: "15:12"
+    start_time: "22:00"
     stop_time: "06:00"
     afk_reminder_every: 60
     afk_reminder_timeout: 15
   welcome:
     enabled: true
     channel_id: 563776770210398212
-    message: "Hey {mention}, bienvenue sur le discord {server} 🎉🤗 ! passe lire le <#563836837043372033> avant de t'amuser ici !! Passe par <#763454034203377745>  et <#697045814450585620> aussi pour t'y retrouver !"
+    message: "Hey {mention}, bienvenue sur le discord **{server}** 🎉🤗 ! Passe lire le <#563836837043372033> avant de t'amuser ici !! Passe par <#763454034203377745>  et <#697045814450585620> aussi pour t'y retrouver !"
 
 bot:
   slash:
