@@ -181,11 +181,19 @@ class AfkNotif(discord.Cog):
         logger.info("AfkNotif cog ready, starting daily registration loop")
         self.loop.start()
 
+    async def cancel_member(self, member: discord.Member) -> bool:
+        if task := self.tasks.get(member.id):
+            logger.debug(f"Cancelling notification task for {member} ({member.id})")
+            task.cancel()
+            self.tasks.pop(member.id)
+            return True
+        return False
+
     @discord.Cog.listener("on_voice_state_update")
     async def on_voice_state_update(
         self,
         member: discord.Member,
-        before: discord.VoiceState,  # noqa: ARG002
+        before: discord.VoiceState,
         after: discord.VoiceState,
     ) -> None:
         if not is_time_between(self.config.start_time, self.config.stop_time, datetime.now(tz=EUROPE_PARIS)):
@@ -197,11 +205,14 @@ class AfkNotif(discord.Cog):
 
         if after.channel is None:
             logger.debug(f"Member {member} ({member.id}) left voice channel")
-            if task := self.tasks.get(member.id):
-                logger.debug(f"Cancelling notification task for {member} ({member.id})")
-                task.cancel()
-                self.tasks.pop(member.id)
-        elif member.id not in self.tasks:
+            await self.cancel_member(member)
+            return
+
+        if before.channel and before.channel.id != after.channel.id:
+            logger.debug(f"Member {member} ({member.id}) moved from {before.channel} to {after.channel}")
+            await self.cancel_member(member)
+
+        if member.id not in self.tasks:
             logger.debug(f"Member {member} ({member.id}) joined voice channel: {after.channel}")
             await self.register_new_member(member)
 
