@@ -1,4 +1,4 @@
-# Copyright (c) Communauté Les Frères Poulain
+# Copyright Communauté Les Frères Poulain 2025, 2026
 # SPDX-License-Identifier: MIT
 
 import asyncio
@@ -40,9 +40,10 @@ def is_time_between(start: time, end: time, current: datetime) -> bool:
 
 class NotifyView(discord.ui.DesignerView):
     @override
-    def __init__(self, member: discord.Member, config: "AfkNotifConfig") -> None:
+    def __init__(self, member: discord.Member, config: "AfkNotifConfig", bot: custom.Bot) -> None:
         self.member: discord.Member = member
         self.config: AfkNotifConfig = config
+        self.bot: custom.Bot = bot
         super().__init__(timeout=self.config.afk_reminder_timeout, disable_on_timeout=True)
 
         button: discord.ui.Button[Self] = discord.ui.Button(
@@ -68,11 +69,12 @@ class NotifyView(discord.ui.DesignerView):
     async def disconnect_member(self) -> None:
         await asyncio.sleep(self.config.afk_reminder_timeout)
         if self.member.voice and self.member.voice.channel:
+            voice_channel = self.member.voice.channel
             logger.info(f"Disconnecting AFK member: {self.member} ({self.member.id})")
             try:
                 await self.member.edit(voice_channel=None)
             except discord.Forbidden:
-                logger.warning(f"Missing permission to disconnect {self.member} ({self.member.id})")
+                logger.warning(f"Missing permission to disconnect {self.member} ({self.member.id})", exc_info=True)
             except Exception:
                 logger.exception(f"Error disconnecting {self.member} ({self.member.id})")
             else:
@@ -80,6 +82,24 @@ class NotifyView(discord.ui.DesignerView):
                     await self.message.reply(
                         f"{self.member.mention}, tu as été AFK pendant trop longtemps."
                         + " Je t'ai déconnecté du salon vocal."
+                    )
+                logs_channel = self.bot.get_partial_messageable(self.config.logs_channel_id)
+                try:
+                    await logs_channel.send(
+                        view=discord.ui.DesignerView(
+                            discord.ui.Container(  # pyright: ignore[reportUnknownArgumentType]
+                                discord.ui.TextDisplay(
+                                    f"""## Utilisateur déconnecté
+    {self.member.mention} ({self.member.id}) a été déconnecté pour AFK du salon {voice_channel.mention}.
+    -# {format_dt(self.datetime_timeout, style="R")}
+    """
+                                )
+                            )
+                        )
+                    )
+                except discord.HTTPException:
+                    logger.exception(
+                        f"Error sending disconnect log message ({self.member.id}) in channel {logs_channel}",
                     )
         else:
             logger.debug(f"Member {self.member} ({self.member.id}) already left voice, skipping disconnect")
@@ -123,7 +143,7 @@ class AfkNotif(discord.Cog):
                     return
 
                 logger.info(f"Sending AFK notification to {member} ({member.id}) in {member.voice.channel}")
-                view = NotifyView(member, self.config)
+                view = NotifyView(member, self.config, self.bot)
                 try:
                     await member.voice.channel.send(view=view, delete_after=self.config.afk_reminder_timeout * 2)
                 except discord.Forbidden:
