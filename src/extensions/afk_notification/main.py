@@ -100,7 +100,6 @@ class NotifyView(discord.ui.DesignerView):
                 except discord.HTTPException:
                     logger.exception(
                         f"Error sending disconnect log message ({self.member.id}) in channel {logs_channel}",
-                        exc_info=True,
                     )
         else:
             logger.debug(f"Member {self.member} ({self.member.id}) already left voice, skipping disconnect")
