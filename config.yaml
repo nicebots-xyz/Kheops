@@ -20,6 +20,7 @@ extensions:
     stop_time: "06:00"
     afk_reminder_every: 60
     afk_reminder_timeout: 15
+    logs_channel_id: 573224892930064394
   welcome:
     enabled: true
     channel_id: 563776770210398212

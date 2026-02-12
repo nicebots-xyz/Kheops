@@ -28,6 +28,7 @@ class AfkNotifConfig(BaseModel):
     afk_reminder_every: int
     afk_reminder_timeout: int
     guild_id: int
+    logs_channel_id: int
     role_id: int | None = None
 
     @field_validator("start_time", mode="before")
