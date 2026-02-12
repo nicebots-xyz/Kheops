@@ -4,7 +4,6 @@
 import asyncio
 from datetime import datetime, time, timedelta
 from logging import getLogger
-from re import escape
 from typing import Self, final, override
 
 import discord
