@@ -78,11 +78,14 @@ class NotifyView(discord.ui.DesignerView):
             except Exception:
                 logger.exception(f"Error disconnecting {self.member} ({self.member.id})")
             else:
-                if self.message:
-                    await self.message.reply(
+                logger.info(f"Disconnected {self.member} ({self.member.id}) from voice channel {voice_channel}")
+                try:
+                    await voice_channel.send(
                         f"{self.member.mention}, tu as été AFK pendant trop longtemps."
                         + " Je t'ai déconnecté du salon vocal."
                     )
+                except discord.HTTPException:
+                    logger.exception(f"Error sending disconnect message in {voice_channel} ({voice_channel.id})")
                 logs_channel = self.bot.get_partial_messageable(self.config.logs_channel_id)
                 try:
                     await logs_channel.send(
