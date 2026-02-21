@@ -93,9 +93,8 @@ class NotifyView(discord.ui.DesignerView):
                             discord.ui.Container(  # pyright: ignore[reportUnknownArgumentType]
                                 discord.ui.TextDisplay(
                                     f"""## Utilisateur déconnecté
-    {self.member.mention} ({self.member.id}) a été déconnecté pour AFK du salon {voice_channel.mention}.
-    -# {format_dt(self.datetime_timeout, style="R")}
-    """
+{self.member.mention} ({self.member.id}) a été déconnecté pour AFK du salon {voice_channel.mention}.
+-# {format_dt(self.datetime_timeout, style="R")}"""
                                 )
                             )
                         )
