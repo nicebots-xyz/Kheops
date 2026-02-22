@@ -16,7 +16,7 @@ extensions:
     enabled: false
   afk_notification:
     enabled: true
-    start_time: "10:00"
+    start_time: "22:00"
     stop_time: "06:00"
     afk_reminder_every: 60
     afk_reminder_timeout: 15
