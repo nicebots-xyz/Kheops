@@ -106,6 +106,28 @@ commands:
         description:
           en-US: "Sends the recruiting information section."
           fr-FR: "Envoie la section de recrutement."
+      recruiting_num_mods:
+        name:
+          en-US: "recruiting_num_mods"
+          fr-FR: "recruiting_num_mods"
+        description:
+          en-US: "Number of moderator positions currently open for recruiting."
+          fr-FR: "Nombre de postes de modérateur actuellement ouverts pour le recrutement."
+      recruiting_num_anim:
+        name:
+          en-US: "recruiting_num_anim"
+          fr-FR: "recruiting_num_anim"
+        description:
+          en-US: "Number of animator positions currently open for recruiting."
+          fr-FR: "Nombre de postes d'animateur actuellement ouverts pour le recrutement."
+      recruiting_num_happymanager:
+        name:
+          en-US: "recruiting_num_happymanager"
+          fr-FR: "recruiting_num_happymanager"
+        description:
+          en-US: "Number of happy manager positions currently open for recruiting."
+          fr-FR: "Nombre de postes de happy manager actuellement ouverts pour le recrutement."
+
     strings:
       <<: *info_reusable_strings
       message_sent:
