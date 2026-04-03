@@ -26,6 +26,7 @@ class SendCog(discord.Cog):
         *,
         main: bool = True,
         networks: bool = True,
+        tipeee_text: bool = True,
         level_roles: bool = True,
         vc_roles: bool = True,
         recruiting: bool = True,
@@ -49,6 +50,9 @@ class SendCog(discord.Cog):
                     TextDisplay[DesignerView, Never](ctx.translations.networks_text),
                 ]
             )
+
+        if tipeee_text:
+            blocks.append([TextDisplay[DesignerView, Never](ctx.translations.tipeee_text)])
 
         if level_roles:
             blocks.append([TextDisplay[DesignerView, Never](ctx.translations.leveled_roles_text)])
@@ -79,6 +83,7 @@ class SendCog(discord.Cog):
         ctx: custom.ApplicationContext,
         main: bool = True,
         networks: bool = True,
+        tipeee_text: bool = True,
         level_roles: bool = True,
         vc_roles: bool = True,
         recruiting: bool = True,
@@ -90,6 +95,7 @@ class SendCog(discord.Cog):
             ctx,
             main=main,
             networks=networks,
+            tipeee_text=tipeee_text,
             level_roles=level_roles,
             vc_roles=vc_roles,
             recruiting=recruiting,
