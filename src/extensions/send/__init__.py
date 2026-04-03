@@ -14,7 +14,7 @@ default: dict[str, bool] = {"enabled": True}
 class SendModal(discord.ui.DesignerModal):
     def __init__(self) -> None:
         super().__init__(title="Envoyer un message")
-        self.input = discord.ui.TextInput(max_length=4000)
+        self.input = discord.ui.TextInput(max_length=4000, style=discord.InputTextStyle.paragraph)
 
         self.add_item(discord.ui.Label(label="Message", description="Le message à envoyer", item=self.input))
 
