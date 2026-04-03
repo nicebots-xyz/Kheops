@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: MIT
+Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
+-->
 # Guide de Contribution
 
 Bienvenue ! Nous sommes ravis que vous souhaitiez contribuer à Khéops. Ce guide vous accompagnera pas à pas dans le processus de contribution, que vous soyez débutant ou expérimenté en développement.
