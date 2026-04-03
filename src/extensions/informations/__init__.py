@@ -29,6 +29,9 @@ class SendCog(discord.Cog):
         level_roles: bool = True,
         vc_roles: bool = True,
         recruiting: bool = True,
+        recruiting_num_mods: int = 5,
+        recruiting_num_anim: int = 2,
+        recruiting_num_happymanager: int = 3,
     ) -> tuple[list[discord.ui.ViewItem[discord.ui.DesignerView]], list[discord.File]]:
         blocks: list[list[ViewItem[DesignerView]]] = []
         files: list[discord.File] = []
@@ -54,23 +57,14 @@ class SendCog(discord.Cog):
             blocks.append([TextDisplay[DesignerView, Never](ctx.translations.activity_roles_voice)])
 
         if recruiting:
-            blocks.append([TextDisplay[DesignerView, Never](ctx.translations.recruiting_text)])
+            blocks.append([TextDisplay[DesignerView, Never](ctx.translations.recruiting_text.format(mods=recruiting_num_mods, anim=recruiting_num_anim, happymanager=recruiting_num_happymanager)
+                                                            )])
 
         for i, block in enumerate(blocks):
             if i != len(blocks) - 1:
                 block.append(Separator[DesignerView](divider=True, spacing=discord.SeparatorSpacingSize.large))
 
         return [block for sublist in blocks for block in sublist], files
-
-    @discord.slash_command(default_member_permissions=discord.Permissions(administrator=True))
-    async def informations(self, ctx: custom.ApplicationContext) -> None:
-        components, files = await self.build_message(ctx)
-        await ctx.respond(
-            view=discord.ui.DesignerView(*components),
-            files=files,
-            allowed_mentions=discord.AllowedMentions.none(),
-            ephemeral=True,
-        )
 
     @discord.slash_command(default_member_permissions=discord.Permissions(administrator=True))
     async def informations_send(
@@ -81,9 +75,12 @@ class SendCog(discord.Cog):
         level_roles: bool = True,
         vc_roles: bool = True,
         recruiting: bool = True,
+        recruiting_num_mods: int = 5,
+        recruiting_num_anim: int = 2,
+        recruiting_num_happymanager: int = 3,
     ) -> None:
         components, files = await self.build_message(
-            ctx, main=main, networks=networks, level_roles=level_roles, vc_roles=vc_roles, recruiting=recruiting
+            ctx, main=main, networks=networks, level_roles=level_roles, vc_roles=vc_roles, recruiting=recruiting, recruiting_num_mods=recruiting_num_mods, recruiting_num_anim=recruiting_num_anim, recruiting_num_happymanager=recruiting_num_happymanager
         )
 
         await ctx.channel.send(
