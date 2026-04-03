@@ -57,8 +57,15 @@ class SendCog(discord.Cog):
             blocks.append([TextDisplay[DesignerView, Never](ctx.translations.activity_roles_voice)])
 
         if recruiting:
-            blocks.append([TextDisplay[DesignerView, Never](ctx.translations.recruiting_text.format(mods=recruiting_num_mods, anim=recruiting_num_anim, happymanager=recruiting_num_happymanager)
-                                                            )])
+            blocks.append(
+                [
+                    TextDisplay[DesignerView, Never](
+                        ctx.translations.recruiting_text.format(
+                            mods=recruiting_num_mods, anim=recruiting_num_anim, happymanager=recruiting_num_happymanager
+                        )
+                    )
+                ]
+            )
 
         for i, block in enumerate(blocks):
             if i != len(blocks) - 1:
@@ -80,7 +87,15 @@ class SendCog(discord.Cog):
         recruiting_num_happymanager: int = 3,
     ) -> None:
         components, files = await self.build_message(
-            ctx, main=main, networks=networks, level_roles=level_roles, vc_roles=vc_roles, recruiting=recruiting, recruiting_num_mods=recruiting_num_mods, recruiting_num_anim=recruiting_num_anim, recruiting_num_happymanager=recruiting_num_happymanager
+            ctx,
+            main=main,
+            networks=networks,
+            level_roles=level_roles,
+            vc_roles=vc_roles,
+            recruiting=recruiting,
+            recruiting_num_mods=recruiting_num_mods,
+            recruiting_num_anim=recruiting_num_anim,
+            recruiting_num_happymanager=recruiting_num_happymanager,
         )
 
         await ctx.channel.send(
