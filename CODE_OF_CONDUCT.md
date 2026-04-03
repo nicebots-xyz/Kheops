@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: MIT
+Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
+-->
 # Code de Conduite du Contributor Covenant 3.0
 
 **Note de traduction :** Ce document est une traduction de la version 3.0 du Code de Conduite du Contributor Covenant.

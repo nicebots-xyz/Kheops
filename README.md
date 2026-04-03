@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: MIT
+Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
+-->
 # Khéops - Bot Communautaire Les Frères Poulain
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)

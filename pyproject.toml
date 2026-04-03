@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
 [project]
 version = "0.1.0"
 description = "Khéops: Bot communautaire Les Frères Poulain"
@@ -22,6 +24,7 @@ dependencies = [
     "tortoise-orm[asyncpg]>=0.23.0",
     "aerich[toml]>=0.8.1",
     "py-cord>=2.7.0rc2",
+    "cachetools>=7.0.1",
     "tzdata>=2025.3",
 ]
 requires-python = "==3.12.*"

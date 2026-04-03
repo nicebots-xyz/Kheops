@@ -1,3 +1,7 @@
+<!--
+SPDX-License-Identifier: MIT
+Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
+-->
 # Politique de Sécurité
 
 ## Versions supportées
