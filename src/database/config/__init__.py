@@ -1,5 +1,6 @@
-# Copyright (c) NiceBots
 # SPDX-License-Identifier: MIT
+# Copyright: 2024-2026 NiceBots.xyz
+
 
 import ssl
 from collections import defaultdict
@@ -54,12 +55,16 @@ def create_ssl_context() -> ssl.SSLContext:
 
 
 def parse_postgres_url(url: str) -> dict[str, Any]:
-    """Parse postgres URL into credentials dict."""
+    """Parse postgres URL into credentials dict.
+
+    Returns a dictionary that can contain various types for asyncpg connection.
+    Query parameters are added as-is (single values unwrapped from lists).
+    """
     parsed = urlparse(url)
 
     query_params = parse_qs(parsed.query)
 
-    credentials = {
+    credentials: dict[str, Any] = {
         "host": parsed.hostname,
         "port": parsed.port or 5432,
         "user": parsed.username,
@@ -69,6 +74,7 @@ def parse_postgres_url(url: str) -> dict[str, Any]:
 
     for key, value in query_params.items():
         if key not in ["ssl", "sslmode"]:  # Skip SSL params
+            # Unwrap single-item lists for cleaner values
             credentials[key] = value[0] if len(value) == 1 else value
 
     return credentials
@@ -145,10 +151,13 @@ def parse_url_apps_mapping(url_apps_mapping: dict[str, list[str]]) -> tuple[dict
     return app_connection, connection_config
 
 
-APP_CONNECTION_MAPPING: dict[str, str]
-CONNECTION_CONFIG_MAPPING: dict[str, dict[str, Any]]
+_app_conn_map: dict[str, str]
+_conn_cfg_map: dict[str, dict[str, Any]]
 
-APP_CONNECTION_MAPPING, CONNECTION_CONFIG_MAPPING = parse_url_apps_mapping(get_url_apps_mapping())
+_app_conn_map, _conn_cfg_map = parse_url_apps_mapping(get_url_apps_mapping())
+
+APP_CONNECTION_MAPPING: dict[str, str] = _app_conn_map
+CONNECTION_CONFIG_MAPPING: dict[str, dict[str, Any]] = _conn_cfg_map
 
 
 def get_apps() -> dict[str, dict[str, list[str] | str]]:
@@ -180,7 +189,7 @@ async def init() -> None:
     )
     await command.init()
     migrated = await command.upgrade(run_in_transaction=True)
-    logger.success(f"Successfully migrated {migrated} migrations")
+    logger.success(f"Successfully migrated {migrated} migrations")  # pyright: ignore[reportAttributeAccessIssue]
     await Tortoise.init(config=TORTOISE_ORM)
 
 

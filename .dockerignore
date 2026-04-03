@@ -1,5 +1,5 @@
 .github/
 .gitignore
 config.example.yaml
-README.md
+readme.md
 renovate.json

@@ -1,5 +1,5 @@
-# Copyright (c) NiceBots.xyz
 # SPDX-License-Identifier: MIT
+# Copyright: 2024-2026 NiceBots.xyz
 
 ARG PYTHON_VERSION=3.12
 ARG NODE_VERSION=20
@@ -30,7 +30,6 @@ COPY --from=python-base --chown=appuser /app/requirements.txt ./
 RUN pip install -r requirements.txt
 
 COPY --chown=appuser src/ ./src
-COPY --chown=appuser config.yaml ./
 COPY --chown=appuser LICENSE ./
 
 USER appuser

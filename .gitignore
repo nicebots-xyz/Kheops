@@ -162,6 +162,8 @@ cython_debug/
 .idea/
 
 # project specific
+config.yaml
+config.yml
 .pdm-python
 listings.yaml
 description.md
