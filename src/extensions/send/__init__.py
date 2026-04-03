@@ -1,3 +1,6 @@
+# Copyright Communauté Les Frères Poulain 2025, 2026
+# SPDX-License-Identifier: MIT
+
 from typing import final, override
 
 import discord
@@ -5,6 +8,7 @@ import discord
 from src import custom
 
 default: dict[str, bool] = {"enabled": True}
+
 
 @final
 class SendModal(discord.ui.DesignerModal):
