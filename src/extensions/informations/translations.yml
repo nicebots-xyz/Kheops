@@ -1,0 +1,124 @@
+# SPDX-License-Identifier: MIT
+# Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
+info_reusable_strings: &info_reusable_strings
+  main_text:
+    en-US: |
+      # Informations
+
+      Le serveur Discord Les Frères Poulain est un serveur communautaire lié à la chaine YouTube Les Frères Poulain.
+
+      Vous y trouverez des discussions liées au contenu de la chaine, mais aussi des discussions plus générales, des salons de partage de créations, de l'entraide et plus encore.
+
+      Le réglement du serveur est disponible dans le salon <#563836837043372033>. En cas de problème immédiat et/ou d'enfreinte du règlement, veuillez mentionners les modérateurs avec le rôle suivant: <@&564753350999015444>.
+  networks_heading:
+    en-US: "## Réseaux"
+  networks_text:
+    en-US: "Retrouvez Les Frères Poulain sur leurs réseaux sociaux:** https://liens.lfp.yt/ **"
+  leveled_roles_text:
+    en-US: |
+      ## Rôles de niveau
+
+      Plus vous participez dans le serveur, en discutant dans <#563776770210398212> par exemple, plus vous montez en niveau et obtenez des rôles de niveaux suivants:
+      - <@&696709538933506138> (100)
+      - <@&835084813060407306> (1500)
+      - <@&835087730379718686> (4500)
+      - <@&573183139623600128> (7000)
+      - <@&835083962384252928> (10000)
+      - <@&573183264706134063> (15000)
+      - <@&835084802285371402> (25000)
+      - <@&835083821598244884> (35000)
+      - <@&829424025301286993> (45000)
+      - <@&829425274655211540> (125000)
+
+      Vous pouvez afficher votre niveau dans <#573182754410201088> en utilisant la commande </rank:957876936024150016>.
+  activity_roles_voice:
+    en-US: |
+      ## Rôles d'activité vocale
+
+      Chaque semaine, les personnes les plus actives dans les salons vocaux sont récompensées avec des rôles spécifiques. Ces rôles sont attribués en fonction de la durée des communications vocales comme suit:
+      - <@&829694597650972672> (5h30)
+      - <@&829695043890577458> (15h)
+      - <@&829695227165540432> (25h)
+      - <@&829695582233821184> (35h)
+      - <@&829696005833621534> (60h)
+
+      Vous pouvez afficher vos statistiques dans <#573182754410201088> en utilisant la commande </stats user:1025501230044286982>.
+  recruiting_text:
+    en-US: |
+      ## Recrutement
+
+      Le serveur **Les Frères Poulain** recrute :
+      - **Modérateurs** Discord (5 postes)
+      - **Animateurs** Discord (2 postes)
+      - **Happy Managers** Discord (3 postes)
+
+      - Recrutement uniquement Discord
+      - Possibilité de modération Twitch sous conditions à établir
+
+      **Processus:**
+      - Candidature via le Google Form obligatoire
+      - Entretien vocal sur Discord pour les profils retenus
+
+      **https://docs.google.com/forms/d/e/1FAIpQLSejt4YxH7QLWtSLohzS7m4MPCb814vHwBCDC5712dxDB2BWpQ/viewform**
+
+
+commands:
+  informations_send:
+    name:
+      en-US: "informations_send"
+      fr-FR: "informations_send"
+    description:
+      en-US: "Sends informations about the server in the current channel."
+      fr-FR: "Envoie des informations sur le serveur dans le salon actuel."
+    options:
+      main:
+        name:
+          en-US: "main"
+          fr-FR: "principale"
+        description:
+          en-US: "Sends the main information section."
+          fr-FR: "Envoie la section d'informations principale."
+      networks:
+        name:
+          en-US: "networks"
+          fr-FR: "réseaux"
+        description:
+          en-US: "Sends the social networks information section."
+          fr-FR: "Envoie la section des réseaux sociaux."
+      level_roles:
+        name:
+          en-US: "level_roles"
+          fr-FR: "rôles_niveaux"
+        description:
+          en-US: "Sends the leveled roles information section."
+          fr-FR: "Envoie la section des rôles de niveau."
+      vc_roles:
+        name:
+          en-US: "vc_roles"
+          fr-FR: "rôles_vocaux"
+        description:
+          en-US: "Sends the voice activity roles information section."
+          fr-FR: "Envoie la section des rôles d'activité vocale."
+      recruiting:
+        name:
+          en-US: "recruiting"
+          fr-FR: "recrutement"
+        description:
+          en-US: "Sends the recruiting information section."
+          fr-FR: "Envoie la section de recrutement."
+    strings:
+      <<: *info_reusable_strings
+      message_sent:
+        en-US: "Information section sent successfully."
+        fr-FR: "Section d'informations envoyée avec succès."
+
+  informations:
+    name:
+      en-US: "informations"
+      fr-FR: "informations"
+    description:
+      en-US: "Shows informations about the server."
+      fr-FR: "Affiche des informations sur le serveur."
+    strings:
+      <<: *info_reusable_strings
+

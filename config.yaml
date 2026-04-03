@@ -25,7 +25,7 @@ extensions:
     enabled: true
     channel_id: 563776770210398212
     message: "Hey {mention}, bienvenue sur le discord **{server}** 🎉🤗 ! Passe lire le <#563836837043372033> avant de t'amuser ici !! Passe par <#763454034203377745>  et <#697045814450585620> aussi pour t'y retrouver !"
-  send:
+  informations:
     enabled: true
 bot:
   slash:
