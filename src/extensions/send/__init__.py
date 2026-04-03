@@ -26,7 +26,7 @@ class SendModal(discord.ui.DesignerModal):
         if not interaction.channel:
             await interaction.respond("Impossible d'envoyer le message : le canal est introuvable.", ephemeral=True)
             return
-        await interaction.channel.send(view=discord.ui.DesignerView(discord.ui.TextDisplay(content=self.input.value)))
+        await interaction.channel.send(content=self.input.value)
         await interaction.respond("Message envoyé !", ephemeral=True)
 
 
