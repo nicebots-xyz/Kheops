@@ -14,6 +14,12 @@ info_reusable_strings: &info_reusable_strings
     en-US: "## Réseaux"
   networks_text:
     en-US: "Retrouvez Les Frères Poulain sur leurs réseaux sociaux:** https://liens.lfp.yt/ **"
+  tipee_text:
+    en-US: |
+      Si vous êtes donateurs sur Tipeee, vous pouvez obtenir un rôle de supporter dans le serveur Discord, ainsi que l'accès à des salons privés.
+      Vous pouvez apprendre comment relier votre compte Discord à Tipeee ici: https://help.tipeee.com/hc/fr/articles/4409363743378-J-ai-pris-une-contrepartie-offrant-un-rôle-Discord-comment-en-bénéficier
+      
+      En cas de difficulté, n'hésitez pas à contacter un membre du staff du serveur.
   leveled_roles_text:
     en-US: |
       ## Rôles de niveau
@@ -85,6 +91,13 @@ commands:
         description:
           en-US: "Sends the social networks information section."
           fr-FR: "Envoie la section des réseaux sociaux."
+      tipeee_text:
+        name:
+          en-US: "tipee_text"
+          fr-FR: "tipee_text"
+        description:
+          en-US: "Sends the Tipeee text section."
+          fr-FR: "Envoie la section du texte Tipeee."
       level_roles:
         name:
           en-US: "level_roles"
