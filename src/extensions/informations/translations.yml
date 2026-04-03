@@ -16,6 +16,7 @@ info_reusable_strings: &info_reusable_strings
     en-US: "Retrouvez Les Frères Poulain sur leurs réseaux sociaux:** https://liens.lfp.yt/ **"
   tipeee_text:
     en-US: |
+      ## Tipeee
       Si vous êtes donateurs sur Tipeee, vous pouvez obtenir un rôle de supporter dans le serveur Discord, ainsi que l'accès à des salons privés.
       Vous pouvez apprendre comment relier votre compte Discord à Tipeee ici: https://help.tipeee.com/hc/fr/articles/4409363743378-J-ai-pris-une-contrepartie-offrant-un-rôle-Discord-comment-en-bénéficier
       
