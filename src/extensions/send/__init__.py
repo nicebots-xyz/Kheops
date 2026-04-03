@@ -4,6 +4,7 @@ import discord
 
 from src import custom
 
+default: dict[str, bool] = {"enabled": True}
 
 @final
 class SendModal(discord.ui.DesignerModal):
