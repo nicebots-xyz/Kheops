@@ -10,6 +10,13 @@ info_reusable_strings: &info_reusable_strings
       Vous y trouverez des discussions liées au contenu de la chaine, mais aussi des discussions plus générales, des salons de partage de créations, de l'entraide et plus encore.
 
       Le réglement du serveur est disponible dans le salon <#563836837043372033>. En cas de problème immédiat et/ou d'enfreinte du règlement, veuillez mentionners les modérateurs avec le rôle suivant: <@&564753350999015444>.
+      
+      Les roles à choix, tels que les rôles de spécialisation, notifications, sexe et majorité  peuvent être sélectionnées dans <id:customize>.
+      
+      Si vous avez des suggestions pour le serveur, n'héistez-pas à les partager dans <#565592753832984576>.
+      
+      Lorsque les Frèrs Poulain organisent des évenements en vocal, ils répondront aux questions postées dans <#1452597928064585728>, n'hésitez donc pas à y poser les votres !
+
   networks_heading:
     en-US: "## Réseaux"
   networks_text:
