@@ -128,7 +128,9 @@ class SendCog(discord.Cog):
             if channel is None:
                 return
             message = await channel.fetch_message(int(message_id))
-            await message.edit(view=discord.ui.DesignerView(*components), files=files)
+            await message.edit(
+                view=discord.ui.DesignerView(*components), files=files, allowed_mentions=discord.AllowedMentions.none()
+            )
         else:
             await ctx.channel.send(
                 view=discord.ui.DesignerView(*components),
