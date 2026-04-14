@@ -141,7 +141,13 @@ commands:
         description:
           en-US: "Number of happy manager positions currently open for recruiting."
           fr-FR: "Nombre de postes de happy manager actuellement ouverts pour le recrutement."
-
+      message_url:
+        name:
+          en-US: "message_url"
+          fr-FR: "message_url"
+        description:
+          en-US: "URL of the message to edit, if any."
+          fr-FR: "URL du message à éditer, si applicable."
     strings:
       <<: *info_reusable_strings
       message_sent:
