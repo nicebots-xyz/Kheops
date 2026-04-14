@@ -8,7 +8,7 @@ from typing import Never
 import aiofile
 import discord
 from discord.components import MediaGalleryItem
-from discord.ui import DesignerView, MediaGallery, Separator, TextDisplay, ViewItem
+from discord.ui import DesignerView, MediaGallery, Section, Separator, TextDisplay, Thumbnail, ViewItem
 
 from src import custom
 
@@ -16,6 +16,9 @@ default: dict[str, bool] = {"enabled": True}
 
 
 class SendCog(discord.Cog):
+    def __init__(self, bot: custom.Bot) -> None:
+        self.bot: custom.Bot = bot
+
     async def get_networks_image(self) -> discord.File:
         async with aiofile.AIOFile(Path(__file__).parent / "assets" / "networks.png", "rb") as file:
             return discord.File(io.BytesIO(await file.read()), filename="networks.png")  # pyright: ignore[reportArgumentType]
@@ -30,6 +33,7 @@ class SendCog(discord.Cog):
         level_roles: bool = True,
         vc_roles: bool = True,
         recruiting: bool = True,
+        self_text: bool = True,
         recruiting_num_mods: int = 5,
         recruiting_num_anim: int = 2,
         recruiting_num_happymanager: int = 3,
@@ -70,6 +74,15 @@ class SendCog(discord.Cog):
                     )
                 ]
             )
+        if self_text:
+            blocks.append(
+                [
+                    Section(
+                        TextDisplay[DesignerView, Never](ctx.translations.self_text.format(bot=self.bot)),
+                        accessory=Thumbnail(url=self.bot.user.avatar.url),  # pyright: ignore[reportOptionalMemberAccess]
+                    )
+                ]
+            )
 
         for i, block in enumerate(blocks):
             if i != len(blocks) - 1:
@@ -87,6 +100,7 @@ class SendCog(discord.Cog):
         level_roles: bool = True,
         vc_roles: bool = True,
         recruiting: bool = True,
+        self_text: bool = True,
         recruiting_num_mods: int = 5,
         recruiting_num_anim: int = 2,
         recruiting_num_happymanager: int = 3,
@@ -103,6 +117,7 @@ class SendCog(discord.Cog):
             level_roles=level_roles,
             vc_roles=vc_roles,
             recruiting=recruiting,
+            self_text=self_text,
             recruiting_num_mods=recruiting_num_mods,
             recruiting_num_anim=recruiting_num_anim,
             recruiting_num_happymanager=recruiting_num_happymanager,
@@ -128,4 +143,4 @@ class SendCog(discord.Cog):
 
 
 def setup(bot: custom.Bot) -> None:
-    bot.add_cog(SendCog())
+    bot.add_cog(SendCog(bot=bot))

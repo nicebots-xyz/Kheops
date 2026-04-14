@@ -74,7 +74,18 @@ info_reusable_strings: &info_reusable_strings
       - Entretien vocal sur Discord pour les profils retenus
 
       **https://docs.google.com/forms/d/e/1FAIpQLSejt4YxH7QLWtSLohzS7m4MPCb814vHwBCDC5712dxDB2BWpQ/viewform**
+  self_text:
+    en-US: |
+      ## Bot Discord
 
+      Ce Bot Discord ({bot.user.mention}) est développé en open-source en partenariat avec [NiceBots.xyz](https://nicebots.xyz), et son code source est disponible sur [GitHub](https://github.com/nicebots-xyz/Kheops).
+      
+      Les contributions sont bienvenues, sous conditons du réspect:
+      - du [Code de Conduite](https://github.com/nicebots-xyz/Kheops?tab=coc-ov-file)
+      - des [Règles de Contribution](https://github.com/nicebots-xyz/Kheops?tab=contributing-ov-file)
+      - du <#563836837043372033> du serveur Discord
+      
+      Si vous souhaitez contribuer une fonctionnalité complexe, n'hésitez pas à en discuter d'abord avec un membre de la team <@&1442261800908492963>.
 
 commands:
   informations_send:
@@ -127,6 +138,13 @@ commands:
         description:
           en-US: "Sends the recruiting information section."
           fr-FR: "Envoie la section de recrutement."
+      self_text:
+        name:
+          en-US: "self_text"
+          fr-FR: "self_text"
+        description:
+          en-US: "Sends the information about the bot section."
+          fr-FR: "Envoie la section d'informations à propos du bot."
       recruiting_num_mods:
         name:
           en-US: "recruiting_num_mods"
