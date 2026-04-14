@@ -90,7 +90,11 @@ class SendCog(discord.Cog):
         recruiting_num_mods: int = 5,
         recruiting_num_anim: int = 2,
         recruiting_num_happymanager: int = 3,
+        message_url: str | None = None,
     ) -> None:
+        if ctx.guild is None:
+            return
+
         components, files = await self.build_message(
             ctx,
             main=main,
@@ -103,12 +107,19 @@ class SendCog(discord.Cog):
             recruiting_num_anim=recruiting_num_anim,
             recruiting_num_happymanager=recruiting_num_happymanager,
         )
-
-        await ctx.channel.send(
-            view=discord.ui.DesignerView(*components),
-            files=files,
-            allowed_mentions=discord.AllowedMentions.none(),
-        )
+        if message_url:
+            channel_id, message_id = message_url.split("/")[-2:]
+            channel = await ctx.guild.get_or_fetch(discord.TextChannel, int(channel_id))
+            if channel is None:
+                return
+            message = await channel.fetch_message(int(message_id))
+            await message.edit(view=discord.ui.DesignerView(*components), files=files)
+        else:
+            await ctx.channel.send(
+                view=discord.ui.DesignerView(*components),
+                files=files,
+                allowed_mentions=discord.AllowedMentions.none(),
+            )
 
         await ctx.respond(
             ctx.translations.message_sent,
