@@ -27,6 +27,8 @@ extensions:
     message: "Hey {mention}, bienvenue sur le discord **{server}** 🎉🤗 ! Passe lire le <#563836837043372033> avant de t'amuser ici !! Passe par <#763454034203377745> et <id:customize> aussi pour t'y retrouver !"
   informations:
     enabled: true
+  announce:
+    enabled: true
 
 bot:
   slash:
