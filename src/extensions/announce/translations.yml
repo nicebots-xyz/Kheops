@@ -1,0 +1,27 @@
+commands:
+  announce:
+    name:
+      en-US: "announce"
+      fr: "annonce"
+    description:
+      en-US: "Create and send an announcement"
+      fr: "Créer et envoyer une annonce"
+    strings:
+      modal_title:
+        en-US: "Create an announcement"
+        fr: "Créer une annonce"
+      roles_to_mention:
+        en-US: "Roles to mention"
+        fr: "Roles à mentionner"
+      announcement_title:
+        en-US: "Announcement title"
+        fr: "Titre de l'annonce"
+      announcement_content:
+        en-US: "Announcement content"
+        fr: "Contenu de l'annonce"
+      announcement_footer:
+        en-US: "Announcement footer"
+        fr: "Footer de l'annonce"
+      announcement_image:
+        en-US: "Announcement image"
+        fr: "Image de l'annonce"
