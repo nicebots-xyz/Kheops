@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: MIT
+# Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
 from os.path import splitext
 from typing import Never, final, override
 
