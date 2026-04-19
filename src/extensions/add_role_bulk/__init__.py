@@ -4,6 +4,10 @@ import discord
 
 from src import custom
 
+default = {
+    "enabled": True,
+}
+
 
 class AddRoleBulkCog(discord.Cog):
     def __init__(self, bot: custom.Bot) -> None:

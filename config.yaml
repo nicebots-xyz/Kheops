@@ -29,6 +29,8 @@ extensions:
     enabled: true
   announce:
     enabled: true
+  add_role_bulk:
+    enabled: true
 
 bot:
   slash:
