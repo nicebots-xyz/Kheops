@@ -48,6 +48,37 @@ class AddRoleBulkCog(discord.Cog):
 
         await ctx.respond(ctx.translations.role_added_bulk.format(count=added_count), ephemeral=True)
 
+    @discord.slash_command(
+        name="add_role_sync",
+        default_member_permissions=discord.Permissions(administrator=True),
+        contexts={discord.InteractionContextType.guild},
+    )
+    async def add_role_sync(
+        self,
+        ctx: custom.ApplicationContext,
+        source: discord.Role,
+        target: discord.Role,
+    ) -> None:
+        if ctx.guild is None:
+            return
+
+        await ctx.defer(ephemeral=True)
+
+        source_members = set(source.members)
+        already_members = set(target.members)
+
+        failures: int = 0
+        for member in source_members - already_members:
+            try:
+                await member.add_roles(target, reason=f"Syncing role {target} with {source} by {ctx.author}")
+            except discord.Forbidden:
+                failures += 1
+
+        await ctx.respond(
+            ctx.translations.role_synced.format(source=source.name, target=target.name, failures=failures),
+            ephemeral=True,
+        )
+
 
 def setup(bot: custom.Bot) -> None:
     bot.add_cog(AddRoleBulkCog(bot=bot))
