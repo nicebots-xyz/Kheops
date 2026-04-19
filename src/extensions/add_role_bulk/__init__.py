@@ -27,6 +27,8 @@ class AddRoleBulkCog(discord.Cog):
         if ctx.guild is None:
             return
 
+        await ctx.defer(ephemeral=True)
+
         bt = await users.read()
         user_ids: set[int] = {int(line.strip()) for line in bt.decode("utf-8").splitlines() if line.strip().isdigit()}
 
