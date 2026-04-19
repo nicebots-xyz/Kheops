@@ -14,3 +14,12 @@ commands:
       role_added_bulk:
         en-US: "Role added to {count} users."
         fr: "Rôle ajouté à {count} utilisateurs."
+  add_role_sync:
+    name:
+      en-US: "add_role_sync"
+    description:
+      en-US: "Sync role permissions with the server."
+    strings:
+      role_synced:
+        en-US: "Role permissions synced successfully from {source} to {target} with {failures} failures."
+        fr: "Permissions du rôle synchronisées avec succès de {source} à {target} avec {failures} échecs."
