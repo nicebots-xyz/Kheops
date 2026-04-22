@@ -10,8 +10,8 @@ commands:
       fr: "Créer et envoyer une annonce"
     strings:
       announcement_signature:
-        en-US: "Annonce effectuée par {user.mention}"
-        fr: "Annonce par {user.mention}"
+        en-US: "Annonce effectuée par {author.mention}"
+        fr: "Annonce par {author.mention}"
       modal_title:
         en-US: "Create an announcement"
         fr: "Créer une annonce"
