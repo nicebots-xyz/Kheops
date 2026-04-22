@@ -61,7 +61,7 @@ class AnnounceModal(DesignerModal):
                 TextDisplay[DesignerView, Never](" ".join(role.mention for role in self.role_select.values))
             )
 
-        if self.title_input.value is not None:
+        if self.title_input.value:
             components.append(TextDisplay[DesignerView, Never](f"# {self.title_input.value}"))
 
         if self.image_upload.values:
@@ -73,12 +73,15 @@ class AnnounceModal(DesignerModal):
         else:
             image = None
 
-        if self.content_input.value is not None:
+        if self.content_input.value:
             components.append(TextDisplay[DesignerView, Never](self.content_input.value))
 
-        if self.footer_input.value is not None:
+        if self.footer_input.value:
             components.append(TextDisplay[DesignerView, Never](f"-# {self.footer_input.value}"))
 
+        components.append(
+            TextDisplay[DesignerView, Never](self.translations.announcement_signature.format(author=interaction.user))
+        )
         await interaction.channel.send(view=DesignerView(*components), files=[image] if image is not None else [])  # pyright: ignore[reportAttributeAccessIssue]
 
 
