@@ -31,6 +31,8 @@ extensions:
     enabled: true
   add_role_bulk:
     enabled: true
+  channel_note:
+    enabled: true
 
 bot:
   slash:
