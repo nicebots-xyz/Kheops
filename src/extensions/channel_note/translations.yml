@@ -1,0 +1,68 @@
+# SPDX-License-Identifier: MIT
+# Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
+commands:
+  channel_note:
+    name:
+      en-US: "channel_note"
+      fr: "note_salon"
+    description:
+      en-US: "Create or edit an automatic channel note"
+      fr: "Créer ou modifier une note automatique de salon"
+    strings:
+      modal_title:
+        en-US: "Configure channel note"
+        fr: "Configurer la note de salon"
+      content_input_box:
+        en-US: "Content"
+        fr: "Contenu"
+      content_input_description:
+        en-US: "Main text displayed in the note message"
+        fr: "Texte principal affiche dans le message de note"
+      header_input_box:
+        en-US: "Header"
+        fr: "En-tete"
+      header_input_description:
+        en-US: "Title shown at the top of the note"
+        fr: "Titre affiche en haut de la note"
+      footer_input_box:
+        en-US: "Footer"
+        fr: "Pied de page"
+      footer_input_description:
+        en-US: "Optional text shown at the bottom"
+        fr: "Texte optionnel affiche en bas"
+      every_select_box:
+        en-US: "Frequency"
+        fr: "Frequence"
+      every_select_description:
+        en-US: "How often this note should be sent"
+        fr: "Frequence d'envoi de cette note"
+      every_select_option_h_1:
+        en-US: "Every hour"
+        fr: "Toutes les heures"
+      every_select_option_h_6:
+        en-US: "Every 6 hours"
+        fr: "Toutes les 6 heures"
+      every_select_option_h_12:
+        en-US: "Every 12 hours"
+        fr: "Toutes les 12 heures"
+      every_select_option_d_1:
+        en-US: "Every day"
+        fr: "Tous les jours"
+      every_select_option_d_7:
+        en-US: "Every week"
+        fr: "Toutes les semaines"
+      enabled_checkbox:
+        en-US: "Enabled"
+        fr: "Active"
+      enabled_checkbox_description:
+        en-US: "Enable or disable this channel note"
+        fr: "Activer ou desactiver cette note de salon"
+      note_created:
+        en-US: "Channel note created."
+        fr: "Note de salon creee."
+      note_modified:
+        en-US: "Channel note updated."
+        fr: "Note de salon modifiee."
+      note_not_modified:
+        en-US: "No changes were made."
+        fr: "Aucun changement n'a ete effectue."

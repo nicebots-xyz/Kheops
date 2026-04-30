@@ -114,7 +114,9 @@ extend-ignore = [
     "PLR0913",
     "C901",
     "RUF200",
-    "ISC003"# Conflicts with basedpyright reportImplicitStringConcatenation
+    "ISC003", # Conflicts with basedpyright reportImplicitStringConcatenation
+    "G003", # Conflicts with basedpyright reportImplicitStringConcatenation
+    "S101" # Assert has legitimate uses
 ]
 
 [tool.ruff.lint.per-file-ignores]
