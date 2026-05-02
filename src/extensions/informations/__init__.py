@@ -2,6 +2,7 @@
 # Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
 
 import io
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Never
 
@@ -67,6 +68,7 @@ class SendCog(discord.Cog):
             blocks.append([TextDisplay[DesignerView, Never](ctx.translations.activity_roles_voice)])
 
         if recruiting:
+            recruiting_last_updated_at = discord.utils.format_dt(datetime.now(UTC), "f")
             blocks.append(
                 [
                     TextDisplay[DesignerView, Never](
@@ -76,6 +78,7 @@ class SendCog(discord.Cog):
                             happymanager=recruiting_num_happymanager,
                             twitchmoderator=recruiting_num_twitchmoderator,
                             technical=recruiting_num_technical,
+                            last_updated_at=recruiting_last_updated_at,
                         )
                     )
                 ]
