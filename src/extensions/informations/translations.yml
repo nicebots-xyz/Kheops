@@ -75,6 +75,8 @@ info_reusable_strings: &info_reusable_strings
       - Entretien vocal sur Discord pour les profils retenus
 
       **https://docs.google.com/forms/d/e/1FAIpQLSejt4YxH7QLWtSLohzS7m4MPCb814vHwBCDC5712dxDB2BWpQ/viewform**
+
+      Dernière mise à jour : {last_updated_at}
   self_text:
     en-US: |
       ## Bot Discord
