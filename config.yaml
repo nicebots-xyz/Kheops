@@ -11,7 +11,10 @@ extensions:
   nice_errors:
     enabled: true
   help:
-    enabled: false
+    enabled: true
+    locales:
+      - "en-US"
+      - "fr"
   add-dm:
     enabled: false
   afk_notification:

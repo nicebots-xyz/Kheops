@@ -1,0 +1,48 @@
+name:
+  en-US: "Bulk Roles"
+  fr: "Roles en masse"
+description:
+  en-US: "Apply or sync roles for many members quickly."
+  fr: "Appliquer ou synchroniser des roles pour beaucoup de membres rapidement."
+order: 40
+pages:
+  add_role_bulk:
+    title:
+      en-US: "add_role_bulk"
+      fr: "add_role_bulk"
+    description:
+      en-US: |
+        Gives the selected role to every valid user ID found in the uploaded text file (one ID per line).
+      fr: |
+        Donne le role selectionne a chaque ID utilisateur valide trouve dans le fichier texte envoye (un ID par ligne).
+    category:
+      en-US: "Bulk Roles"
+      fr: "Roles en masse"
+    quick_tips:
+      - en-US: "Prepare a UTF-8 `.txt` file with only numeric Discord user IDs."
+        fr: "Prepare un fichier `.txt` UTF-8 avec uniquement des IDs Discord numeriques."
+      - en-US: "This command is admin-only and responds ephemerally."
+        fr: "Cette commande est reservee aux admins et repond en ephemere."
+    examples:
+      - en-US: "/add_role_bulk role:@Members users:ids.txt"
+        fr: "/add_role_bulk role:@Membres users:ids.txt"
+    related_commands:
+      - add_role_bulk
+      - add_role_sync
+  add_role_sync:
+    title:
+      en-US: "add_role_sync"
+      fr: "add_role_sync"
+    description:
+      en-US: |
+        Copies membership from a source role to a target role. Members that already have the target role are skipped.
+      fr: |
+        Copie les membres d'un role source vers un role cible. Les membres qui ont deja le role cible sont ignores.
+    category:
+      en-US: "Bulk Roles"
+      fr: "Roles en masse"
+    examples:
+      - en-US: "/add_role_sync source:@OldRole target:@NewRole"
+        fr: "/add_role_sync source:@AncienRole target:@NouveauRole"
+    related_commands:
+      - add_role_sync

@@ -1,0 +1,36 @@
+name:
+  en-US: "AFK Notification"
+  fr: "Notification AFK"
+description:
+  en-US: "Manage the dormeurs list used by AFK voice reminders."
+  fr: "Gerer la liste des dormeurs utilisee par les rappels AFK vocaux."
+order: 30
+pages:
+  afk_dormeurs:
+    title:
+      en-US: "dormeurs (group)"
+      fr: "dormeurs (groupe)"
+    description:
+      en-US: |
+        Admin command group for AFK monitoring participants.
+        Use it to add, remove, or list members who can receive AFK checks in voice channels.
+      fr: |
+        Groupe de commandes admin pour les participants au suivi AFK.
+        Utilise-le pour ajouter, supprimer ou lister les membres qui peuvent recevoir les verifications AFK en vocal.
+    category:
+      en-US: "AFK Notification"
+      fr: "Notification AFK"
+    quick_tips:
+      - en-US: "`/dormeurs ajouter` adds one member to the tracked list."
+        fr: "`/dormeurs ajouter` ajoute un membre a la liste suivie."
+      - en-US: "`/dormeurs supprimer` removes one member from AFK checks."
+        fr: "`/dormeurs supprimer` retire un membre des verifications AFK."
+      - en-US: "`/dormeurs lister` shows all registered dormeurs."
+        fr: "`/dormeurs lister` affiche tous les dormeurs enregistres."
+    examples:
+      - en-US: "/dormeurs ajouter member:@User"
+        fr: "/dormeurs ajouter member:@Utilisateur"
+      - en-US: "/dormeurs supprimer member:@User"
+        fr: "/dormeurs supprimer member:@Utilisateur"
+      - en-US: "/dormeurs lister"
+        fr: "/dormeurs lister"
