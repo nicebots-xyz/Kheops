@@ -1,0 +1,39 @@
+# SPDX-License-Identifier: MIT
+# Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
+name:
+  en-US: "Informations"
+  fr: "Informations"
+description:
+  en-US: "Send server information sections in a channel."
+  fr: "Envoyer des sections d'informations du serveur dans un salon."
+order: 10
+pages:
+  informations_send:
+    title:
+      en-US: "informations_send"
+      fr: "informations_send"
+    description:
+      en-US: |
+        Sends one or more information sections in the current channel, or edits an existing info message using `message_url`.
+        Useful when you want to repost only a specific block (main text, networks, recruiting, bot info, etc.).
+      fr: |
+        Envoie une ou plusieurs sections d'information dans le salon actuel, ou modifie un message d'information existant via `message_url`.
+        Pratique pour republier uniquement un bloc precis (texte principal, reseaux, recrutement, infos bot, etc.).
+    category:
+      en-US: "Informations"
+      fr: "Informations"
+    quick_tips:
+      - en-US: "Use section toggles (`main`, `networks`, `recruiting`, etc.) to post only what you need."
+        fr: "Utilise les options de section (`main`, `networks`, `recruiting`, etc.) pour publier seulement ce dont tu as besoin."
+      - en-US: "Use `message_url` to update a previous information post instead of sending duplicates."
+        fr: "Utilise `message_url` pour mettre a jour un ancien message d'information sans creer de doublon."
+    examples:
+      - en-US: "/informations_send main:true networks:true"
+        fr: "/informations_send main:true networks:true"
+      - en-US: "/informations_send recruiting:true recruiting_num_mods:2 recruiting_num_anim:1"
+        fr: "/informations_send recruiting:true recruiting_num_mods:2 recruiting_num_anim:1"
+      - en-US: "/informations_send self_text:true message_url:https://discord.com/channels/..."
+        fr: "/informations_send self_text:true message_url:https://discord.com/channels/..."
+    related_commands:
+      - informations_send
+      - informations

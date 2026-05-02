@@ -1,0 +1,107 @@
+# SPDX-License-Identifier: MIT
+# Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
+name:
+  en-US: "Name Styles"
+  fr: "Styles de nom"
+description:
+  en-US: "Customize the bot display-name style for your guild."
+  fr: "Personnaliser le style de nom du bot pour ton serveur."
+order: 60
+pages:
+  namestyle:
+    title:
+      en-US: "namestyle"
+      fr: "namestyle"
+    description:
+      en-US: |
+        Updates the bot display-name style in the current guild.
+        You can set `font_id`, `effect_id`, `primary_color`, `secondary_color`, or reset everything with `clear:true`.
+      fr: |
+        Met a jour le style de nom d'affichage du bot dans le serveur actuel.
+        Tu peux definir `font_id`, `effect_id`, `primary_color`, `secondary_color`, ou tout reinitialiser avec `clear:true`.
+    category:
+      en-US: "Name Styles"
+      fr: "Styles de nom"
+    quick_tips:
+      - en-US: "Color values must be hex (`#A1B2C3`)."
+        fr: "Les couleurs doivent etre au format hex (`#A1B2C3`)."
+      - en-US: "When `effect_id` is `2`, provide exactly 2 colors."
+        fr: "Quand `effect_id` vaut `2`, il faut exactement 2 couleurs."
+      - en-US: "Use `clear:true` to restore default style."
+        fr: "Utilise `clear:true` pour revenir au style par defaut."
+    examples:
+      - en-US: "/namestyle font_id:1 effect_id:2 primary_color:#FF4F8B secondary_color:#7C5CFF"
+        fr: "/namestyle font_id:1 effect_id:2 primary_color:#FF4F8B secondary_color:#7C5CFF"
+      - en-US: "/namestyle clear:true"
+        fr: "/namestyle clear:true"
+    related_commands:
+      - namestyle
+  displaystyles:
+    title:
+      en-US: "displaystyles"
+      fr: "displaystyles"
+    description:
+      en-US: |
+        Hey style explorer 👋 Here is the full style palette you can play with:
+
+        **Pick colors**
+        - [Adobe Color](https://color.adobe.com/) (great for finding matching palettes)
+
+        **Font IDs**
+        - `11` `DEFAULT` - Default font
+        - `1` `BANGERS` - [Bangers](https://fonts.google.com/specimen/Bangers)
+        - `2` `BIO_RHYME` - [BioRhyme](https://fonts.google.com/specimen/BioRhyme)
+        - `3` `CHERRY_BOMB` - [Cherry Bomb One](https://fonts.google.com/specimen/Cherry+Bomb+One)
+        - `4` `CHICLE` - [Chicle](https://fonts.google.com/specimen/Chicle)
+        - `5` `COMPAGNON` - [Compagnon](https://velvetyne.fr/fonts/compagnon/)
+        - `6` `MUSEO_MODERNO` - [MuseoModerno](https://fonts.google.com/specimen/MuseoModerno)
+        - `7` `NEO_CASTEL` - [Neo-Castel](https://maxlilllo.gumroad.com/l/neo-castel)
+        - `8` `PIXELIFY` - [Pixelify Sans](https://fonts.google.com/specimen/Pixelify+Sans)
+        - `9` `RIBES` - [Ribes](https://www.collletttivo.it/typefaces/ribes)
+        - `10` `SINISTRE` - [Sinistre](https://www.collletttivo.it/typefaces/sinistre)
+        - `12` `ZILLA_SLAB` - [Zilla Slab](https://fonts.google.com/specimen/Zilla+Slab)
+
+        **Effect IDs**
+        - `1` Solid color effect (1 color required)
+        - `2` Gradient effect (2 colors required)
+        - `3` Single-color effect variant (1 color required)
+        - `4` Single-color effect variant (1 color required)
+        - `5` Single-color effect variant (1 color required)
+        - `6` Single-color effect variant (1 color required)
+      fr: |
+        Salut explorateur de style 👋 Voici toute la palette que tu peux utiliser :
+
+        **Choisir des couleurs**
+        - [Adobe Color](https://color.adobe.com/) (super pratique pour trouver des palettes harmonieuses)
+
+        **IDs de police**
+        - `11` `DEFAULT` - Police par defaut
+        - `1` `BANGERS` - [Bangers](https://fonts.google.com/specimen/Bangers)
+        - `2` `BIO_RHYME` - [BioRhyme](https://fonts.google.com/specimen/BioRhyme)
+        - `3` `CHERRY_BOMB` - [Cherry Bomb One](https://fonts.google.com/specimen/Cherry+Bomb+One)
+        - `4` `CHICLE` - [Chicle](https://fonts.google.com/specimen/Chicle)
+        - `5` `COMPAGNON` - [Compagnon](https://velvetyne.fr/fonts/compagnon/)
+        - `6` `MUSEO_MODERNO` - [MuseoModerno](https://fonts.google.com/specimen/MuseoModerno)
+        - `7` `NEO_CASTEL` - [Neo-Castel](https://maxlilllo.gumroad.com/l/neo-castel)
+        - `8` `PIXELIFY` - [Pixelify Sans](https://fonts.google.com/specimen/Pixelify+Sans)
+        - `9` `RIBES` - [Ribes](https://www.collletttivo.it/typefaces/ribes)
+        - `10` `SINISTRE` - [Sinistre](https://www.collletttivo.it/typefaces/sinistre)
+        - `12` `ZILLA_SLAB` - [Zilla Slab](https://fonts.google.com/specimen/Zilla+Slab)
+
+        **IDs d'effet**
+        - `1` Effet couleur unie (1 couleur requise)
+        - `2` Effet degrade (2 couleurs requises)
+        - `3` Variante d'effet mono-couleur (1 couleur requise)
+        - `4` Variante d'effet mono-couleur (1 couleur requise)
+        - `5` Variante d'effet mono-couleur (1 couleur requise)
+        - `6` Variante d'effet mono-couleur (1 couleur requise)
+    category:
+      en-US: "Name Styles"
+      fr: "Styles de nom"
+    examples:
+      - en-US: "/namestyle font_id:12 effect_id:1 primary_color:#6B8BFF"
+        fr: "/namestyle font_id:12 effect_id:1 primary_color:#6B8BFF"
+      - en-US: "/namestyle font_id:8 effect_id:2 primary_color:#FF6A00 secondary_color:#FFD166"
+        fr: "/namestyle font_id:8 effect_id:2 primary_color:#FF6A00 secondary_color:#FFD166"
+    related_commands:
+      - namestyle

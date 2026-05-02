@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: MIT
+# Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
+name:
+  en-US: "Announcements"
+  fr: "Annonces"
+description:
+  en-US: "Publish clean announcement messages with optional role pings."
+  fr: "Publier des annonces propres avec mentions de roles optionnelles."
+order: 20
+pages:
+  announce:
+    title:
+      en-US: "announce"
+      fr: "announce"
+    description:
+      en-US: |
+        Opens a modal to build an announcement with title, content, optional footer, role mentions, and optional image upload.
+        Designed for admins who want consistent and readable announcement posts.
+      fr: |
+        Ouvre une fenetre pour creer une annonce avec titre, contenu, pied de page optionnel, mentions de roles et image optionnelle.
+        Concu pour les admins qui veulent des annonces coherentes et lisibles.
+    category:
+      en-US: "Announcements"
+      fr: "Annonces"
+    quick_tips:
+      - en-US: "You can mention up to 10 roles directly from the role selector."
+        fr: "Tu peux mentionner jusqu'a 10 roles directement via le selecteur de roles."
+      - en-US: "Keep titles short and move details to content for better readability."
+        fr: "Garde un titre court et mets les details dans le contenu pour une meilleure lisibilite."
+    examples:
+      - en-US: "/announce"
+        fr: "/announce"
+    related_commands:
+      - announce

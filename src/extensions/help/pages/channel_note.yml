@@ -1,0 +1,34 @@
+# SPDX-License-Identifier: MIT
+# Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
+name:
+  en-US: "Channel Notes"
+  fr: "Notes de salon"
+description:
+  en-US: "Create periodic reminder notes per channel."
+  fr: "Creer des notes de rappel periodiques par salon."
+order: 50
+pages:
+  channel_note:
+    title:
+      en-US: "channel_note"
+      fr: "channel_note"
+    description:
+      en-US: |
+        Opens the channel note configuration modal for the current channel.
+        You can define header/content/footer, schedule frequency, and enable/disable the note.
+      fr: |
+        Ouvre la fenetre de configuration de note pour le salon actuel.
+        Tu peux definir en-tete/contenu/pied de page, frequence d'envoi, et activer/desactiver la note.
+    category:
+      en-US: "Channel Notes"
+      fr: "Notes de salon"
+    quick_tips:
+      - en-US: "Use short headers and concise body text for recurring messages."
+        fr: "Utilise un en-tete court et un texte concis pour les messages recurrents."
+      - en-US: "Choose a lower frequency if the channel is already very active."
+        fr: "Choisis une frequence plus basse si le salon est deja tres actif."
+    examples:
+      - en-US: "/channel_note"
+        fr: "/channel_note"
+    related_commands:
+      - channel_note
