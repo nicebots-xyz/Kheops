@@ -65,9 +65,10 @@ info_reusable_strings: &info_reusable_strings
       - **Modérateurs** Discord ({mods} postes)
       - **Animateurs** Discord ({anim} postes)
       - **Happy Managers** Discord ({happymanager} postes)
+      - **Modérateurs Twitch** ({twitchmoderator} postes)
+      - **Staff Technique** ({technical} postes)
 
-      - Recrutement uniquement Discord
-      - Possibilité de modération Twitch sous conditions à établir
+      - Recrutement sur Discord et Twitch selon le rôle
 
       **Processus:**
       - Candidature via le Google Form obligatoire
@@ -166,6 +167,20 @@ commands:
         description:
           en-US: "Number of happy manager positions currently open for recruiting."
           fr-FR: "Nombre de postes de happy manager actuellement ouverts pour le recrutement."
+      recruiting_num_twitchmoderator:
+        name:
+          en-US: "recruiting_num_twitchmoderator"
+          fr-FR: "recruiting_num_twitchmoderator"
+        description:
+          en-US: "Number of Twitch moderator positions currently open for recruiting."
+          fr-FR: "Nombre de postes de modérateur Twitch actuellement ouverts pour le recrutement."
+      recruiting_num_technical:
+        name:
+          en-US: "recruiting_num_technical"
+          fr-FR: "recruiting_num_technical"
+        description:
+          en-US: "Number of technical staff positions currently open for recruiting."
+          fr-FR: "Nombre de postes staff technique actuellement ouverts pour le recrutement."
       message_url:
         name:
           en-US: "message_url"
