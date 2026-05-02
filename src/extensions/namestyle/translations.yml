@@ -1,0 +1,31 @@
+# SPDX-License-Identifier: MIT
+# Copyright: 2024-2026 NiceBots.xyz
+commands:
+  namestyle:
+    name:
+      en-US: "namestyle"
+    description:
+      en-US: "Update the bot display name style in this guild."
+      fr: "Met a jour le style du nom du bot dans ce serveur."
+    strings:
+      guild_only:
+        en-US: "This command can only be used in a guild."
+        fr: "Cette commande ne peut etre utilisee que dans un serveur."
+      invalid_color:
+        en-US: "Colors must be valid hex values like #A1B2C3."
+        fr: "Les couleurs doivent etre des valeurs hex valides comme #A1B2C3."
+      invalid_style_options:
+        en-US: "Invalid style options: {errors}"
+        fr: "Options de style invalides : {errors}"
+      nothing_to_update:
+        en-US: "Nothing to update. Provide at least one style option or set clear to true."
+        fr: "Rien a mettre a jour. Donnez au moins une option de style ou activez clear."
+      missing_bot_token:
+        en-US: "Failed to read bot token for API request."
+        fr: "Impossible de lire le token du bot pour la requete API."
+      request_failed:
+        en-US: "Failed to update display style (HTTP {status}). Check logs for details."
+        fr: "Echec de mise a jour du style d'affichage (HTTP {status}). Verifiez les logs."
+      updated:
+        en-US: "Guild display name style updated."
+        fr: "Style du nom d'affichage du serveur mis a jour."
