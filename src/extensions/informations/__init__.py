@@ -37,6 +37,8 @@ class SendCog(discord.Cog):
         recruiting_num_mods: int = 5,
         recruiting_num_anim: int = 2,
         recruiting_num_happymanager: int = 3,
+        recruiting_num_twitchmoderator: int = 2,
+        recruiting_num_technical: int = 2,
     ) -> tuple[list[discord.ui.ViewItem[discord.ui.DesignerView]], list[discord.File]]:
         blocks: list[list[ViewItem[DesignerView]]] = []
         files: list[discord.File] = []
@@ -69,7 +71,11 @@ class SendCog(discord.Cog):
                 [
                     TextDisplay[DesignerView, Never](
                         ctx.translations.recruiting_text.format(
-                            mods=recruiting_num_mods, anim=recruiting_num_anim, happymanager=recruiting_num_happymanager
+                            mods=recruiting_num_mods,
+                            anim=recruiting_num_anim,
+                            happymanager=recruiting_num_happymanager,
+                            twitchmoderator=recruiting_num_twitchmoderator,
+                            technical=recruiting_num_technical,
                         )
                     )
                 ]
@@ -104,6 +110,8 @@ class SendCog(discord.Cog):
         recruiting_num_mods: int = 5,
         recruiting_num_anim: int = 2,
         recruiting_num_happymanager: int = 3,
+        recruiting_num_twitchmoderator: int = 2,
+        recruiting_num_technical: int = 2,
         message_url: str | None = None,
     ) -> None:
         if ctx.guild is None:
@@ -121,6 +129,8 @@ class SendCog(discord.Cog):
             recruiting_num_mods=recruiting_num_mods,
             recruiting_num_anim=recruiting_num_anim,
             recruiting_num_happymanager=recruiting_num_happymanager,
+            recruiting_num_twitchmoderator=recruiting_num_twitchmoderator,
+            recruiting_num_technical=recruiting_num_technical,
         )
         if message_url:
             channel_id, message_id = message_url.split("/")[-2:]
