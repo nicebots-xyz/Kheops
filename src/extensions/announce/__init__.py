@@ -56,7 +56,7 @@ class AnnounceModal(DesignerModal):
 
         components: list[ViewItem[DesignerView]] = []
 
-        if self.role_select.values is not None:
+        if self.role_select.values:
             components.append(
                 TextDisplay[DesignerView, Never](" ".join(role.mention for role in self.role_select.values))
             )
