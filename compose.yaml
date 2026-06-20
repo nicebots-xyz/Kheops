@@ -3,11 +3,8 @@
 
 
 services:
-  postgres:
-    image: postgres:18-alpine
+  redis:
+    image: redis:alpine@sha256:ad0a6eff0a40304ab1ab4f50f0dc192d82b071e1094eac961bcb6106092f8a4e
     ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
+      - "6379:6379"
+    command: --loglevel debug

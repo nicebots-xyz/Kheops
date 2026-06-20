@@ -1,5 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright: 2024-2026 NiceBots.xyz
+# ruff: noqa: S101
 import os
 import zipfile
 from glob import iglob

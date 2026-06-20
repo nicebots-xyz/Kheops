@@ -29,9 +29,8 @@ COPY --from=python-base --chown=appuser /app/requirements.txt ./
 
 RUN pip install -r requirements.txt
 
-COPY --chown=appuser LICENSE ./
 COPY --chown=appuser src/ ./src
-COPY --chown=appuser config.yaml ./
+COPY --chown=appuser LICENSE ./
 
 USER appuser
 
