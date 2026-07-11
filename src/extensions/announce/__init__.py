@@ -6,6 +6,7 @@ from typing import Never, final, override
 import discord
 from discord import InputTextStyle, Interaction, MediaGalleryItem
 from discord.ui import (
+    Checkbox,
     DesignerModal,
     DesignerView,
     FileUpload,
@@ -34,6 +35,9 @@ class AnnounceModal(DesignerModal):
         self.role_select = RoleSelect(min_values=0, max_values=10, required=False)
         self.add_item(Label(label=self.translations.roles_to_mention, item=self.role_select))
 
+        self.ping_everyone_checkbox = Checkbox(default=False)
+        self.add_item(Label(label=self.translations.ping_everyone, item=self.ping_everyone_checkbox))
+
         self.title_input = TextInput(required=True, style=InputTextStyle.short, max_length=256)
         self.add_item(Label(label=self.translations.announcement_title, item=self.title_input))
 
@@ -56,10 +60,12 @@ class AnnounceModal(DesignerModal):
 
         components: list[ViewItem[DesignerView]] = []
 
-        if self.role_select.values:
-            components.append(
-                TextDisplay[DesignerView, Never](" ".join(role.mention for role in self.role_select.values))
-            )
+        mentions: list[str] = [role.mention for role in self.role_select.values or []]
+        if self.ping_everyone_checkbox.value:
+            mentions.append("@everyone")
+
+        if mentions:
+            components.append(TextDisplay[DesignerView, Never](" ".join(mentions)))
 
         if self.title_input.value:
             components.append(TextDisplay[DesignerView, Never](f"# {self.title_input.value}"))
@@ -82,7 +88,13 @@ class AnnounceModal(DesignerModal):
         components.append(
             TextDisplay[DesignerView, Never](self.translations.announcement_signature.format(author=interaction.user))
         )
-        await interaction.channel.send(view=DesignerView(*components), files=[image] if image is not None else [])  # pyright: ignore[reportAttributeAccessIssue]
+        await interaction.channel.send(  # pyright: ignore[reportAttributeAccessIssue]
+            view=DesignerView(*components),
+            files=[image] if image is not None else [],
+            allowed_mentions=discord.AllowedMentions(
+                everyone=self.ping_everyone_checkbox.value or False, roles=True, users=True
+            ),
+        )
 
 
 @final
