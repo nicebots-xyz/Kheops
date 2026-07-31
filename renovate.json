@@ -7,7 +7,7 @@
   ],
   "forkProcessing": "enabled",
   "baseBranchPatterns": [
-    "dev"
+    "master"
   ],
   "lockFileMaintenance": {
     "enabled": true
