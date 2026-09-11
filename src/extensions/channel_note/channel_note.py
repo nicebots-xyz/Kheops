@@ -24,7 +24,7 @@ from .config import ChannelNoteConfig
 logger = base_logger.getChild("channel_note")
 
 
-HISTORY_NOSEND_LIMIT = 6
+HISTORY_NOSEND_LIMIT = 12
 
 
 @final
