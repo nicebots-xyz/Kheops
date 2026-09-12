@@ -224,13 +224,13 @@ class ChannelNoteCog(discord.Cog):
             if not len(note.slots & slots_to_handle) > 0:
                 logger.info(
                     f"Note {note} does not match the current slot, it has slots {note.slots}"
-                    + "and the current slots are {slots_to_handle}, skipping"
+                    + f"and the current slots are {slots_to_handle}, skipping"
                 )
                 continue
             if channel := self.bot.get_channel(note.discord_id):
                 skip = False
                 async for message in channel.history(limit=HISTORY_NOSEND_LIMIT):  # pyright: ignore[reportAttributeAccessIssue]
-                    if message.author.id == self.bot.user.id:
+                    if message.author.id == self.bot.user.id and message.components:
                         logger.info(f"Message {message.id} is from the bot, skipping")
                         skip = True
                         break
