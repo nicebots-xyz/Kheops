@@ -25,6 +25,8 @@ pages:
     quick_tips:
       - en-US: "You can mention up to 10 roles directly from the role selector."
         fr: "Tu peux mentionner jusqu'a 10 roles directement via le selecteur de roles."
+      - en-US: "Check the ping everyone box to mention @everyone in the announcement."
+        fr: "Coche la case mentionner tout le monde pour mentionner @everyone dans l'annonce."
       - en-US: "Keep titles short and move details to content for better readability."
         fr: "Garde un titre court et mets les details dans le contenu pour une meilleure lisibilite."
     examples:
