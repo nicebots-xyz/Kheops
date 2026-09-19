@@ -29,6 +29,7 @@ class ChannelNote(Model):
 
     discord_id: fields.Field[int] = fields.BigIntField(unique=True)
     enabled: fields.Field[bool] = fields.BooleanField(default=True)
+    force_resend: fields.Field[bool] = fields.BooleanField(default=False)
     content: fields.Field[str] = fields.CharField(max_length=CONTENT_MAX_LENGTH)
     header: fields.Field[str] = fields.CharField(max_length=HEADER_MAX_LENGTH)
     footer: fields.Field[str] = fields.CharField(max_length=FOOTER_MAX_LENGTH)

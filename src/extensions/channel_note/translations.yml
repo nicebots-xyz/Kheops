@@ -51,12 +51,21 @@ commands:
       every_select_option_d_7:
         en-US: "Every week"
         fr: "Toutes les semaines"
+      flags_group_box:
+        en-US: "Options"
+        fr: "Options"
       enabled_checkbox:
         en-US: "Enabled"
         fr: "Active"
       enabled_checkbox_description:
         en-US: "Enable or disable this channel note"
         fr: "Activer ou desactiver cette note de salon"
+      force_resend_checkbox:
+        en-US: "Always resend"
+        fr: "Toujours renvoyer"
+      force_resend_checkbox_description:
+        en-US: "Resend even if this note is still visible among the last messages"
+        fr: "Renvoyer meme si la note est encore visible parmi les derniers messages"
       note_created:
         en-US: "Channel note created."
         fr: "Note de salon creee."
