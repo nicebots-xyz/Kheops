@@ -27,6 +27,23 @@ logger = base_logger.getChild("channel_note")
 HISTORY_NOSEND_LIMIT = 12
 
 
+def _is_note_message(message: discord.Message, note: ChannelNote) -> bool:
+    """Check whether a message is this specific note's own previously-sent message.
+
+    Matches on the note's header text inside the message's Components V2 tree, since
+    a channel can contain other bot messages with components (other notes, other
+    features) that must not be mistaken for this note already having been sent.
+    """
+    expected_header = f"## {note.header}"
+    for component in message.components:
+        if not isinstance(component, discord.Container):
+            continue
+        for child in component.components:
+            if isinstance(child, discord.TextDisplay) and child.content == expected_header:
+                return True
+    return False
+
+
 @final
 class ChannelNoteConfigModal(discord.ui.DesignerModal):
     def __init__(
@@ -230,8 +247,8 @@ class ChannelNoteCog(discord.Cog):
             if channel := self.bot.get_channel(note.discord_id):
                 skip = False
                 async for message in channel.history(limit=HISTORY_NOSEND_LIMIT):  # pyright: ignore[reportAttributeAccessIssue]
-                    if message.author.id == self.bot.user.id and message.components:
-                        logger.info(f"Message {message.id} is from the bot, skipping")
+                    if message.author.id == self.bot.user.id and _is_note_message(message, note):
+                        logger.info(f"Message {message.id} is this note's own message, skipping")
                         skip = True
                         break
                 if skip:
@@ -253,7 +270,7 @@ class ChannelNoteCog(discord.Cog):
                     )
                 await channel.send(view=DesignerView(container))  # pyright: ignore[reportAttributeAccessIssue]
             else:
-                logger.info(f"Note {note} is not enabled or does not match the current slot, skipping")
+                logger.info(f"Channel {note.discord_id} for note {note} not found or not cached, skipping")
         self.last_slot = current_slot
 
 
