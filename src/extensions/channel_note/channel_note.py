@@ -1,11 +1,12 @@
 # SPDX-License-Identifier: MIT
 # Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
 from datetime import UTC, datetime
+from enum import StrEnum
 from typing import final, override
 
 import discord
 from discord.ext import tasks
-from discord.ui import Checkbox, Container, DesignerView, Label, StringSelect, TextDisplay, TextInput
+from discord.ui import CheckboxGroup, Container, DesignerView, Label, StringSelect, TextDisplay, TextInput
 
 from src import custom
 from src.database.models import (
@@ -25,6 +26,11 @@ logger = base_logger.getChild("channel_note")
 
 
 HISTORY_NOSEND_LIMIT = 12
+
+
+class NoteFlag(StrEnum):
+    ENABLED = "enabled"
+    FORCE_RESEND = "force_resend"
 
 
 def _is_note_message(message: discord.Message, note: ChannelNote) -> bool:
@@ -123,29 +129,51 @@ class ChannelNoteConfigModal(discord.ui.DesignerModal):
             )
         )
 
-        self.enabled_checkbox = Checkbox(default=self.note.enabled if self.note else True)
+        # Discord caps modals at 5 items; both flags share a single CheckboxGroup slot.
+        self.flags_group = CheckboxGroup(
+            required=False,
+            min_values=0,
+            max_values=2,
+            options=[
+                discord.CheckboxGroupOption(
+                    label=self.translations.enabled_checkbox,
+                    description=self.translations.enabled_checkbox_description,
+                    value=NoteFlag.ENABLED,
+                    default=self.note.enabled if self.note else True,
+                ),
+                discord.CheckboxGroupOption(
+                    label=self.translations.force_resend_checkbox,
+                    description=self.translations.force_resend_checkbox_description,
+                    value=NoteFlag.FORCE_RESEND,
+                    default=self.note.force_resend if self.note else False,
+                ),
+            ],
+        )
         self.add_item(
             Label(
-                label=self.translations.enabled_checkbox,
-                description=self.translations.enabled_checkbox_description,
-                item=self.enabled_checkbox,
+                label=self.translations.flags_group_box,
+                item=self.flags_group,
             )
         )
 
     @override
     async def callback(self, interaction: discord.Interaction) -> None:
         assert interaction.channel is not None
-        assert self.enabled_checkbox.value is not None
+        assert self.flags_group.values is not None
         assert self.content_input.value is not None
         assert self.header_input.value is not None
         assert self.footer_input.value is not None
         assert self.every_select.values is not None
         assert len(self.every_select.values) == 1
 
+        enabled = NoteFlag.ENABLED in self.flags_group.values
+        force_resend = NoteFlag.FORCE_RESEND in self.flags_group.values
+
         if self.note is None:
             self.note = ChannelNote(
                 discord_id=interaction.channel.id,
-                enabled=self.enabled_checkbox.value,
+                enabled=enabled,
+                force_resend=force_resend,
                 content=self.content_input.value,
                 header=self.header_input.value,
                 footer=self.footer_input.value,
@@ -155,8 +183,11 @@ class ChannelNoteConfigModal(discord.ui.DesignerModal):
             await interaction.respond(self.translations.note_created, ephemeral=True)
         else:
             modified: bool = False
-            if self.note.enabled != self.enabled_checkbox.value:
-                self.note.enabled = self.enabled_checkbox.value
+            if self.note.enabled != enabled:
+                self.note.enabled = enabled
+                modified = True
+            if self.note.force_resend != force_resend:
+                self.note.force_resend = force_resend
                 modified = True
             if self.note.content != self.content_input.value:
                 self.note.content = self.content_input.value
@@ -246,11 +277,12 @@ class ChannelNoteCog(discord.Cog):
                 continue
             if channel := self.bot.get_channel(note.discord_id):
                 skip = False
-                async for message in channel.history(limit=HISTORY_NOSEND_LIMIT):  # pyright: ignore[reportAttributeAccessIssue]
-                    if message.author.id == self.bot.user.id and _is_note_message(message, note):
-                        logger.info(f"Message {message.id} is this note's own message, skipping")
-                        skip = True
-                        break
+                if not note.force_resend:
+                    async for message in channel.history(limit=HISTORY_NOSEND_LIMIT):  # pyright: ignore[reportAttributeAccessIssue]
+                        if message.author.id == self.bot.user.id and _is_note_message(message, note):
+                            logger.info(f"Message {message.id} is this note's own message, skipping")
+                            skip = True
+                            break
                 if skip:
                     continue
                 logger.info(f"Note {note} matches the current slot, sending to channel {channel.id}")
