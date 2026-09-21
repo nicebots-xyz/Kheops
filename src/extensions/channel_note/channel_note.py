@@ -1,6 +1,7 @@
 # SPDX-License-Identifier: MIT
 # Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
 from datetime import UTC, datetime
+from enum import StrEnum
 from typing import final, override
 
 import discord
@@ -26,8 +27,10 @@ logger = base_logger.getChild("channel_note")
 
 HISTORY_NOSEND_LIMIT = 12
 
-FLAG_ENABLED = "enabled"
-FLAG_FORCE_RESEND = "force_resend"
+
+class NoteFlag(StrEnum):
+    ENABLED = "enabled"
+    FORCE_RESEND = "force_resend"
 
 
 def _is_note_message(message: discord.Message, note: ChannelNote) -> bool:
@@ -135,13 +138,13 @@ class ChannelNoteConfigModal(discord.ui.DesignerModal):
                 discord.CheckboxGroupOption(
                     label=self.translations.enabled_checkbox,
                     description=self.translations.enabled_checkbox_description,
-                    value=FLAG_ENABLED,
+                    value=NoteFlag.ENABLED,
                     default=self.note.enabled if self.note else True,
                 ),
                 discord.CheckboxGroupOption(
                     label=self.translations.force_resend_checkbox,
                     description=self.translations.force_resend_checkbox_description,
-                    value=FLAG_FORCE_RESEND,
+                    value=NoteFlag.FORCE_RESEND,
                     default=self.note.force_resend if self.note else False,
                 ),
             ],
@@ -163,8 +166,8 @@ class ChannelNoteConfigModal(discord.ui.DesignerModal):
         assert self.every_select.values is not None
         assert len(self.every_select.values) == 1
 
-        enabled = FLAG_ENABLED in self.flags_group.values
-        force_resend = FLAG_FORCE_RESEND in self.flags_group.values
+        enabled = NoteFlag.ENABLED in self.flags_group.values
+        force_resend = NoteFlag.FORCE_RESEND in self.flags_group.values
 
         if self.note is None:
             self.note = ChannelNote(
