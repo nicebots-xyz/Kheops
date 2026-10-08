@@ -27,7 +27,7 @@ extensions:
   welcome:
     enabled: true
     channel_id: 563776770210398212
-    message: "Hey {mention}, bienvenue sur le discord **{server}** 🎉🤗 ! Passe lire le <#563836837043372033> avant de t'amuser ici !! Passe par <#763454034203377745> et <id:customize> aussi pour t'y retrouver !"
+    message: "Hey {mention}, bienvenue dans les ténèbres de **{server}** 🕯️👻 Avant de t'aventurer plus loin, lis les règles dans <#563836837043372033>, elles te protégeront des mauvais sorts. Ensuite, passe par <#763454034203377745> et <id:customize> pour choisir tes accès et te repérer dans le manoir. On t'attendait... 🎃"
   informations:
     enabled: true
   namestyle:
