@@ -27,7 +27,7 @@ from .staff_stats import (
     StaffQuotaMode,
     StaffRoleQuota,
     StaffStatsSettings,
-    StaffVoiceSegment,
+    StaffVoiceSession,
 )
 from .user import User
 
@@ -46,6 +46,6 @@ __all__ = [
     "StaffQuotaMode",
     "StaffRoleQuota",
     "StaffStatsSettings",
-    "StaffVoiceSegment",
+    "StaffVoiceSession",
     "User",
 ]

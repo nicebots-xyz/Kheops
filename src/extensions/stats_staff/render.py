@@ -4,109 +4,69 @@
 from __future__ import annotations
 
 from datetime import datetime
+from typing import TYPE_CHECKING
 
 import discord
 
-from src.database.models import StaffQuotaMode, StaffStatsSettings
+from src.database.models import StaffQuotaMode, StaffRoleQuota, StaffStatsSettings
 
-from .logic import (
-    EUROPE_PARIS,
-    StatsPeriod,
-    completion_ratio,
-    evaluate_quota,
-    previous_week_bounds,
-    progress_bar,
-    trend_arrow,
-)
-from .quotas import find_quota_role
-from .stats import PERIOD_LABELS, compute_stats, compute_stats_range
+from .logic import EUROPE_PARIS, StatsPeriod, period_start, previous_week_bounds, progress_bar, quota_score, trend_arrow
+from .stats import PERIOD_LABELS, get_stats
+
+if TYPE_CHECKING:
+    from .stats import Strings
 
 
-async def render_stats(member: discord.Member, period: StatsPeriod) -> discord.ui.DesignerView:
-    quota = await find_quota_role(member)
+def score_for(quota: StaffRoleQuota, stats: tuple[int, float], penalty: float) -> float:
+    messages, voice_minutes = stats
+    return quota_score(
+        quota.mode,
+        messages=messages,
+        messages_required=quota.messages_required,
+        voice_minutes=voice_minutes,
+        voice_minutes_required=quota.voice_minutes_required,
+        penalty=penalty,
+    )
+
+
+async def render_stats(
+    member: discord.Member, quota: StaffRoleQuota | None, period: StatsPeriod, t: Strings
+) -> discord.Embed:
+    """Build the stats card of `member`: activity, quota and (for the current week) trend, side by side."""
     now = datetime.now(tz=EUROPE_PARIS)
-    messages, voice_minutes = await compute_stats(member.guild.id, member.id, period, now)
-    period_label = PERIOD_LABELS[period]
-
-    header = discord.ui.Section[discord.ui.DesignerView](
-        discord.ui.TextDisplay(f"## {member.display_name}\n-# {period_label}"),
-        accessory=discord.ui.Thumbnail(member.display_avatar.url),
+    stats = (await get_stats(member.guild.id, period_start(period, now), now)).get(member.id, (0, 0.0))
+    embed = discord.Embed(
+        title=member.display_name, description=f"-# {PERIOD_LABELS[period]}", colour=discord.Colour.light_grey()
     )
-    activity_block = discord.ui.TextDisplay(  # pyright: ignore[reportUnknownVariableType]
-        f"### 📈 Activité\n**{messages}** messages · **{voice_minutes / 60:.1f}h** de vocal"
+    embed.set_thumbnail(url=member.display_avatar.url)
+    embed.add_field(
+        name=t.card_activity, value=t.card_activity_value.format(messages=stats[0], hours=f"{stats[1] / 60:.1f}")
     )
-
     if quota is None:
-        container = discord.ui.Container[discord.ui.DesignerView](
-            header,
-            discord.ui.Separator(spacing=discord.SeparatorSpacingSize.large),
-            activity_block,
-            discord.ui.Separator(spacing=discord.SeparatorSpacingSize.large),
-            discord.ui.TextDisplay("-# Ce membre n'a pas de rôle avec quota configuré."),
-            colour=discord.Colour.light_grey(),
-        )
-        return discord.ui.DesignerView(container)
+        embed.add_field(name=t.card_quota, value=t.card_no_quota)
+        return embed
 
     settings = await StaffStatsSettings.get_or_none(guild_id=member.guild.id)
-    et_penalty = settings.et_substitution_penalty if settings is not None else 1.25
-    passed = evaluate_quota(
-        quota.mode,
-        messages=messages,
-        messages_required=quota.messages_required,
-        voice_minutes=voice_minutes,
-        voice_minutes_required=quota.voice_minutes_required,
-        et_penalty=et_penalty,
+    penalty = settings.et_substitution_penalty if settings is not None else 1.25
+    score = score_for(quota, stats, penalty)
+    passed = score >= 1
+    mode = "ET" if quota.mode == StaffQuotaMode.ALL else "OU"
+    embed.colour = discord.Colour.green() if passed else discord.Colour.red()
+    embed.add_field(
+        name=t.card_quota_mode.format(mode=mode),
+        value=t.quota_requirement.format(
+            hours=f"{quota.voice_minutes_required / 60:g}", mode=mode, messages=quota.messages_required
+        )
+        + f"\n{progress_bar(score)}\n"
+        + (t.card_passed if passed else t.card_failed),
     )
-    ratio = completion_ratio(
-        quota.mode,
-        messages=messages,
-        messages_required=quota.messages_required,
-        voice_minutes=voice_minutes,
-        voice_minutes_required=quota.voice_minutes_required,
-    )
-    mode_label = "ET" if quota.mode == StaffQuotaMode.ALL else "OU"
-    status_label = "Quota atteint" if passed else "Quota non atteint"
-    status_emoji = "✅" if passed else "❌"
-
-    quota_block = discord.ui.TextDisplay(  # pyright: ignore[reportUnknownVariableType]
-        f"### 🎯 Quota ({mode_label})\n"
-        + f"{quota.voice_minutes_required / 60:g}h vocal **{mode_label}** {quota.messages_required} messages\n"
-        + f"{progress_bar(ratio)}\n"
-        + f"{status_emoji} **{status_label}**"
-    )
-
-    items: list[discord.ui.ViewItem[discord.ui.DesignerView]] = [
-        header,
-        discord.ui.Separator(spacing=discord.SeparatorSpacingSize.large),
-        activity_block,
-        discord.ui.Separator(spacing=discord.SeparatorSpacingSize.large),
-        quota_block,
-    ]
-
     if period == StatsPeriod.WEEK:
-        last_week_start, last_week_end = previous_week_bounds(now)
-        last_messages, last_voice_minutes = await compute_stats_range(
-            member.guild.id, member.id, last_week_start, last_week_end
+        last_start, last_end = previous_week_bounds(now)
+        last = (await get_stats(member.guild.id, last_start, last_end)).get(member.id, (0, 0.0))
+        embed.add_field(
+            name=t.card_trend, value=t.vs_last_week.format(trend=trend_arrow(score, score_for(quota, last, penalty)))
         )
-        last_ratio = completion_ratio(
-            quota.mode,
-            messages=last_messages,
-            messages_required=quota.messages_required,
-            voice_minutes=last_voice_minutes,
-            voice_minutes_required=quota.voice_minutes_required,
-        )
-        items.append(discord.ui.Separator(spacing=discord.SeparatorSpacingSize.large))
-        items.append(
-            discord.ui.TextDisplay(  # pyright: ignore[reportUnknownArgumentType]
-                f"### 📊 Tendance\n{trend_arrow(ratio, last_ratio)} vs semaine dernière"
-            )
-        )
-
-    container = discord.ui.Container[discord.ui.DesignerView](
-        *items,
-        colour=discord.Colour.green() if passed else discord.Colour.red(),
-    )
-    return discord.ui.DesignerView(container)
+    return embed
 
 
-__all__ = ("render_stats",)
+__all__ = ("render_stats", "score_for")
