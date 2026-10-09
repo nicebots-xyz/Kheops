@@ -21,6 +21,14 @@ from .channel_note import (
 )
 from .dormeur import Dormeur
 from .guild import Guild
+from .staff_stats import (
+    StaffMemberRoleOverride,
+    StaffMessageEvent,
+    StaffQuotaMode,
+    StaffRoleQuota,
+    StaffStatsSettings,
+    StaffVoiceSegment,
+)
 from .user import User
 
 __all__ = [
@@ -33,5 +41,11 @@ __all__ = [
     "ChannelNoteEvery",
     "Dormeur",
     "Guild",
+    "StaffMemberRoleOverride",
+    "StaffMessageEvent",
+    "StaffQuotaMode",
+    "StaffRoleQuota",
+    "StaffStatsSettings",
+    "StaffVoiceSegment",
     "User",
 ]
