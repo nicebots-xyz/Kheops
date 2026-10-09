@@ -29,7 +29,6 @@ from .logic import (
     StatsPeriod,
     chunk_text_lines,
     completion_ratio,
-    et_full_substitution,
     evaluate_quota,
     is_valid_voice_state,
     overlapping_minutes,
@@ -1057,59 +1056,10 @@ class StatsStaffCog(discord.Cog):
         )
         return discord.ui.DesignerView(container)
 
-    stats_staff = discord.SlashCommandGroup("stats-staff", "Statistiques d'activité du staff")
+    stats_staff = discord.SlashCommandGroup("stats-staff", "Staff activity statistics")
 
-    @stats_staff.command(name="aide", description="Comprendre comment sont calculés les quotas (OU / ET)")
-    async def aide(self, ctx: custom.ApplicationContext) -> None:
-        assert ctx.guild is not None
-        assert isinstance(ctx.author, discord.Member)
-
-        settings = await StaffStatsSettings.get_or_none(guild_id=ctx.guild.id)
-        et_penalty = settings.et_substitution_penalty if settings is not None else 1.25
-        penalty_percent = et_penalty * 100
-
-        lines = [
-            "## 📖 Comment fonctionnent les quotas",
-            "### 🔀 Mode OU",
-            "Le vocal et les messages se combinent proportionnellement : chaque activité compte "
-            + "pour le pourcentage de son propre seuil atteint, et la somme doit atteindre 100%. "
-            + 'Ex: sur un quota "4h vocal OU 100 messages", faire 2h de vocal (50%) et 50 messages '
-            + "(50%) remplit le quota, même si aucun des deux seuils n'est atteint seul.",
-            f"### 🧩 Mode ET (pénalité actuelle : {penalty_percent:g}%)",
-            "Les deux seuils sont normalement requis en entier, mais un manque sur l'un peut être "
-            + f"compensé par un surplus sur l'autre, à {penalty_percent:g}% du manque. Sauter "
-            + "entièrement un des deux critères demande donc l'équivalent du seuil habituel "
-            + f"+ {penalty_percent:g}% sur l'autre. Si les deux critères sont en dessous de leur "
-            + "seuil, le quota échoue dans tous les cas, peu importe le surplus ailleurs.",
-        ]
-
-        quota = await self._find_quota_role(ctx.author)
-        if quota is not None:
-            role = ctx.guild.get_role(quota.role_id)
-            role_label = role.mention if role is not None else "ton rôle"
-            hours_required = quota.voice_minutes_required / 60
-            lines.append(f"### 🎯 Ton quota ({role_label})")
-            if quota.mode == StaffQuotaMode.ANY:
-                lines.append(
-                    f"**{hours_required:g}h** de vocal OU **{quota.messages_required}** messages — ou un "
-                    + "mélange des deux qui totalise 100% (ex: la moitié de chaque)."
-                )
-            else:
-                voice_substitute = et_full_substitution(hours_required, et_penalty)
-                messages_substitute = round(et_full_substitution(quota.messages_required, et_penalty))
-                lines.append(
-                    f"**{hours_required:g}h** de vocal ET **{quota.messages_required}** messages.\n"
-                    + f"- Si tu ne fais aucun message, il te faut **{voice_substitute:g}h** de vocal.\n"
-                    + f"- Si tu ne fais aucun vocal, il te faut **{messages_substitute}** messages."
-                )
-
-        await ctx.respond(
-            view=discord.ui.DesignerView(discord.ui.Container(discord.ui.TextDisplay("\n\n".join(lines)))),  # pyright: ignore[reportUnknownArgumentType]
-            ephemeral=True,
-        )
-
-    @stats_staff.command(name="moi", description="Voir mes propres statistiques de staff")
-    async def moi(
+    @stats_staff.command(name="me", description="View my own staff statistics")
+    async def me(
         self,
         ctx: custom.ApplicationContext,
         periode: str = discord.Option(str, "Période", choices=PERIOD_CHOICES, default=StatsPeriod.WEEK.value),  # pyright: ignore[reportArgumentType, reportCallInDefaultInitializer]
@@ -1121,8 +1071,8 @@ class StatsStaffCog(discord.Cog):
         view = await self._render_stats(ctx.author, StatsPeriod(periode))
         await ctx.respond(view=view, ephemeral=True)
 
-    @stats_staff.command(name="voir", description="Voir les statistiques d'un membre du staff")
-    async def voir(
+    @stats_staff.command(name="view", description="View a staff member's statistics")
+    async def view(
         self,
         ctx: custom.ApplicationContext,
         membre: discord.Member,
@@ -1136,21 +1086,21 @@ class StatsStaffCog(discord.Cog):
 
     stats_staff_admin = discord.SlashCommandGroup(
         "stats-staff-admin",
-        "Administration des statistiques de staff",
+        "Staff statistics administration",
         default_member_permissions=discord.Permissions(administrator=True),
     )
 
-    @stats_staff_admin.command(name="config", description="Configurer les quotas, salons suivis et rapports de stats")
+    @stats_staff_admin.command(name="config", description="Configure quotas, tracked channels and stats reports")
     async def config(self, ctx: custom.ApplicationContext) -> None:
         assert ctx.guild is not None
         view = await ConfigPanelView.build(ctx.guild)
         await ctx.respond(view=view, ephemeral=True)
 
     @stats_staff_admin.command(
-        name="apercu-rapport",
-        description="Voir à quoi ressemblerait le rapport hebdomadaire maintenant, sans attendre dimanche",
+        name="preview-report",
+        description="Preview what the weekly report would currently look like, without waiting for Sunday",
     )
-    async def apercu_rapport(self, ctx: custom.ApplicationContext) -> None:
+    async def preview_report(self, ctx: custom.ApplicationContext) -> None:
         assert ctx.guild is not None
         settings = await _get_or_create_settings(ctx.guild.id)
         now = datetime.now(tz=EUROPE_PARIS)

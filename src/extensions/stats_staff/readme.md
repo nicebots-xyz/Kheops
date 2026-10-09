@@ -41,17 +41,21 @@ Suivi des quotas d'activité hebdomadaires du staff (messages + temps vocal vali
 
 ## Commandes
 
-- `/stats-staff aide` — explique le fonctionnement des modes OU/ET (avec la pénalité de
-  substitution actuelle du serveur), et le détail chiffré du quota du membre qui l'utilise s'il en
-  a un. Ouvert à tout le monde.
-- `/stats-staff moi [periode]` — mes propres statistiques (semaine en cours par défaut), réservé
-  aux membres ayant un rôle avec quota configuré.
-- `/stats-staff voir <membre> [periode]` — statistiques d'un autre membre, réservé aux
-  administrateurs et au rôle "Responsable Staff" configuré.
+Le fonctionnement des modes OU/ET est documenté dans `/help` (catégorie "Staff Stats"), pas dans
+une commande dédiée. Les noms par défaut (code / locale `en-US`) sont en anglais, traduits en
+français via `translations.yml` — les noms ci-dessous sont ceux vus par un client Discord en
+français.
+
+- `/stats-staff moi [periode]` (nom par défaut : `me`) — mes propres statistiques (semaine en
+  cours par défaut), réservé aux membres ayant un rôle avec quota configuré.
+- `/stats-staff voir <membre> [periode]` (nom par défaut : `view`) — statistiques d'un autre
+  membre, réservé aux administrateurs et au rôle "Responsable Staff" configuré.
 - `/stats-staff-admin config` — panel de configuration interactif (rôle responsable, salon de
   rapport, salons suivis, quotas par rôle). Réservé par défaut aux administrateurs Discord ; un
   administrateur peut ensuite déléguer l'accès à cette commande au rôle "Responsable Staff" via
   les permissions de commande du serveur (Paramètres du serveur → Intégrations).
+- `/stats-staff-admin apercu-rapport` (nom par défaut : `preview-report`) — prévisualise le
+  rapport hebdomadaire sans attendre dimanche.
 
 ## Membres avec plusieurs rôles quota
 

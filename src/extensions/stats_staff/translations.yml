@@ -1,0 +1,71 @@
+# SPDX-License-Identifier: MIT
+# Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
+commands:
+  stats-staff:
+    name:
+      en-US: "stats-staff"
+      fr: "stats-staff"
+    description:
+      en-US: "Staff activity statistics"
+      fr: "Statistiques d'activité du staff"
+    commands:
+      me:
+        name:
+          en-US: "me"
+          fr: "moi"
+        description:
+          en-US: "View my own staff statistics"
+          fr: "Voir mes propres statistiques de staff"
+        options:
+          periode:
+            name:
+              en-US: "period"
+              fr: "periode"
+            description:
+              en-US: "Period"
+              fr: "Période"
+      view:
+        name:
+          en-US: "view"
+          fr: "voir"
+        description:
+          en-US: "View a staff member's statistics"
+          fr: "Voir les statistiques d'un membre du staff"
+        options:
+          membre:
+            name:
+              en-US: "member"
+              fr: "membre"
+            description:
+              en-US: "The member to look up"
+              fr: "Le membre à consulter"
+          periode:
+            name:
+              en-US: "period"
+              fr: "periode"
+            description:
+              en-US: "Period"
+              fr: "Période"
+
+  stats-staff-admin:
+    name:
+      en-US: "stats-staff-admin"
+      fr: "stats-staff-admin"
+    description:
+      en-US: "Staff statistics administration"
+      fr: "Administration des statistiques de staff"
+    commands:
+      config:
+        name:
+          en-US: "config"
+          fr: "config"
+        description:
+          en-US: "Configure quotas, tracked channels and stats reports"
+          fr: "Configurer les quotas, salons suivis et rapports de stats"
+      preview-report:
+        name:
+          en-US: "preview-report"
+          fr: "apercu-rapport"
+        description:
+          en-US: "Preview what the weekly report would currently look like, without waiting for Sunday"
+          fr: "Voir à quoi ressemblerait le rapport hebdomadaire maintenant, sans attendre dimanche"
