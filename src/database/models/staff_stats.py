@@ -16,6 +16,10 @@ class StaffQuotaMode(StrEnum):
     ALL = "all"
 
 
+# Default extra cost of making up an ALL ("ET") quota shortfall on the other side (125%).
+DEFAULT_ET_SUBSTITUTION_PENALTY = 1.25
+
+
 class StaffStatsSettings(Model):
     id: fields.Field[UUID] = fields.UUIDField(pk=True)
     guild: fields.OneToOneRelation[Guild] = fields.OneToOneField("models.Guild", related_name="staff_stats_settings")
@@ -29,7 +33,7 @@ class StaffStatsSettings(Model):
 
     # Applies to every ALL ("ET") quota: a shortfall on one side can be made up on the other side,
     # at this extra cost. See quota_score() in the stats_staff extension.
-    et_substitution_penalty: fields.Field[float] = fields.FloatField(default=1.25)
+    et_substitution_penalty: fields.Field[float] = fields.FloatField(default=DEFAULT_ET_SUBSTITUTION_PENALTY)
 
 
 class StaffRoleQuota(Model):
