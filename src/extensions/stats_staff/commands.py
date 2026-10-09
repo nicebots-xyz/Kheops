@@ -54,6 +54,7 @@ class CommandsCog(discord.Cog):
         await self.show_stats(ctx, ctx.author, quota, StatsPeriod(periode))
 
     @stats_staff.command(name="view", description="View a staff member's statistics")
+    @discord.option("membre", discord.Member, description="Membre")  # pyright: ignore[reportUntypedFunctionDecorator]
     async def view(
         self,
         ctx: custom.ApplicationContext,
