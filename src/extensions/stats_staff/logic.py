@@ -3,19 +3,20 @@
 
 from __future__ import annotations
 
+import calendar
 from datetime import date, datetime, time, timedelta
 from enum import StrEnum
 from typing import TYPE_CHECKING
 from zoneinfo import ZoneInfo
 
-from src.database.models import StaffQuotaMode
+from src.database.models import StaffQuotaMode, StaffRoleQuota
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     import discord
 
 EUROPE_PARIS = ZoneInfo("Europe/Paris")
-
-REPORT_TIME = time(hour=23, minute=59, tzinfo=EUROPE_PARIS)
 
 
 class StatsPeriod(StrEnum):
@@ -29,10 +30,11 @@ class StatsPeriod(StrEnum):
 def is_valid_voice_state(voice_state: discord.VoiceState, *, other_humans: int) -> bool:
     """Whether a staff member's current voice state should count toward their quota.
 
-    Requires the member to be neither muted nor deafened (self or server-imposed), and that at
-    least one other human is present in the channel.
+    Requires the member to be neither muted nor deafened — self-imposed or server-imposed — and
+    that at least one other human is present in the channel. `VoiceState.mute`/`.deaf` only
+    reflect a server-imposed mute/deafen; `self_mute`/`self_deaf` must be checked separately.
     """
-    if voice_state.mute or voice_state.deaf:
+    if voice_state.mute or voice_state.deaf or voice_state.self_mute or voice_state.self_deaf:
         return False
     return other_humans > 0
 
@@ -58,16 +60,34 @@ def previous_week_bounds(now: datetime) -> tuple[datetime, datetime]:
     return last_week_start, last_week_start + elapsed
 
 
+def weekly_report_deadline(now: datetime) -> datetime:
+    """Return the Sunday 23:59 Europe/Paris deadline that `now` should be checked against.
+
+    Normally "this week's" deadline (today, if it's Sunday evening). In the first hour after
+    midnight on Monday, resolves to *last* night's deadline instead — a safety grace window so a
+    report loop whose tick phase lands a few minutes outside the narrow Sunday-23:59 instant still
+    catches it, instead of permanently missing that week's report.
+    """
+    now = now.astimezone(EUROPE_PARIS)
+    reference = now - timedelta(days=1) if now.weekday() == 0 and now.time() < time(1, 0) else now
+    monday = reference.date() - timedelta(days=reference.weekday())
+    sunday = monday + timedelta(days=6)
+    return datetime.combine(sunday, time(23, 59), tzinfo=EUROPE_PARIS)
+
+
 def should_send_weekly_report(now: datetime, last_sent: date | None) -> bool:
     """Whether the weekly staff report should fire now.
 
-    Fires once Sunday 23:59 Europe/Paris is reached, and stays true on every subsequent check
-    until a report is actually sent (`last_sent` updated) — so a missed tick is retried.
+    Fires once the relevant Sunday 23:59 Europe/Paris deadline is reached (see
+    `weekly_report_deadline`), and stays true on every subsequent check until a report is actually
+    sent for that deadline (`last_sent` holds the deadline's date, not the send date) — so a
+    missed tick is retried, within the grace window.
     """
     now = now.astimezone(EUROPE_PARIS)
-    if last_sent == now.date():
+    deadline = weekly_report_deadline(now)
+    if now < deadline:
         return False
-    return now.weekday() == 6 and now.timetz() >= REPORT_TIME
+    return last_sent != deadline.date()
 
 
 def period_start(period: StatsPeriod, now: datetime) -> datetime | None:
@@ -92,7 +112,9 @@ def _months_ago(now: datetime, months: int) -> datetime:
     while month <= 0:
         month += 12
         year -= 1
-    return now.replace(year=year, month=month)
+    last_day_of_month = calendar.monthrange(year, month)[1]
+    day = min(now.day, last_day_of_month)
+    return now.replace(year=year, month=month, day=day)
 
 
 def et_full_substitution(required: float, et_penalty: float) -> float:
@@ -177,6 +199,54 @@ def trend_arrow(current_ratio: float, previous_ratio: float, *, threshold: float
     if diff < -threshold:
         return f"▼ {diff * 100:.0f}%"
     return "▬ stable"
+
+
+def resolve_quota_for_member(
+    member_role_ids: set[int],
+    quotas: Sequence[StaffRoleQuota],
+    override_role_id: int | None,
+) -> StaffRoleQuota | None:
+    """Pick the single quota that applies to a member, from the roles they currently hold.
+
+    A member matching more than one configured role is resolved via `override_role_id` (their
+    `StaffMemberRoleOverride`, if set) so they are never counted under more than one role. Falls
+    back to the first matching quota if no override is set or it no longer matches.
+    """
+    matching = [quota for quota in quotas if quota.role_id in member_role_ids]
+    if not matching:
+        return None
+    if len(matching) == 1:
+        return matching[0]
+    if override_role_id is not None:
+        picked = next((quota for quota in matching if quota.role_id == override_role_id), None)
+        if picked is not None:
+            return picked
+    return matching[0]
+
+
+def chunk_text_lines(items: Sequence[str], max_chars: int, *, sep: str = "\n") -> list[str]:
+    """Group `items` into chunks joined by `sep`, each at most `max_chars` long.
+
+    Used to stay under Discord's per-component text size limit (e.g. a Text Display is capped at
+    4,000 characters) when rendering a list whose length depends on how many staff members exist.
+    A single item longer than `max_chars` becomes its own oversized chunk rather than being split
+    (splitting mid-item would produce broken output).
+    """
+    chunks: list[str] = []
+    current: list[str] = []
+    current_len = 0
+    for item in items:
+        added_len = len(item) + (len(sep) if current else 0)
+        if current and current_len + added_len > max_chars:
+            chunks.append(sep.join(current))
+            current = []
+            current_len = 0
+            added_len = len(item)
+        current.append(item)
+        current_len += added_len
+    if current:
+        chunks.append(sep.join(current))
+    return chunks
 
 
 def overlapping_minutes(

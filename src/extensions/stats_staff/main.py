@@ -3,12 +3,15 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+import math
+from collections import defaultdict
+from datetime import UTC, datetime, timedelta
 from typing import TYPE_CHECKING, Self, final, override
 
 import discord
 from discord.ext import tasks
 from discord.utils import format_dt
+from tortoise.expressions import Q
 
 from src.database.models import (
     StaffMemberRoleOverride,
@@ -23,22 +26,30 @@ from src.log import logger as base_logger
 from .logic import (
     EUROPE_PARIS,
     StatsPeriod,
+    chunk_text_lines,
     completion_ratio,
     et_full_substitution,
     evaluate_quota,
+    is_valid_voice_state,
     overlapping_minutes,
     period_start,
     previous_week_bounds,
     progress_bar,
+    resolve_quota_for_member,
     should_send_weekly_report,
     trend_arrow,
     week_start,
+    weekly_report_deadline,
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
     from uuid import UUID
 
     from src import custom
+
+CHECKPOINT_INTERVAL = timedelta(minutes=1)
+TEXT_DISPLAY_MAX_CHARS = 3900
 
 logger = base_logger.getChild("stats_staff")
 
@@ -73,6 +84,124 @@ async def _compute_stats_range(
 async def _compute_stats(guild_id: int, member_id: int, period: StatsPeriod, now: datetime) -> tuple[int, float]:
     start = period_start(period, now)
     return await _compute_stats_range(guild_id, member_id, start, now)
+
+
+async def _bulk_compute_stats(
+    guild_id: int,
+    member_ids: Sequence[int],
+    now: datetime,
+    last_week_start: datetime,
+    last_week_end: datetime,
+) -> dict[int, tuple[int, float, int, float]]:
+    """Fetch this-week and last-week (messages, voice_minutes) for many members in a few queries.
+
+    Replaces what would otherwise be 4 queries per member (used by the weekly report and its
+    preview, where that N+1 pattern risked slow responses or interaction timeouts on a large
+    staff list).
+    """
+    if not member_ids:
+        return {}
+    this_week_start = week_start(now)
+
+    messages_this: dict[int, int] = defaultdict(int)
+    messages_last: dict[int, int] = defaultdict(int)
+    message_rows = await StaffMessageEvent.filter(
+        guild_id=guild_id, member_id__in=member_ids, created_at__gte=last_week_start, created_at__lt=now
+    ).values_list("member_id", "created_at")
+    for member_id, created_at in message_rows:
+        if created_at >= this_week_start:
+            messages_this[member_id] += 1
+        else:
+            messages_last[member_id] += 1
+
+    voice_this: dict[int, float] = defaultdict(float)
+    voice_last: dict[int, float] = defaultdict(float)
+    segments = await StaffVoiceSegment.filter(guild_id=guild_id, member_id__in=member_ids, started_at__lt=now).filter(
+        Q(ended_at__isnull=True) | Q(ended_at__gt=last_week_start)
+    )
+    for segment in segments:
+        voice_this[segment.member_id] += overlapping_minutes(segment.started_at, segment.ended_at, this_week_start, now)
+        voice_last[segment.member_id] += overlapping_minutes(
+            segment.started_at, segment.ended_at, last_week_start, last_week_end
+        )
+
+    return {
+        member_id: (
+            messages_this.get(member_id, 0),
+            voice_this.get(member_id, 0.0),
+            messages_last.get(member_id, 0),
+            voice_last.get(member_id, 0.0),
+        )
+        for member_id in member_ids
+    }
+
+
+def _build_role_report_blocks(
+    quota: StaffRoleQuota,
+    role: discord.Role,
+    members: list[discord.Member],
+    stats_by_member: dict[int, tuple[int, float, int, float]],
+    et_penalty: float,
+) -> tuple[list[discord.ui.Container[discord.ui.DesignerView]], int, int, list[discord.Member]]:
+    mode_label = "ET" if quota.mode == StaffQuotaMode.ALL else "OU"
+    lines = [
+        f"### {role.mention}",
+        f"-# Quota : {quota.voice_minutes_required / 60:g}h vocal **{mode_label}** {quota.messages_required} messages",
+    ]
+
+    passed_count = 0
+    zero_activity_members: list[discord.Member] = []
+    for member in sorted(members, key=lambda m: m.display_name.lower()):
+        messages, voice_minutes, last_messages, last_voice_minutes = stats_by_member.get(member.id, (0, 0.0, 0, 0.0))
+        passed = evaluate_quota(
+            quota.mode,
+            messages=messages,
+            messages_required=quota.messages_required,
+            voice_minutes=voice_minutes,
+            voice_minutes_required=quota.voice_minutes_required,
+            et_penalty=et_penalty,
+        )
+        passed_count += passed
+        ratio = completion_ratio(
+            quota.mode,
+            messages=messages,
+            messages_required=quota.messages_required,
+            voice_minutes=voice_minutes,
+            voice_minutes_required=quota.voice_minutes_required,
+        )
+        last_ratio = completion_ratio(
+            quota.mode,
+            messages=last_messages,
+            messages_required=quota.messages_required,
+            voice_minutes=last_voice_minutes,
+            voice_minutes_required=quota.voice_minutes_required,
+        )
+
+        if messages == 0 and voice_minutes == 0:
+            zero_activity_members.append(member)
+            emoji = "🚨"
+        else:
+            emoji = "✅" if passed else "❌"
+        lines.append(
+            f"{emoji} **{member.display_name}** — {voice_minutes / 60:.1f}h vocal · {messages} messages\n"
+            + f"-# {progress_bar(ratio)} · {trend_arrow(ratio, last_ratio)} vs semaine dernière"
+        )
+
+    if not members:
+        lines.append("-# Aucun membre.")
+        colour = discord.Colour.light_grey()
+    elif passed_count == len(members):
+        colour = discord.Colour.green()
+    elif passed_count == 0:
+        colour = discord.Colour.red()
+    else:
+        colour = discord.Colour.gold()
+
+    containers = [
+        discord.ui.Container[discord.ui.DesignerView](discord.ui.TextDisplay(chunk), colour=colour)
+        for chunk in chunk_text_lines(lines, TEXT_DISPLAY_MAX_CHARS)
+    ]
+    return containers, passed_count, len(members), zero_activity_members
 
 
 @final
@@ -128,8 +257,8 @@ class QuotaModal(discord.ui.DesignerModal):
         except ValueError:
             await interaction.respond("Les heures et messages doivent être des nombres.", ephemeral=True)
             return
-        if hours < 0 or messages_required < 0:
-            await interaction.respond("Les valeurs doivent être positives.", ephemeral=True)
+        if not math.isfinite(hours) or hours < 0 or messages_required < 0:
+            await interaction.respond("Les valeurs doivent être des nombres positifs et finis.", ephemeral=True)
             return
 
         mode = StaffQuotaMode(self.mode_select.values[0])
@@ -179,8 +308,8 @@ class PenaltyModal(discord.ui.DesignerModal):
         except ValueError:
             await interaction.respond("La pénalité doit être un nombre.", ephemeral=True)
             return
-        if percent < 0:
-            await interaction.respond("La pénalité doit être positive ou nulle.", ephemeral=True)
+        if not math.isfinite(percent) or percent < 0:
+            await interaction.respond("La pénalité doit être un nombre positif ou nul, et fini.", ephemeral=True)
             return
 
         self.settings.et_substitution_penalty = percent / 100
@@ -520,28 +649,123 @@ class StatsStaffCog(discord.Cog):
         self.report_loop.start()
         self.checkpoint_loop.start()
 
+    def _is_member_valid_now(
+        self, member: discord.Member, quota_role_ids: set[int], tracked_channel_ids: list[int]
+    ) -> bool:
+        if member.bot or not any(role.id in quota_role_ids for role in member.roles):
+            return False
+        voice_state = member.voice
+        if voice_state is None or voice_state.channel is None:
+            return False
+        if voice_state.channel.id not in tracked_channel_ids:
+            return False
+        other_humans = sum(1 for m in voice_state.channel.members if not m.bot and m.id != member.id)
+        return is_valid_voice_state(voice_state, other_humans=other_humans)
+
+    async def _recompute_validity(
+        self, member: discord.Member, quota_role_ids: set[int], tracked_channel_ids: list[int]
+    ) -> None:
+        valid = self._is_member_valid_now(member, quota_role_ids, tracked_channel_ids)
+        key = (member.guild.id, member.id)
+        open_segment = self.open_segments.get(key)
+        now = datetime.now(tz=UTC)
+        if valid and open_segment is None:
+            assert member.voice is not None
+            assert member.voice.channel is not None
+            segment = await StaffVoiceSegment.create(
+                guild_id=member.guild.id, member_id=member.id, channel_id=member.voice.channel.id, started_at=now
+            )
+            self.open_segments[key] = segment
+        elif not valid and open_segment is not None:
+            open_segment.ended_at = now
+            await open_segment.save()
+            del self.open_segments[key]
+
     async def checkpoint_loop_meth(self) -> None:
-        """Roll every open voice segment over into a fresh one, closing the old one in place.
+        """Roll every still-valid open voice segment over into a fresh one, closing invalid ones.
 
         Bounds how much voice time a crash or hard restart can over-credit (the reconciliation
-        on the next startup closes whatever is still open at the restart time) to at most one
-        checkpoint interval, instead of the full downtime.
+        on the next startup closes whatever is still open, at its last checkpoint) to at most one
+        checkpoint interval, instead of the full downtime. Also re-validates each segment against
+        current settings/quotas/roles on every tick, so a quota role or tracked channel removed
+        mid-session (and a member leaving the server) stops being credited within one interval,
+        rather than silently forever.
         """
         now = datetime.now(tz=UTC)
+        settings_cache: dict[int, StaffStatsSettings | None] = {}
+        quota_role_ids_cache: dict[int, set[int]] = {}
+
         for key, segment in list(self.open_segments.items()):
             guild_id, member_id = key
-            segment.ended_at = now
-            await segment.save()
-            new_segment = await StaffVoiceSegment.create(
-                guild_id=guild_id, member_id=member_id, channel_id=segment.channel_id, started_at=now
-            )
-            self.open_segments[key] = new_segment
+            try:
+                await self._checkpoint_one_segment(key, segment, now, settings_cache, quota_role_ids_cache)
+            except Exception:
+                logger.exception(f"Failed to checkpoint voice segment for member {member_id} in guild {guild_id}")
+
+    async def _checkpoint_one_segment(
+        self,
+        key: tuple[int, int],
+        segment: StaffVoiceSegment,
+        now: datetime,
+        settings_cache: dict[int, StaffStatsSettings | None],
+        quota_role_ids_cache: dict[int, set[int]],
+    ) -> None:
+        guild_id, member_id = key
+        still_valid = await self._revalidate_open_segment(guild_id, member_id, settings_cache, quota_role_ids_cache)
+
+        if self.open_segments.get(key) is not segment:
+            return  # closed or replaced concurrently while we were checking
+
+        segment.ended_at = now
+        await segment.save()
+
+        if not still_valid:
+            if self.open_segments.get(key) is segment:
+                del self.open_segments[key]
+            return
+
+        if self.open_segments.get(key) is not segment:
+            return  # closed concurrently between the save above and here
+
+        new_segment = await StaffVoiceSegment.create(
+            guild_id=guild_id, member_id=member_id, channel_id=segment.channel_id, started_at=now
+        )
+        if self.open_segments.get(key) is not segment:
+            await new_segment.delete()
+            return
+        self.open_segments[key] = new_segment
+
+    async def _revalidate_open_segment(
+        self,
+        guild_id: int,
+        member_id: int,
+        settings_cache: dict[int, StaffStatsSettings | None],
+        quota_role_ids_cache: dict[int, set[int]],
+    ) -> bool:
+        guild = self.bot.get_guild(guild_id)
+        if guild is None:
+            return False
+        member = guild.get_member(member_id)
+        if member is None:
+            return False
+        if guild_id not in settings_cache:
+            settings_cache[guild_id] = await StaffStatsSettings.get_or_none(guild_id=guild_id)
+        settings = settings_cache[guild_id]
+        if settings is None or not settings.voice_channel_ids:
+            return False
+        if guild_id not in quota_role_ids_cache:
+            quota_role_ids_cache[guild_id] = {q.role_id for q in await StaffRoleQuota.filter(guild_id=guild_id)}
+        return self._is_member_valid_now(member, quota_role_ids_cache[guild_id], settings.voice_channel_ids)
 
     async def _reconcile_voice_segments(self) -> None:
         now = datetime.now(tz=UTC)
         stale = await StaffVoiceSegment.filter(ended_at__isnull=True)
         for segment in stale:
-            segment.ended_at = now
+            # Bounded to the last checkpoint instead of `now`: a segment left open across a crash
+            # or hard restart was last known-valid at most one checkpoint interval before it was
+            # orphaned, so closing it at the restart time instead would over-credit the entire
+            # downtime.
+            segment.ended_at = min(now, segment.started_at + CHECKPOINT_INTERVAL)
             await segment.save()
 
         all_settings = await StaffStatsSettings.all()
@@ -557,40 +781,7 @@ class StatsStaffCog(discord.Cog):
                 if not isinstance(channel, discord.VoiceChannel):
                     continue
                 for member in channel.members:
-                    await self._recompute_validity(member, channel, quota_role_ids)
-
-    def _has_quota_role(self, member: discord.Member, quota_role_ids: set[int]) -> bool:
-        return not member.bot and any(role.id in quota_role_ids for role in member.roles)
-
-    async def _recompute_validity(
-        self, member: discord.Member, channel: discord.VoiceChannel, quota_role_ids: set[int]
-    ) -> None:
-        if not self._has_quota_role(member, quota_role_ids):
-            return
-
-        other_humans = sum(1 for m in channel.members if not m.bot and m.id != member.id)
-        voice_state = member.voice
-        valid = (
-            voice_state is not None
-            and voice_state.channel is not None
-            and voice_state.channel.id == channel.id
-            and not voice_state.mute
-            and not voice_state.deaf
-            and other_humans > 0
-        )
-
-        key = (channel.guild.id, member.id)
-        open_segment = self.open_segments.get(key)
-        now = datetime.now(tz=UTC)
-        if valid and open_segment is None:
-            segment = await StaffVoiceSegment.create(
-                guild_id=channel.guild.id, member_id=member.id, channel_id=channel.id, started_at=now
-            )
-            self.open_segments[key] = segment
-        elif not valid and open_segment is not None:
-            open_segment.ended_at = now
-            await open_segment.save()
-            del self.open_segments[key]
+                    await self._recompute_validity(member, quota_role_ids, settings.voice_channel_ids)
 
     @discord.Cog.listener("on_voice_state_update")
     async def on_voice_state_update(
@@ -605,22 +796,18 @@ class StatsStaffCog(discord.Cog):
         if not quota_role_ids:
             return
 
-        channels: set[discord.VoiceChannel] = set()
+        # A join/leave/mute toggle can flip whether *other* members in the channel count as
+        # "alone", so every current member of an affected channel needs re-checking — not just
+        # the member who triggered the event (who is included here too, so leaving voice entirely
+        # closes their own segment the same way, without a separate special case).
+        affected_members: dict[int, discord.Member] = {member.id: member}
         for state in (before, after):
             if state.channel is not None and state.channel.id in settings.voice_channel_ids:
-                channels.add(state.channel)  # pyright: ignore[reportArgumentType]
+                for other in state.channel.members:
+                    affected_members[other.id] = other
 
-        for channel in channels:
-            for other in channel.members:
-                await self._recompute_validity(other, channel, quota_role_ids)
-
-        if after.channel is None or after.channel.id not in settings.voice_channel_ids:
-            key = (member.guild.id, member.id)
-            open_segment = self.open_segments.get(key)
-            if open_segment is not None:
-                open_segment.ended_at = datetime.now(tz=UTC)
-                await open_segment.save()
-                del self.open_segments[key]
+        for affected in affected_members.values():
+            await self._recompute_validity(affected, quota_role_ids, settings.voice_channel_ids)
 
     @discord.Cog.listener("on_message")
     async def on_message(self, message: discord.Message) -> None:
@@ -637,8 +824,13 @@ class StatsStaffCog(discord.Cog):
         )
 
     async def report_loop_meth(self) -> None:
-        now = datetime.now(tz=EUROPE_PARIS)
-        all_settings = await StaffStatsSettings.filter(report_channel_id__isnull=False)
+        try:
+            now = datetime.now(tz=EUROPE_PARIS)
+            all_settings = await StaffStatsSettings.filter(report_channel_id__isnull=False)
+        except Exception:
+            logger.exception("Failed to fetch staff stats settings for the weekly report loop")
+            return
+
         for settings in all_settings:
             if not should_send_weekly_report(now, settings.last_report_sent_date):
                 continue
@@ -647,87 +839,14 @@ class StatsStaffCog(discord.Cog):
             except Exception:
                 logger.exception(f"Failed to send weekly staff report for guild {settings.guild_id}")
 
-    async def _build_role_report_block(
-        self,
-        guild: discord.Guild,
-        settings: StaffStatsSettings,
-        quota: StaffRoleQuota,
-        role: discord.Role,
-        members: list[discord.Member],
-        now: datetime,
-    ) -> tuple[discord.ui.Container[discord.ui.DesignerView], int, int, list[discord.Member]]:
-        mode_label = "ET" if quota.mode == StaffQuotaMode.ALL else "OU"
-        lines = [
-            f"### {role.mention}",
-            f"-# Quota : {quota.voice_minutes_required / 60:g}h vocal **{mode_label}** "
-            + f"{quota.messages_required} messages",
-        ]
-
-        last_week_start, last_week_end = previous_week_bounds(now)
-
-        passed_count = 0
-        zero_activity_members: list[discord.Member] = []
-        for member in sorted(members, key=lambda m: m.display_name.lower()):
-            messages, voice_minutes = await _compute_stats(guild.id, member.id, StatsPeriod.WEEK, now)
-            passed = evaluate_quota(
-                quota.mode,
-                messages=messages,
-                messages_required=quota.messages_required,
-                voice_minutes=voice_minutes,
-                voice_minutes_required=quota.voice_minutes_required,
-                et_penalty=settings.et_substitution_penalty,
-            )
-            passed_count += passed
-            ratio = completion_ratio(
-                quota.mode,
-                messages=messages,
-                messages_required=quota.messages_required,
-                voice_minutes=voice_minutes,
-                voice_minutes_required=quota.voice_minutes_required,
-            )
-
-            last_messages, last_voice_minutes = await _compute_stats_range(
-                guild.id, member.id, last_week_start, last_week_end
-            )
-            last_ratio = completion_ratio(
-                quota.mode,
-                messages=last_messages,
-                messages_required=quota.messages_required,
-                voice_minutes=last_voice_minutes,
-                voice_minutes_required=quota.voice_minutes_required,
-            )
-
-            if messages == 0 and voice_minutes == 0:
-                zero_activity_members.append(member)
-                emoji = "🚨"
-            else:
-                emoji = "✅" if passed else "❌"
-            lines.append(
-                f"{emoji} **{member.display_name}** — {voice_minutes / 60:.1f}h vocal · {messages} messages\n"
-                + f"-# {progress_bar(ratio)} · {trend_arrow(ratio, last_ratio)} vs semaine dernière"
-            )
-
-        if not members:
-            lines.append("-# Aucun membre.")
-            colour = discord.Colour.light_grey()
-        elif passed_count == len(members):
-            colour = discord.Colour.green()
-        elif passed_count == 0:
-            colour = discord.Colour.red()
-        else:
-            colour = discord.Colour.gold()
-
-        container = discord.ui.Container[discord.ui.DesignerView](
-            discord.ui.TextDisplay("\n".join(lines)),
-            colour=colour,
-        )
-        return container, passed_count, len(members), zero_activity_members
-
     async def _build_weekly_report_view(
         self, guild: discord.Guild, settings: StaffStatsSettings, now: datetime
     ) -> discord.ui.DesignerView:
         quotas = await StaffRoleQuota.filter(guild_id=guild.id)
         members_by_quota_id = await self._resolve_members_by_quota(guild, quotas)
+        all_member_ids = [member.id for members in members_by_quota_id.values() for member in members]
+        last_week_start, last_week_end = previous_week_bounds(now)
+        stats_by_member = await _bulk_compute_stats(guild.id, all_member_ids, now, last_week_start, last_week_end)
 
         role_blocks: list[discord.ui.Container[discord.ui.DesignerView]] = []
         total_passed = 0
@@ -738,10 +857,10 @@ class StatsStaffCog(discord.Cog):
             if role is None:
                 continue
             members = members_by_quota_id.get(quota.id, [])
-            block, passed_count, member_count, zero_activity_members = await self._build_role_report_block(
-                guild, settings, quota, role, members, now
+            blocks, passed_count, member_count, zero_activity_members = _build_role_report_blocks(
+                quota, role, members, stats_by_member, settings.et_substitution_penalty
             )
-            role_blocks.append(block)
+            role_blocks.extend(blocks)
             total_passed += passed_count
             total_members += member_count
             all_zero_activity.extend(zero_activity_members)
@@ -756,16 +875,20 @@ class StatsStaffCog(discord.Cog):
         ]
 
         if all_zero_activity and settings.responsible_role_id is not None:
-            mentions = ", ".join(member.mention for member in all_zero_activity)
+            mention_chunks = chunk_text_lines(
+                [member.mention for member in all_zero_activity], TEXT_DISPLAY_MAX_CHARS, sep=", "
+            )
             alert_lines = [
                 f"## 🚨 <@&{settings.responsible_role_id}> — aucune activité cette semaine",
-                f"{len(all_zero_activity)} membre(s) n'ont fait ni message ni vocal cette semaine : {mentions}",
+                f"{len(all_zero_activity)} membre(s) n'ont fait ni message ni vocal cette semaine :",
+                *mention_chunks,
             ]
-            items.append(
+            items.extend(
                 discord.ui.Container[discord.ui.DesignerView](
-                    discord.ui.TextDisplay("\n".join(alert_lines)),
+                    discord.ui.TextDisplay(chunk),
                     colour=discord.Colour.dark_red(),
                 )
+                for chunk in chunk_text_lines(alert_lines, TEXT_DISPLAY_MAX_CHARS)
             )
 
         items.extend(role_blocks)
@@ -786,7 +909,10 @@ class StatsStaffCog(discord.Cog):
             logger.exception(f"Failed to post weekly staff report in channel {settings.report_channel_id}")
             return
 
-        settings.last_report_sent_date = now.date()
+        # The deadline's date, not `now`'s — the grace window lets this fire a little into
+        # Monday, and storing `now.date()` there would record the wrong day and never match
+        # `weekly_report_deadline(...).date()` on a later check, causing an immediate re-send.
+        settings.last_report_sent_date = weekly_report_deadline(now).date()
         await settings.save()
 
     async def _is_responsible_or_admin(self, ctx: custom.ApplicationContext) -> bool:
@@ -805,7 +931,11 @@ class StatsStaffCog(discord.Cog):
 
         A member matching more than one configured role is resolved via their
         `StaffMemberRoleOverride` if set, so they are never counted under more than one role.
+        Fetches every role override once up front instead of once per member.
         """
+        overrides = await StaffMemberRoleOverride.filter(guild_id=guild.id)
+        overrides_by_member_id = {override.member_id: override.role_id for override in overrides}
+
         members_by_quota_id: dict[UUID, list[discord.Member]] = {}
         seen_member_ids: set[int] = set()
         for quota in quotas:
@@ -816,26 +946,17 @@ class StatsStaffCog(discord.Cog):
                 if member.bot or member.id in seen_member_ids:
                     continue
                 seen_member_ids.add(member.id)
-                resolved = await self._find_quota_role(member)
+                member_role_ids = {r.id for r in member.roles}
+                resolved = resolve_quota_for_member(member_role_ids, quotas, overrides_by_member_id.get(member.id))
                 if resolved is not None:
                     members_by_quota_id.setdefault(resolved.id, []).append(member)
         return members_by_quota_id
 
     async def _find_quota_role(self, member: discord.Member) -> StaffRoleQuota | None:
         quotas = await StaffRoleQuota.filter(guild_id=member.guild.id)
-        member_role_ids = {role.id for role in member.roles}
-        matching = [q for q in quotas if q.role_id in member_role_ids]
-        if not matching:
-            return None
-        if len(matching) == 1:
-            return matching[0]
-
         override = await StaffMemberRoleOverride.get_or_none(guild_id=member.guild.id, member_id=member.id)
-        if override is not None:
-            picked = next((q for q in matching if q.role_id == override.role_id), None)
-            if picked is not None:
-                return picked
-        return matching[0]
+        member_role_ids = {role.id for role in member.roles}
+        return resolve_quota_for_member(member_role_ids, quotas, override.role_id if override else None)
 
     async def _render_stats(self, member: discord.Member, period: StatsPeriod) -> discord.ui.DesignerView:
         quota = await self._find_quota_role(member)

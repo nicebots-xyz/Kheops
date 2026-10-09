@@ -1,23 +1,38 @@
 # SPDX-License-Identifier: MIT
 # Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
 
+from dataclasses import dataclass
 from datetime import date, datetime
 
-from src.database.models import StaffQuotaMode
+from src.database.models import StaffQuotaMode, StaffRoleQuota
 from src.extensions.stats_staff.logic import (
     EUROPE_PARIS,
     StatsPeriod,
+    chunk_text_lines,
     completion_ratio,
     et_full_substitution,
     evaluate_quota,
+    is_valid_voice_state,
     overlapping_minutes,
     period_start,
     previous_week_bounds,
     progress_bar,
+    resolve_quota_for_member,
     should_send_weekly_report,
     trend_arrow,
     week_start,
+    weekly_report_deadline,
 )
+
+
+@dataclass
+class _FakeVoiceState:
+    """Stand-in for `discord.VoiceState` exposing only the fields `is_valid_voice_state` reads."""
+
+    mute: bool = False
+    deaf: bool = False
+    self_mute: bool = False
+    self_deaf: bool = False
 
 
 def test_week_start_on_monday() -> None:
@@ -55,9 +70,40 @@ def test_should_send_weekly_report_retried_same_sunday() -> None:
     assert should_send_weekly_report(now, date(2026, 3, 15)) is True
 
 
-def test_should_send_weekly_report_monday_after_deadline_passed() -> None:
-    now = datetime(2026, 3, 23, 0, 30, tzinfo=EUROPE_PARIS)  # Monday, Sunday's window is gone
+def test_should_send_weekly_report_monday_grace_window_still_catches_it() -> None:
+    # a tick that missed the narrow Sunday-23:59 instant still fires early Monday morning
+    now = datetime(2026, 3, 23, 0, 30, tzinfo=EUROPE_PARIS)
+    assert should_send_weekly_report(now, date(2026, 3, 15)) is True
+
+
+def test_should_send_weekly_report_monday_after_grace_window_is_gone() -> None:
+    now = datetime(2026, 3, 23, 2, 0, tzinfo=EUROPE_PARIS)  # well past the 1h grace window
     assert should_send_weekly_report(now, date(2026, 3, 15)) is False
+
+
+def test_should_send_weekly_report_monday_grace_window_already_sent() -> None:
+    now = datetime(2026, 3, 23, 0, 30, tzinfo=EUROPE_PARIS)
+    assert should_send_weekly_report(now, date(2026, 3, 22)) is False  # already sent for that Sunday
+
+
+def test_weekly_report_deadline_on_sunday_is_today() -> None:
+    now = datetime(2026, 3, 22, 10, 0, tzinfo=EUROPE_PARIS)  # Sunday morning
+    assert weekly_report_deadline(now) == datetime(2026, 3, 22, 23, 59, tzinfo=EUROPE_PARIS)
+
+
+def test_weekly_report_deadline_mid_week_is_upcoming_sunday() -> None:
+    now = datetime(2026, 3, 18, 10, 0, tzinfo=EUROPE_PARIS)  # Wednesday
+    assert weekly_report_deadline(now) == datetime(2026, 3, 22, 23, 59, tzinfo=EUROPE_PARIS)
+
+
+def test_weekly_report_deadline_monday_grace_window_is_yesterday() -> None:
+    now = datetime(2026, 3, 23, 0, 30, tzinfo=EUROPE_PARIS)
+    assert weekly_report_deadline(now) == datetime(2026, 3, 22, 23, 59, tzinfo=EUROPE_PARIS)
+
+
+def test_weekly_report_deadline_monday_after_grace_window_is_next_sunday() -> None:
+    now = datetime(2026, 3, 23, 2, 0, tzinfo=EUROPE_PARIS)
+    assert weekly_report_deadline(now) == datetime(2026, 3, 29, 23, 59, tzinfo=EUROPE_PARIS)
 
 
 def test_period_start_week() -> None:
@@ -82,6 +128,45 @@ def test_period_start_last_6_months() -> None:
     result = period_start(StatsPeriod.LAST_6_MONTHS, now)
     assert result is not None
     assert (result.year, result.month, result.day) == (2025, 9, 19)
+
+
+def test_period_start_last_3_months_clamps_to_last_valid_day() -> None:
+    # May 31st minus 3 months would be "February 31st", which doesn't exist
+    now = datetime(2026, 5, 31, 10, 0, tzinfo=EUROPE_PARIS)
+    result = period_start(StatsPeriod.LAST_3_MONTHS, now)
+    assert result is not None
+    assert (result.year, result.month, result.day) == (2026, 2, 28)
+
+
+def test_period_start_last_6_months_clamps_december_to_june() -> None:
+    now = datetime(2026, 12, 31, 10, 0, tzinfo=EUROPE_PARIS)
+    result = period_start(StatsPeriod.LAST_6_MONTHS, now)
+    assert result is not None
+    assert (result.year, result.month, result.day) == (2026, 6, 30)
+
+
+def test_is_valid_voice_state_clean() -> None:
+    assert is_valid_voice_state(_FakeVoiceState(), other_humans=1) is True
+
+
+def test_is_valid_voice_state_alone() -> None:
+    assert is_valid_voice_state(_FakeVoiceState(), other_humans=0) is False
+
+
+def test_is_valid_voice_state_server_muted() -> None:
+    assert is_valid_voice_state(_FakeVoiceState(mute=True), other_humans=1) is False
+
+
+def test_is_valid_voice_state_server_deafened() -> None:
+    assert is_valid_voice_state(_FakeVoiceState(deaf=True), other_humans=1) is False
+
+
+def test_is_valid_voice_state_self_muted() -> None:
+    assert is_valid_voice_state(_FakeVoiceState(self_mute=True), other_humans=1) is False
+
+
+def test_is_valid_voice_state_self_deafened() -> None:
+    assert is_valid_voice_state(_FakeVoiceState(self_deaf=True), other_humans=1) is False
 
 
 def test_period_start_all_time() -> None:
@@ -264,3 +349,59 @@ def test_et_full_substitution_default_penalty() -> None:
 
 def test_et_full_substitution_no_penalty() -> None:
     assert et_full_substitution(100, 0.0) == 100
+
+
+def _quota(role_id: int) -> StaffRoleQuota:
+    return StaffRoleQuota(
+        guild_id=1, role_id=role_id, voice_minutes_required=240, messages_required=100, mode=StaffQuotaMode.ANY
+    )
+
+
+def test_resolve_quota_for_member_no_match() -> None:
+    assert resolve_quota_for_member({1, 2}, [_quota(10), _quota(20)], None) is None
+
+
+def test_resolve_quota_for_member_single_match() -> None:
+    quota = _quota(10)
+    assert resolve_quota_for_member({10, 99}, [quota, _quota(20)], None) is quota
+
+
+def test_resolve_quota_for_member_multiple_matches_uses_override() -> None:
+    quota_a = _quota(10)
+    quota_b = _quota(20)
+    assert resolve_quota_for_member({10, 20}, [quota_a, quota_b], override_role_id=20) is quota_b
+
+
+def test_resolve_quota_for_member_multiple_matches_no_override_falls_back_to_first() -> None:
+    quota_a = _quota(10)
+    quota_b = _quota(20)
+    assert resolve_quota_for_member({10, 20}, [quota_a, quota_b], override_role_id=None) is quota_a
+
+
+def test_resolve_quota_for_member_override_not_matching_falls_back_to_first() -> None:
+    quota_a = _quota(10)
+    quota_b = _quota(20)
+    assert resolve_quota_for_member({10, 20}, [quota_a, quota_b], override_role_id=999) is quota_a
+
+
+def test_chunk_text_lines_single_chunk_when_short() -> None:
+    assert chunk_text_lines(["a", "b", "c"], max_chars=100) == ["a\nb\nc"]
+
+
+def test_chunk_text_lines_splits_when_over_limit() -> None:
+    result = chunk_text_lines(["aaaa", "bbbb", "cccc"], max_chars=10)
+    assert result == ["aaaa\nbbbb", "cccc"]
+    assert all(len(chunk) <= 10 for chunk in result)
+
+
+def test_chunk_text_lines_oversized_single_item_becomes_its_own_chunk() -> None:
+    result = chunk_text_lines(["short", "x" * 50, "short"], max_chars=10)
+    assert result == ["short", "x" * 50, "short"]
+
+
+def test_chunk_text_lines_empty() -> None:
+    assert chunk_text_lines([], max_chars=100) == []
+
+
+def test_chunk_text_lines_custom_separator() -> None:
+    assert chunk_text_lines(["a", "b"], max_chars=100, sep=", ") == ["a, b"]
