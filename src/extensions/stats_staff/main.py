@@ -14,6 +14,7 @@ from discord.utils import format_dt
 from tortoise.expressions import Q
 
 from src.database.models import (
+    Guild,
     StaffMemberRoleOverride,
     StaffMessageEvent,
     StaffQuotaMode,
@@ -66,6 +67,18 @@ MODE_CHOICES = [
     discord.OptionChoice("OU (vocal OU messages)", StaffQuotaMode.ANY.value),
     discord.OptionChoice("ET (vocal ET messages)", StaffQuotaMode.ALL.value),
 ]
+
+
+async def _get_or_create_settings(guild_id: int) -> StaffStatsSettings:
+    """Fetch this guild's stats settings, creating them (and the `Guild` row they require) if needed.
+
+    `StaffStatsSettings.guild` is a real foreign key to `Guild`, so the referenced row must exist
+    first — unlike the other `guild_id` columns in this module, which are plain integers with no
+    constraint.
+    """
+    await Guild.get_or_create(id=guild_id)
+    settings, _ = await StaffStatsSettings.get_or_create(guild_id=guild_id)
+    return settings
 
 
 async def _compute_stats_range(
@@ -503,7 +516,7 @@ class ConfigPanelView(discord.ui.DesignerView):
 
     @classmethod
     async def build(cls, guild: discord.Guild) -> ConfigPanelView:
-        settings, _ = await StaffStatsSettings.get_or_create(guild_id=guild.id)
+        settings = await _get_or_create_settings(guild.id)
         quotas = await StaffRoleQuota.filter(guild_id=guild.id)
         return cls(guild, settings, quotas)
 
@@ -1139,7 +1152,7 @@ class StatsStaffCog(discord.Cog):
     )
     async def apercu_rapport(self, ctx: custom.ApplicationContext) -> None:
         assert ctx.guild is not None
-        settings, _ = await StaffStatsSettings.get_or_create(guild_id=ctx.guild.id)
+        settings = await _get_or_create_settings(ctx.guild.id)
         now = datetime.now(tz=EUROPE_PARIS)
         view = await self._build_weekly_report_view(ctx.guild, settings, now)
         await ctx.respond(view=view, ephemeral=True)

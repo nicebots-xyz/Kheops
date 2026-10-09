@@ -8,6 +8,8 @@ from uuid import UUID
 from tortoise import fields
 from tortoise.models import Model
 
+from .guild import Guild
+
 
 class StaffQuotaMode(StrEnum):
     ANY = "any"
@@ -15,7 +17,12 @@ class StaffQuotaMode(StrEnum):
 
 
 class StaffStatsSettings(Model):
-    guild_id: fields.Field[int] = fields.BigIntField(pk=True)
+    id: fields.Field[UUID] = fields.UUIDField(pk=True)
+    guild: fields.OneToOneRelation[Guild] = fields.OneToOneField("models.Guild", related_name="staff_stats_settings")
+    # Bare type-only annotation (no Field assignment): documents the shadow `guild_id` column
+    # Tortoise generates for the relation above, so code can read/filter/create by it directly
+    # without awaiting `.guild`, and pyright knows the attribute exists.
+    guild_id: int
 
     responsible_role_id: fields.Field[int | None] = fields.BigIntField(null=True)  # pyright: ignore[reportAssignmentType]
     report_channel_id: fields.Field[int | None] = fields.BigIntField(null=True)  # pyright: ignore[reportAssignmentType]
@@ -42,7 +49,7 @@ class StaffRoleQuota(Model):
     messages_required: fields.Field[int] = fields.IntField()
     mode: StaffQuotaMode = fields.CharEnumField(enum_type=StaffQuotaMode)
 
-    class Meta:  # pyright: ignore[reportIncompatibleVariableOverride]
+    class Meta(Model.Meta):
         unique_together: tuple[tuple[str, ...], ...] = (("guild_id", "role_id"),)
 
 
@@ -59,7 +66,7 @@ class StaffMemberRoleOverride(Model):
     member_id: fields.Field[int] = fields.BigIntField()
     role_id: fields.Field[int] = fields.BigIntField()
 
-    class Meta:  # pyright: ignore[reportIncompatibleVariableOverride]
+    class Meta(Model.Meta):
         unique_together: tuple[tuple[str, ...], ...] = (("guild_id", "member_id"),)
 
 
@@ -72,7 +79,7 @@ class StaffMessageEvent(Model):
 
     created_at: fields.Field[datetime] = fields.DatetimeField(auto_now_add=True)
 
-    class Meta:  # pyright: ignore[reportIncompatibleVariableOverride]
+    class Meta(Model.Meta):
         indexes: tuple[tuple[str, ...], ...] = (("guild_id", "member_id", "created_at"),)
 
 
@@ -86,7 +93,7 @@ class StaffVoiceSegment(Model):
     started_at: fields.Field[datetime] = fields.DatetimeField()
     ended_at: fields.Field[datetime | None] = fields.DatetimeField(null=True)  # pyright: ignore[reportAssignmentType]
 
-    class Meta:  # pyright: ignore[reportIncompatibleVariableOverride]
+    class Meta(Model.Meta):
         indexes: tuple[tuple[str, ...], ...] = (("guild_id", "member_id", "started_at"),)
 
 
