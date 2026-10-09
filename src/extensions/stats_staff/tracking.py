@@ -10,9 +10,8 @@ from uuid import UUID, uuid4
 
 import discord
 from discord.ext import tasks
-from tortoise.transactions import in_transaction
-
 from src.database.models import StaffMessageEvent, StaffRoleQuota, StaffStatsSettings, StaffVoiceSession
+from src.database.utils.atomics import in_transaction
 from src.log import logger as base_logger
 
 from .logic import counting_channel_id
@@ -148,7 +147,7 @@ class TrackingCog(discord.Cog):
         async with self.flush_lock:
             finished, ongoing, messages = self.tracker.take(discord.utils.utcnow())
             try:
-                async with in_transaction(StaffVoiceSession._meta.default_connection) as connection:  # noqa: SLF001
+                async with in_transaction() as connection:
                     await StaffVoiceSession.bulk_create(
                         [StaffVoiceSession(**asdict(session)) for session in (*finished, *ongoing)],
                         on_conflict=["id"],
