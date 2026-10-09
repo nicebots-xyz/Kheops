@@ -8,4 +8,4 @@ import os
 # `Config` singleton requires `bot.token`. CI has no `.env`, so without this the first test module
 # that imports an extension submodule fails collection entirely. Set a harmless default before any
 # test module is imported; `setdefault` keeps a real token if one is already set in the environment.
-os.environ.setdefault("BOTKIT__BOT__TOKEN", "test-token-for-pytest")  # noqa: S105
+os.environ.setdefault("BOTKIT__BOT__TOKEN", "test-token-for-pytest")
