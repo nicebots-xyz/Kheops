@@ -67,6 +67,26 @@ pour leurs stats et pour le rapport hebdomadaire (qui ne les compte alors que so
 sous chacun). Sans assignation, le bot retombe sur le premier rôle correspondant trouvé — à éviter
 pour des stats fiables.
 
+## API (panel admin)
+
+Expose des routes HTTP sous `/stats_staff/v1`, protégées par la clé API de l'extension
+`dashboard_api` (voir son readme) — jamais appelées directement par un navigateur, seulement par le
+back-end du site. Toutes les routes prennent un `guild_id` en chemin, par cohérence avec le modèle
+de données (même si ce bot ne sert qu'une seule guilde pour l'instant) :
+
+- `GET /guilds/{guild_id}/members/{member_id}/stats?period=week|month|last_3_months|last_6_months|all_time`
+  — totaux messages/vocal sur la période.
+- `GET /guilds/{guild_id}/members/{member_id}/history?start=YYYY-MM-DD&end=YYYY-MM-DD` — historique
+  jour par jour (messages, minutes de vocal), limité à 366 jours par requête.
+- `GET /guilds/{guild_id}/quotas` — liste des quotas par rôle.
+- `PUT /guilds/{guild_id}/quotas/{role_id}` — crée ou met à jour le quota d'un rôle (404 si le rôle
+  n'existe pas dans la guilde).
+- `DELETE /guilds/{guild_id}/quotas/{role_id}` — supprime le quota d'un rôle.
+
+Aucune de ces routes ne reflète les permissions Discord (`/stats-staff-admin` reste la seule
+interface qui applique le rôle "Responsable Staff") : l'autorisation se fait entièrement via la clé
+API, qui n'est détenue que par le back-end du site.
+
 ## Limitations connues
 
 - Aucune action de modération n'est comptabilisée : Khéops n'a pas de commandes de modération

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
+from datetime import datetime, time, timedelta
 from typing import TYPE_CHECKING
 
 import discord
@@ -11,11 +12,11 @@ from tortoise.expressions import Q
 
 from src.database.models import Guild, StaffMessageEvent, StaffStatsSettings, StaffVoiceSegment
 
-from .logic import StatsPeriod, overlapping_minutes, period_start, week_start
+from .logic import EUROPE_PARIS, StatsPeriod, overlapping_minutes, period_start, week_start
 
 if TYPE_CHECKING:
     from collections.abc import Sequence
-    from datetime import datetime
+    from datetime import date
 
 PERIOD_CHOICES = [
     discord.OptionChoice("Semaine en cours", StatsPeriod.WEEK.value),
@@ -107,10 +108,42 @@ async def bulk_compute_stats(
     }
 
 
+async def compute_daily_history(guild_id: int, member_id: int, start: date, end: date) -> list[tuple[date, int, float]]:
+    """Return `(day, messages, voice_minutes)` for each day in `[start, end]` (inclusive).
+
+    Used by the dashboard API for per-day history charts, where `compute_stats_range`'s single
+    aggregate total isn't granular enough.
+    """
+    range_start = datetime.combine(start, time.min, tzinfo=EUROPE_PARIS)
+    range_end = datetime.combine(end, time.max, tzinfo=EUROPE_PARIS)
+
+    messages_by_day: dict[date, int] = defaultdict(int)
+    message_dates = await StaffMessageEvent.filter(
+        guild_id=guild_id, member_id=member_id, created_at__gte=range_start, created_at__lte=range_end
+    ).values_list("created_at", flat=True)
+    for created_at in message_dates:
+        messages_by_day[created_at.astimezone(EUROPE_PARIS).date()] += 1
+
+    segments = await StaffVoiceSegment.filter(
+        guild_id=guild_id, member_id=member_id, started_at__lte=range_end
+    ).filter(Q(ended_at__isnull=True) | Q(ended_at__gte=range_start))
+
+    days = [start + timedelta(days=i) for i in range((end - start).days + 1)]
+    voice_by_day: dict[date, float] = defaultdict(float)
+    for day in days:
+        day_start = datetime.combine(day, time.min, tzinfo=EUROPE_PARIS)
+        day_end = datetime.combine(day, time.max, tzinfo=EUROPE_PARIS)
+        for segment in segments:
+            voice_by_day[day] += overlapping_minutes(segment.started_at, segment.ended_at, day_start, day_end)
+
+    return [(day, messages_by_day.get(day, 0), voice_by_day.get(day, 0.0)) for day in days]
+
+
 __all__ = (
     "PERIOD_CHOICES",
     "PERIOD_LABELS",
     "bulk_compute_stats",
+    "compute_daily_history",
     "compute_stats",
     "compute_stats_range",
     "get_or_create_settings",
