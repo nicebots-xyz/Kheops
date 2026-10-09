@@ -3,211 +3,221 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime, timedelta
+import asyncio
+from dataclasses import asdict, dataclass, replace
 from typing import TYPE_CHECKING, final
+from uuid import UUID, uuid4
 
 import discord
 from discord.ext import tasks
+from tortoise.transactions import in_transaction
 
-from src.database.models import StaffMessageEvent, StaffRoleQuota, StaffStatsSettings, StaffVoiceSegment
+from src.database.models import StaffMessageEvent, StaffRoleQuota, StaffStatsSettings, StaffVoiceSession
 from src.log import logger as base_logger
 
-from .logic import is_valid_voice_state
+from .logic import counting_channel_id
 
 if TYPE_CHECKING:
+    from collections.abc import Iterable
+    from datetime import datetime
+
     from src import custom
 
 logger = base_logger.getChild("stats_staff")
 
-CHECKPOINT_INTERVAL = timedelta(minutes=1)
+
+# Field names match StaffVoiceSession / StaffMessageEvent, so rows are built with asdict().
+@dataclass(slots=True)
+class Session:
+    id: UUID
+    guild_id: int
+    member_id: int
+    channel_id: int
+    started_at: datetime
+    ended_at: datetime | None = None
+
+
+@dataclass(slots=True, frozen=True)
+class PendingMessage:
+    guild_id: int
+    member_id: int
+    channel_id: int
+    created_at: datetime
+
+
+class VoiceTracker:
+    """Voice sessions and messages kept in memory until the next flush writes them.
+
+    Every method is synchronous on purpose: asyncio only switches tasks at an `await`, so each call
+    runs as one uninterrupted step and needs no lock.
+    """
+
+    def __init__(self) -> None:
+        self.open: dict[tuple[int, int], Session] = {}
+        self.closed: list[Session] = []
+        self.messages: list[PendingMessage] = []
+
+    def sync(self, guild_id: int, member_id: int, channel_id: int | None, now: datetime) -> None:
+        """Record where a member is counting right now.
+
+        Nothing changes while the member keeps counting in the same channel. Any change closes the
+        open session, and a new one starts if the member is still counting.
+
+        Args:
+            guild_id: The guild.
+            member_id: The member.
+            channel_id: The channel the member counts in right now, or None if not counting.
+            now: The current time.
+
+        """
+        key = (guild_id, member_id)
+        current = self.open.get(key)
+        if current is not None and current.channel_id == channel_id:
+            return
+        if current is not None:
+            current.ended_at = now
+            self.closed.append(self.open.pop(key))
+        if channel_id is not None:
+            self.open[key] = Session(uuid4(), guild_id, member_id, channel_id, now)
+
+    def take(self, now: datetime) -> tuple[list[Session], list[Session], list[PendingMessage]]:
+        """Hand over everything to write and forget what is finished.
+
+        Args:
+            now: The time open sessions are written up to.
+
+        Returns:
+            The finished sessions, copies of the open sessions ending at `now`, and the messages.
+
+        """
+        finished, messages = self.closed, self.messages
+        self.closed, self.messages = [], []
+        return finished, [replace(session, ended_at=now) for session in self.open.values()], messages
+
+    def restore(self, finished: list[Session], messages: list[PendingMessage]) -> None:
+        """Put back what a failed write did not save. Open sessions are simply rewritten next time."""
+        self.closed[:0] = finished
+        self.messages[:0] = messages
+
+
+@dataclass(slots=True, frozen=True)
+class TrackingConfig:
+    message_channel_ids: frozenset[int]
+    voice_channel_ids: frozenset[int]
+    quota_role_ids: frozenset[int]
 
 
 @final
 class TrackingCog(discord.Cog):
     def __init__(self, bot: custom.Bot) -> None:
         self.bot: custom.Bot = bot
-        self.open_segments: dict[tuple[int, int], StaffVoiceSegment] = {}
-        self.checkpoint_loop: tasks.Loop = tasks.loop(minutes=1)(self.checkpoint_loop_meth)  # pyright: ignore [reportMissingTypeArgument]
+        self.tracker: VoiceTracker = VoiceTracker()
+        self.configs: dict[int, TrackingConfig] = {}
+        self.flush_lock: asyncio.Lock = asyncio.Lock()
 
     @discord.Cog.listener("on_ready", once=True)
     async def on_ready(self) -> None:
-        logger.info("Stats staff tracking cog ready, reconciling voice segments")
-        await self._reconcile_voice_segments()
-        self.checkpoint_loop.start()
+        self.flush_loop.start()
 
-    def _is_member_valid_now(
-        self, member: discord.Member, quota_role_ids: set[int], tracked_channel_ids: list[int]
-    ) -> bool:
-        if member.bot or not any(role.id in quota_role_ids for role in member.roles):
-            return False
-        voice_state = member.voice
-        if voice_state is None or voice_state.channel is None:
-            return False
-        if voice_state.channel.id not in tracked_channel_ids:
-            return False
-        other_humans = sum(1 for m in voice_state.channel.members if not m.bot and m.id != member.id)
-        return is_valid_voice_state(voice_state, other_humans=other_humans)
+    @tasks.loop(minutes=2)
+    async def flush_loop(self) -> None:
+        try:
+            guild_ids = {settings.guild_id for settings in await StaffStatsSettings.all()}
+            for guild_id in guild_ids | {guild_id for guild_id, _ in self.tracker.open}:
+                await self.reload_config(guild_id)
+        except Exception:
+            logger.exception("Failed to reload staff stats config")
+        await self.flush()
 
-    async def _recompute_validity(
-        self, member: discord.Member, quota_role_ids: set[int], tracked_channel_ids: list[int]
-    ) -> None:
-        valid = self._is_member_valid_now(member, quota_role_ids, tracked_channel_ids)
-        key = (member.guild.id, member.id)
-        open_segment = self.open_segments.get(key)
-        now = datetime.now(tz=UTC)
-        if valid and open_segment is None:
-            assert member.voice is not None
-            assert member.voice.channel is not None
-            segment = await StaffVoiceSegment.create(
-                guild_id=member.guild.id, member_id=member.id, channel_id=member.voice.channel.id, started_at=now
+    async def reload_config(self, guild_id: int) -> None:
+        """Reload a guild's tracked channels and quota roles, then re-check its members."""
+        settings = await StaffStatsSettings.get_or_none(guild_id=guild_id)
+        if settings is None:
+            self.configs.pop(guild_id, None)
+        else:
+            role_ids = {quota.role_id for quota in await StaffRoleQuota.filter(guild_id=guild_id)}
+            self.configs[guild_id] = TrackingConfig(
+                frozenset(settings.message_channel_ids), frozenset(settings.voice_channel_ids), frozenset(role_ids)
             )
-            self.open_segments[key] = segment
-        elif not valid and open_segment is not None:
-            open_segment.ended_at = now
-            await open_segment.save()
-            del self.open_segments[key]
+        self._sync_guild(guild_id)
 
-    async def checkpoint_loop_meth(self) -> None:
-        """Roll every still-valid open voice segment over into a fresh one, closing invalid ones.
-
-        Bounds how much voice time a crash or hard restart can over-credit (the reconciliation
-        on the next startup closes whatever is still open, at its last checkpoint) to at most one
-        checkpoint interval, instead of the full downtime. Also re-validates each segment against
-        current settings/quotas/roles on every tick, so a quota role or tracked channel removed
-        mid-session (and a member leaving the server) stops being credited within one interval,
-        rather than silently forever.
-        """
-        now = datetime.now(tz=UTC)
-        settings_cache: dict[int, StaffStatsSettings | None] = {}
-        quota_role_ids_cache: dict[int, set[int]] = {}
-
-        for key, segment in list(self.open_segments.items()):
-            guild_id, member_id = key
+    async def flush(self) -> None:
+        """Write pending sessions and messages. Readers flush first; a failed write is retried next time."""
+        # The only lock: two flushes running at once could finish out of order and move a session's
+        # `ended_at` backwards.
+        async with self.flush_lock:
+            finished, ongoing, messages = self.tracker.take(discord.utils.utcnow())
             try:
-                await self._checkpoint_one_segment(key, segment, now, settings_cache, quota_role_ids_cache)
+                async with in_transaction(StaffVoiceSession._meta.default_connection) as connection:  # noqa: SLF001
+                    await StaffVoiceSession.bulk_create(
+                        [StaffVoiceSession(**asdict(session)) for session in (*finished, *ongoing)],
+                        on_conflict=["id"],
+                        update_fields=["ended_at"],
+                        using_db=connection,
+                    )
+                    await StaffMessageEvent.bulk_create(
+                        [StaffMessageEvent(**asdict(message)) for message in messages], using_db=connection
+                    )
             except Exception:
-                logger.exception(f"Failed to checkpoint voice segment for member {member_id} in guild {guild_id}")
+                self.tracker.restore(finished, messages)
+                logger.exception("Failed to write staff stats, will retry on the next flush")
 
-    async def _checkpoint_one_segment(
-        self,
-        key: tuple[int, int],
-        segment: StaffVoiceSegment,
-        now: datetime,
-        settings_cache: dict[int, StaffStatsSettings | None],
-        quota_role_ids_cache: dict[int, set[int]],
-    ) -> None:
-        guild_id, member_id = key
-        still_valid = await self._revalidate_open_segment(guild_id, member_id, settings_cache, quota_role_ids_cache)
+    def _want(self, member: discord.Member | None) -> int | None:
+        config = self.configs.get(member.guild.id) if member is not None else None
+        if member is None or config is None:
+            return None
+        return counting_channel_id(member, config.voice_channel_ids, config.quota_role_ids)
 
-        if self.open_segments.get(key) is not segment:
-            return  # closed or replaced concurrently while we were checking
+    def _sync(self, members: Iterable[discord.Member]) -> None:
+        now = discord.utils.utcnow()
+        for member in members:
+            self.tracker.sync(member.guild.id, member.id, self._want(member), now)
 
-        segment.ended_at = now
-        await segment.save()
-
-        if not still_valid:
-            if self.open_segments.get(key) is segment:
-                del self.open_segments[key]
-            return
-
-        if self.open_segments.get(key) is not segment:
-            return  # closed concurrently between the save above and here
-
-        new_segment = await StaffVoiceSegment.create(
-            guild_id=guild_id, member_id=member_id, channel_id=segment.channel_id, started_at=now
-        )
-        if self.open_segments.get(key) is not segment:
-            await new_segment.delete()
-            return
-        self.open_segments[key] = new_segment
-
-    async def _revalidate_open_segment(
-        self,
-        guild_id: int,
-        member_id: int,
-        settings_cache: dict[int, StaffStatsSettings | None],
-        quota_role_ids_cache: dict[int, set[int]],
-    ) -> bool:
+    def _sync_guild(self, guild_id: int) -> None:
+        """Re-check everyone in the guild's tracked channels, and everyone with an open session."""
+        now = discord.utils.utcnow()
         guild = self.bot.get_guild(guild_id)
-        if guild is None:
-            return False
-        member = guild.get_member(member_id)
-        if member is None:
-            return False
-        if guild_id not in settings_cache:
-            settings_cache[guild_id] = await StaffStatsSettings.get_or_none(guild_id=guild_id)
-        settings = settings_cache[guild_id]
-        if settings is None or not settings.voice_channel_ids:
-            return False
-        if guild_id not in quota_role_ids_cache:
-            quota_role_ids_cache[guild_id] = {q.role_id for q in await StaffRoleQuota.filter(guild_id=guild_id)}
-        return self._is_member_valid_now(member, quota_role_ids_cache[guild_id], settings.voice_channel_ids)
-
-    async def _reconcile_voice_segments(self) -> None:
-        now = datetime.now(tz=UTC)
-        stale = await StaffVoiceSegment.filter(ended_at__isnull=True)
-        for segment in stale:
-            # Bounded to the last checkpoint instead of `now`: a segment left open across a crash
-            # or hard restart was last known-valid at most one checkpoint interval before it was
-            # orphaned, so closing it at the restart time instead would over-credit the entire
-            # downtime.
-            segment.ended_at = min(now, segment.started_at + CHECKPOINT_INTERVAL)
-            await segment.save()
-
-        all_settings = await StaffStatsSettings.all()
-        for settings in all_settings:
-            if not settings.voice_channel_ids:
-                continue
-            guild = self.bot.get_guild(settings.guild_id)
-            if guild is None:
-                continue
-            quota_role_ids = {q.role_id for q in await StaffRoleQuota.filter(guild_id=guild.id)}
-            for channel_id in settings.voice_channel_ids:
+        config = self.configs.get(guild_id)
+        member_ids = {member_id for g, member_id in self.tracker.open if g == guild_id}
+        if guild is not None and config is not None:
+            for channel_id in config.voice_channel_ids:
                 channel = guild.get_channel(channel_id)
-                if not isinstance(channel, discord.VoiceChannel):
-                    continue
-                for member in channel.members:
-                    await self._recompute_validity(member, quota_role_ids, settings.voice_channel_ids)
+                if isinstance(channel, discord.VoiceChannel):
+                    member_ids.update(member.id for member in channel.members)
+        for member_id in member_ids:
+            member = guild.get_member(member_id) if guild is not None else None
+            self.tracker.sync(guild_id, member_id, self._want(member), now)
 
     @discord.Cog.listener("on_voice_state_update")
     async def on_voice_state_update(
         self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState
     ) -> None:
-        if member.bot:
-            return
-        settings = await StaffStatsSettings.get_or_none(guild_id=member.guild.id)
-        if settings is None or not settings.voice_channel_ids:
-            return
-        quota_role_ids = {q.role_id for q in await StaffRoleQuota.filter(guild_id=member.guild.id)}
-        if not quota_role_ids:
-            return
-
-        # A join/leave/mute toggle can flip whether *other* members in the channel count as
-        # "alone", so every current member of an affected channel needs re-checking — not just
-        # the member who triggered the event (who is included here too, so leaving voice entirely
-        # closes their own segment the same way, without a separate special case).
-        affected_members: dict[int, discord.Member] = {member.id: member}
+        # py-cord updates its cache before running listeners, so the cache may already be newer than
+        # `after`. Re-check the current state of everyone affected instead of comparing before/after:
+        # one join, leave or mute can also change whether someone else in the channel is alone.
+        affected = {member.id: member}
         for state in (before, after):
-            if state.channel is not None and state.channel.id in settings.voice_channel_ids:
-                for other in state.channel.members:
-                    affected_members[other.id] = other
+            if state.channel is not None:
+                affected.update((other.id, other) for other in state.channel.members)
+        self._sync(affected.values())
 
-        for affected in affected_members.values():
-            await self._recompute_validity(affected, quota_role_ids, settings.voice_channel_ids)
+    @discord.Cog.listener("on_member_update")
+    async def on_member_update(self, before: discord.Member, after: discord.Member) -> None:
+        if before.roles != after.roles:
+            self._sync([after])
 
     @discord.Cog.listener("on_message")
     async def on_message(self, message: discord.Message) -> None:
-        if message.author.bot or message.guild is None or not isinstance(message.author, discord.Member):
+        author = message.author
+        if message.guild is None or author.bot or not isinstance(author, discord.Member):
             return
-        settings = await StaffStatsSettings.get_or_none(guild_id=message.guild.id)
-        if settings is None or message.channel.id not in settings.message_channel_ids:
+        config = self.configs.get(message.guild.id)
+        if config is None or message.channel.id not in config.message_channel_ids:
             return
-        quota_role_ids = {q.role_id for q in await StaffRoleQuota.filter(guild_id=message.guild.id)}
-        if not any(role.id in quota_role_ids for role in message.author.roles):
-            return
-        await StaffMessageEvent.create(
-            guild_id=message.guild.id, member_id=message.author.id, channel_id=message.channel.id
-        )
+        if any(role.id in config.quota_role_ids for role in author.roles):
+            self.tracker.messages.append(
+                PendingMessage(message.guild.id, author.id, message.channel.id, message.created_at)
+            )
 
 
-__all__ = ("TrackingCog",)
+__all__ = ("PendingMessage", "Session", "TrackingCog", "VoiceTracker")

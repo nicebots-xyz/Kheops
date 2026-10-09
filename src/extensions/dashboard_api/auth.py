@@ -15,6 +15,7 @@ from __future__ import annotations
 import hashlib
 import hmac
 from functools import lru_cache
+from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
@@ -32,7 +33,7 @@ def _load_config() -> DashboardApiConfig:
     return DashboardApiConfig.model_validate(raw)
 
 
-def require_api_key(credentials: HTTPAuthorizationCredentials | None = Depends(_bearer_scheme)) -> None:
+def require_api_key(credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer_scheme)]) -> None:
     """Raise unless `credentials` carries a key matching a configured hash.
 
     503 means the dashboard API has no key configured yet (nothing *can* authenticate); 401 means

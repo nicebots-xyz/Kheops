@@ -3,8 +3,6 @@
 
 """Pydantic request/response models for the stats_staff dashboard API routes."""
 
-from __future__ import annotations
-
 from datetime import date
 from uuid import UUID
 

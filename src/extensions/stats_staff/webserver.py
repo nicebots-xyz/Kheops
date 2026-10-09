@@ -13,11 +13,11 @@ the router-level dependency below.
 from __future__ import annotations
 
 from datetime import date, datetime
+from typing import TYPE_CHECKING
 
-import discord
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 
-from src.database.models import StaffRoleQuota
+from src.database.models import Guild, StaffRoleQuota
 from src.extensions.dashboard_api.auth import require_api_key
 
 from .logic import EUROPE_PARIS, StatsPeriod, period_start
@@ -28,9 +28,30 @@ from .schemas import (
     QuotaResponse,
     QuotaUpsertRequest,
 )
-from .stats import compute_daily_history, compute_stats_range
+from .stats import get_daily_history, get_stats
+from .tracking import TrackingCog
+
+if TYPE_CHECKING:
+    import discord
 
 MAX_HISTORY_DAYS = 366
+
+
+def _tracking(bot: discord.Bot) -> TrackingCog | None:
+    cog = bot.get_cog(TrackingCog.__name__)
+    return cog if isinstance(cog, TrackingCog) else None
+
+
+async def _flush(bot: discord.Bot) -> None:
+    """Write the last ~2 minutes of activity still held in memory, so reads are up to date."""
+    if (cog := _tracking(bot)) is not None:
+        await cog.flush()
+
+
+async def _quotas_changed(bot: discord.Bot, guild_id: int) -> None:
+    """Let voice/message tracking pick up a quota change right away."""
+    if (cog := _tracking(bot)) is not None:
+        await cog.reload_config(guild_id)
 
 
 def setup_webserver(app: FastAPI, bot: discord.Bot) -> None:
@@ -40,9 +61,10 @@ def setup_webserver(app: FastAPI, bot: discord.Bot) -> None:
     async def get_member_stats(
         guild_id: int, member_id: int, period: StatsPeriod = StatsPeriod.WEEK
     ) -> MemberStatsResponse:
+        await _flush(bot)
         now = datetime.now(tz=EUROPE_PARIS)
-        start = period_start(period, now)
-        messages, voice_minutes = await compute_stats_range(guild_id, member_id, start, now)
+        stats = await get_stats(guild_id, period_start(period, now), now)
+        messages, voice_minutes = stats.get(member_id, (0, 0.0))
         return MemberStatsResponse(member_id=member_id, period=period, messages=messages, voice_minutes=voice_minutes)
 
     @router.get("/guilds/{guild_id}/members/{member_id}/history", response_model=MemberHistoryResponse)
@@ -51,7 +73,8 @@ def setup_webserver(app: FastAPI, bot: discord.Bot) -> None:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "end must not be before start")
         if (end - start).days + 1 > MAX_HISTORY_DAYS:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, f"range too wide (max {MAX_HISTORY_DAYS} days)")
-        days = await compute_daily_history(guild_id, member_id, start, end)
+        await _flush(bot)
+        days = await get_daily_history(guild_id, member_id, start, end)
         return MemberHistoryResponse(
             member_id=member_id,
             start=start,
@@ -72,6 +95,7 @@ def setup_webserver(app: FastAPI, bot: discord.Bot) -> None:
         guild = bot.get_guild(guild_id)
         if guild is None or guild.get_role(role_id) is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Role not found in this guild")
+        await Guild.get_or_create(id=guild_id)  # quotas reference the guild row
         quota, _ = await StaffRoleQuota.update_or_create(
             guild_id=guild_id,
             role_id=role_id,
@@ -81,6 +105,7 @@ def setup_webserver(app: FastAPI, bot: discord.Bot) -> None:
                 "mode": payload.mode,
             },
         )
+        await _quotas_changed(bot, guild_id)
         return QuotaResponse.model_validate(quota, from_attributes=True)
 
     @router.delete("/guilds/{guild_id}/quotas/{role_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -88,6 +113,7 @@ def setup_webserver(app: FastAPI, bot: discord.Bot) -> None:
         deleted = await StaffRoleQuota.filter(guild_id=guild_id, role_id=role_id).delete()
         if not deleted:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Quota not found")
+        await _quotas_changed(bot, guild_id)
 
     app.include_router(router)
 

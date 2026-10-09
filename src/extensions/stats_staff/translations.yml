@@ -67,5 +67,167 @@ commands:
           en-US: "preview-report"
           fr: "apercu-rapport"
         description:
-          en-US: "Preview what the weekly report would currently look like, without waiting for Sunday"
-          fr: "Voir à quoi ressemblerait le rapport hebdomadaire maintenant, sans attendre dimanche"
+          en-US: "Preview what the weekly report would currently look like, without waiting for Monday"
+          fr: "Voir à quoi ressemblerait le rapport hebdomadaire maintenant, sans attendre lundi"
+
+strings:
+  # Commands
+  no_quota_self:
+    en-US: "You don't have a role with a configured quota."
+    fr: "Tu n'as pas de rôle avec un quota configuré."
+  no_permission_view:
+    en-US: "You don't have permission to view another member's statistics."
+    fr: "Tu n'as pas la permission de voir les statistiques d'un autre membre."
+
+  # Shared
+  quota_requirement:
+    en-US: "{hours}h voice **{mode}** {messages} messages"
+    fr: "{hours}h vocal **{mode}** {messages} messages"
+  vs_last_week:
+    en-US: "{trend} vs last week"
+    fr: "{trend} vs semaine dernière"
+
+  # Stats card
+  card_activity:
+    en-US: "📈 Activity"
+    fr: "📈 Activité"
+  card_activity_value:
+    en-US: "**{messages}** messages · **{hours}h** of voice"
+    fr: "**{messages}** messages · **{hours}h** de vocal"
+  card_quota:
+    en-US: "🎯 Quota"
+    fr: "🎯 Quota"
+  card_quota_mode:
+    en-US: "🎯 Quota ({mode})"
+    fr: "🎯 Quota ({mode})"
+  card_no_quota:
+    en-US: "-# This member has no role with a configured quota."
+    fr: "-# Ce membre n'a pas de rôle avec quota configuré."
+  card_passed:
+    en-US: "✅ **Quota met**"
+    fr: "✅ **Quota atteint**"
+  card_failed:
+    en-US: "❌ **Quota not met**"
+    fr: "❌ **Quota non atteint**"
+  card_trend:
+    en-US: "📊 Trend"
+    fr: "📊 Tendance"
+
+  # Weekly report
+  report_header:
+    en-US: "## 📊 Weekly staff quota report\n-# Week of {date} — {passed}/{total} quota(s) met"
+    fr: "## 📊 Rapport hebdomadaire des quotas staff\n-# Semaine du {date} — {passed}/{total} quota(s) atteint(s)"
+  report_alert:
+    en-US: "## 🚨 {role} — no activity this week\n{count} member(s) sent no message and spent no time in voice this week:\n{members}"
+    fr: "## 🚨 {role} — aucune activité cette semaine\n{count} membre(s) n'ont fait ni message ni vocal cette semaine :\n{members}"
+  report_quota:
+    en-US: "-# Quota: {hours}h voice **{mode}** {messages} messages"
+    fr: "-# Quota : {hours}h vocal **{mode}** {messages} messages"
+  report_member_line:
+    en-US: "{emoji} **{name}** — {hours}h voice · {messages} messages\n-# {bar} · {trend}"
+    fr: "{emoji} **{name}** — {hours}h vocal · {messages} messages\n-# {bar} · {trend}"
+  report_no_members:
+    en-US: "-# No members."
+    fr: "-# Aucun membre."
+
+  # Config panel
+  config_summary:
+    en-US: "## Staff stats configuration\n- Responsible role: {responsible}\n- Weekly report channel: {report_channel}\n- Tracked channels (messages): {message_channels}\n- Tracked channels (voice): {voice_channels}\n- Roles with a quota: {quotas}\n- Substitution penalty (ET): {penalty}%"
+    fr: "## Configuration des stats staff\n- Rôle responsable : {responsible}\n- Salon de rapport hebdo : {report_channel}\n- Salons suivis (messages) : {message_channels}\n- Salons suivis (vocal) : {voice_channels}\n- Rôles avec quota configuré : {quotas}\n- Pénalité de substitution (ET) : {penalty}%"
+  not_set:
+    en-US: "not set"
+    fr: "non défini"
+  none:
+    en-US: "none"
+    fr: "aucun"
+  placeholder_responsible_role_id:
+    en-US: "Change the responsible role…"
+    fr: "Changer le rôle responsable…"
+  placeholder_report_channel_id:
+    en-US: "Change the weekly report channel…"
+    fr: "Changer le salon de rapport hebdo…"
+  placeholder_message_channel_ids:
+    en-US: "Change the tracked channels (messages)…"
+    fr: "Changer les salons suivis (messages)…"
+  placeholder_voice_channel_ids:
+    en-US: "Change the tracked channels (voice)…"
+    fr: "Changer les salons suivis (vocal)…"
+  open_quotas:
+    en-US: "Manage quotas per role"
+    fr: "Gérer les quotas par rôle"
+  edit_penalty:
+    en-US: "Substitution penalty (ET)"
+    fr: "Pénalité de substitution (ET)"
+  back:
+    en-US: "Back"
+    fr: "Retour"
+  invalid_number:
+    en-US: "Values must be positive numbers."
+    fr: "Les valeurs doivent être des nombres positifs."
+
+  # Quotas panel
+  quotas_title:
+    en-US: "## Quotas per role"
+    fr: "## Quotas par rôle"
+  quota_line:
+    en-US: "- {role}: {hours}h voice **{mode}** {messages} messages / week"
+    fr: "- {role} : {hours}h vocal **{mode}** {messages} messages / semaine"
+  no_quotas:
+    en-US: "- No quota configured yet."
+    fr: "- Aucun quota configuré pour le moment."
+  edit_quota_placeholder:
+    en-US: "Add or edit a role's quota…"
+    fr: "Ajouter ou modifier un quota pour un rôle…"
+  remove_quota_placeholder:
+    en-US: "Remove a role's quota…"
+    fr: "Retirer le quota d'un rôle…"
+  open_assign:
+    en-US: "Assign members with several roles"
+    fr: "Assigner les membres à rôles multiples"
+  quota_modal_title:
+    en-US: "Quota for {role}"
+    fr: "Quota pour {role}"
+  quota_modal_hours:
+    en-US: "Required voice hours / week"
+    fr: "Heures de vocal requises / semaine"
+  quota_modal_messages:
+    en-US: "Required messages / week"
+    fr: "Messages requis / semaine"
+  quota_modal_mode:
+    en-US: "Condition"
+    fr: "Condition"
+  mode_any:
+    en-US: "OU (voice OR messages)"
+    fr: "OU (vocal OU messages)"
+  mode_all:
+    en-US: "ET (voice AND messages)"
+    fr: "ET (vocal ET messages)"
+  penalty_modal_title:
+    en-US: "Substitution penalty (ET)"
+    fr: "Pénalité de substitution (ET)"
+  penalty_modal_label:
+    en-US: "Substitution extra cost (%)"
+    fr: "Surcoût (%) de substitution"
+  penalty_modal_description:
+    en-US: "E.g. 125 means skipping one side requires 125% more on the other."
+    fr: "Ex: 125 veut dire que sauter un critère demande 125% de plus sur l'autre."
+
+  # Member assignment panel
+  assign_title:
+    en-US: "## Members with several quota roles"
+    fr: "## Membres avec plusieurs rôles quota"
+  to_assign:
+    en-US: "⚠️ to assign"
+    fr: "⚠️ à assigner"
+  no_ambiguous_members:
+    en-US: "- No member currently has several roles with a quota."
+    fr: "- Aucun membre n'a actuellement plusieurs rôles avec quota configuré."
+  assign_member_placeholder:
+    en-US: "Pick the member to assign…"
+    fr: "Choisir le membre à assigner…"
+  assign_role_placeholder:
+    en-US: "Pick their quota role…"
+    fr: "Choisir son rôle quota…"
+  role_without_quota:
+    en-US: "This role has no quota — pick a role that has one."
+    fr: "Ce rôle n'a pas de quota configuré — choisis un rôle qui a un quota."
