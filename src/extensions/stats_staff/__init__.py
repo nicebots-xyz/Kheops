@@ -7,6 +7,7 @@ from src import custom
 from .commands import CommandsCog
 from .report import ReportCog
 from .tracking import TrackingCog
+from .webserver import setup_webserver
 
 default = {"enabled": False}
 
@@ -20,3 +21,6 @@ def setup(bot: custom.Bot, config: dict[str, Any]) -> None:  # pyright: ignore[r
     bot.add_cog(tracking)
     bot.add_cog(ReportCog(bot, tracking, strings))
     bot.add_cog(CommandsCog(bot, tracking, strings))
+
+
+__all__ = ("default", "setup", "setup_webserver")

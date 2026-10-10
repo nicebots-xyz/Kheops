@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from datetime import UTC, datetime
+from datetime import UTC, date, datetime
 from typing import TYPE_CHECKING
 
 import discord
@@ -33,6 +33,27 @@ SELECT member_id, SUM(EXTRACT(EPOCH FROM LEAST(ended_at, $3) - GREATEST(started_
 FROM staffvoicesession
 WHERE guild_id = $1 AND started_at < $3 AND ended_at > $2
 GROUP BY member_id
+"""
+
+# One row per Europe/Paris day in [$3, $4]; sessions and messages are cut at the day boundaries.
+DAILY_HISTORY_SQL = """
+WITH days AS (
+    SELECT d::date AS day,
+           d::date::timestamp AT TIME ZONE 'Europe/Paris' AS day_start,
+           (d::date + 1)::timestamp AT TIME ZONE 'Europe/Paris' AS day_end
+    FROM generate_series($3::date, $4::date, interval '1 day') AS d
+)
+SELECT days.day,
+       (SELECT COUNT(*) FROM staffmessageevent m
+        WHERE m.guild_id = $1 AND m.member_id = $2
+          AND m.created_at >= days.day_start AND m.created_at < days.day_end) AS messages,
+       (SELECT COALESCE(SUM(EXTRACT(EPOCH FROM
+                    LEAST(s.ended_at, days.day_end) - GREATEST(s.started_at, days.day_start))), 0)
+        FROM staffvoicesession s
+        WHERE s.guild_id = $1 AND s.member_id = $2
+          AND s.started_at < days.day_end AND s.ended_at > days.day_start) AS seconds
+FROM days
+ORDER BY days.day
 """
 
 
@@ -68,4 +89,21 @@ async def get_stats(guild_id: int, start: datetime | None, end: datetime) -> dic
     return {member_id: (messages.get(member_id, 0), voice.get(member_id, 0.0)) for member_id in messages | voice}
 
 
-__all__ = ("PERIOD_CHOICES", "PERIOD_LABELS", "get_or_create_settings", "get_stats")
+async def get_daily_history(guild_id: int, member_id: int, start: date, end: date) -> list[tuple[date, int, float]]:
+    """Count a member's messages and voice minutes for each day (Europe/Paris) from `start` to `end`.
+
+    Args:
+        guild_id: The guild.
+        member_id: The member.
+        start: The first day.
+        end: The last day (included).
+
+    Returns:
+        `(day, messages, voice_minutes)` for every day of the range, in order.
+
+    """
+    rows = await StaffVoiceSession._meta.db.execute_query_dict(DAILY_HISTORY_SQL, [guild_id, member_id, start, end])  # noqa: SLF001
+    return [(row["day"], int(row["messages"]), float(row["seconds"]) / 60) for row in rows]
+
+
+__all__ = ("PERIOD_CHOICES", "PERIOD_LABELS", "get_daily_history", "get_or_create_settings", "get_stats")

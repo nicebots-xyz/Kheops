@@ -47,6 +47,25 @@ Noms par défaut en anglais, traduits en français via `translations.yml`.
 
 Tous les textes affichés sont dans `translations.yml` (section `strings`).
 
+## API (panel admin)
+
+Routes HTTP sous `/stats_staff/v1`, protégées par la clé API de l'extension `dashboard_api` (voir son
+readme). Elles ne sont jamais appelées par un navigateur, seulement par le back-end du site. Toutes prennent
+un `guild_id` dans le chemin :
+
+- `GET /guilds/{guild_id}/members/{member_id}/stats?period=week|month|last_3_months|last_6_months|all_time` :
+  totaux messages/vocal sur la période.
+- `GET /guilds/{guild_id}/members/{member_id}/history?start=YYYY-MM-DD&end=YYYY-MM-DD` : messages et minutes de
+  vocal jour par jour (jours Europe/Paris), 366 jours maximum par requête, en une seule requête SQL.
+- `GET /guilds/{guild_id}/quotas` : quotas par rôle.
+- `PUT /guilds/{guild_id}/quotas/{role_id}` : crée ou met à jour le quota d'un rôle (404 si le rôle n'existe
+  pas dans la guilde).
+- `DELETE /guilds/{guild_id}/quotas/{role_id}` : supprime le quota d'un rôle.
+
+Les lectures font un flush avant de répondre (données à jour à la seconde près), et les écritures de quotas
+préviennent le suivi tout de suite. Aucune route ne reflète les permissions Discord : l'autorisation se fait
+uniquement par la clé API, détenue par le back-end du site.
+
 ## Comment le vocal est compté
 
 ### L'idée : des « sessions »
