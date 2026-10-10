@@ -14,23 +14,27 @@ from __future__ import annotations
 
 import hashlib
 import hmac
-from functools import lru_cache
-from typing import Annotated
+from typing import TYPE_CHECKING, Annotated
 
 from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from src.config import config
-
 from .config import DashboardApiConfig
+
+if TYPE_CHECKING:
+    from src.startup.types import ExtensionConfig
 
 _bearer_scheme = HTTPBearer(auto_error=False)
 
+# Set once from `setup_webserver`, which receives the extension's config dict. Kept at module level
+# so `require_api_key` can be used as a bare FastAPI dependency by any extension's routes.
+_dashboard_config = DashboardApiConfig()
 
-@lru_cache(maxsize=1)
-def _load_config() -> DashboardApiConfig:
-    _, raw = config.get_extension("dashboard_api", {"enabled": False})
-    return DashboardApiConfig.model_validate(raw)
+
+def configure(raw: ExtensionConfig) -> None:
+    """Store the validated dashboard config. Called once from this extension's `setup_webserver`."""
+    global _dashboard_config  # noqa: PLW0603
+    _dashboard_config = DashboardApiConfig.model_validate(raw)
 
 
 def require_api_key(credentials: Annotated[HTTPAuthorizationCredentials | None, Depends(_bearer_scheme)]) -> None:
@@ -39,7 +43,7 @@ def require_api_key(credentials: Annotated[HTTPAuthorizationCredentials | None, 
     503 means the dashboard API has no key configured yet (nothing *can* authenticate); 401 means
     a key was expected but is missing or wrong.
     """
-    dashboard_config = _load_config()
+    dashboard_config = _dashboard_config
     if not dashboard_config.api_key_hashes:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Dashboard API has no key configured")
     if credentials is None:

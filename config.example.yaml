@@ -8,10 +8,6 @@ extensions:
     token: "top.gg token here" # https://docs.top.gg/docs/API/@reference/#authentication
   ping:
     enabled: true
-  dashboard_api: # Shared bearer-token auth for any extension exposing routes to an admin dashboard. See its readme.
-    enabled: false
-    api_key_hashes: # SHA-256 hex hash(es) of the API key(s) the dashboard backend authenticates with. Never the raw key.
-      - "sha256 hash here"
   branding:
     enabled: true
     embed:
