@@ -10,12 +10,12 @@ from uuid import UUID, uuid4
 
 import discord
 from discord.ext import tasks
-from tortoise.transactions import in_transaction
 
 from src.database.models import StaffMessageEvent, StaffRoleQuota, StaffStatsSettings, StaffVoiceSession
+from src.database.utils.atomics import in_transaction
 from src.log import logger as base_logger
 
-from .logic import counting_channel_id
+from .logic import counting_channel_id, is_tracked_channel
 
 if TYPE_CHECKING:
     from collections.abc import Iterable
@@ -104,6 +104,7 @@ class VoiceTracker:
 class TrackingConfig:
     message_channel_ids: frozenset[int]
     voice_channel_ids: frozenset[int]
+    category_ids: frozenset[int]
     quota_role_ids: frozenset[int]
 
 
@@ -137,7 +138,10 @@ class TrackingCog(discord.Cog):
         else:
             role_ids = {quota.role_id for quota in await StaffRoleQuota.filter(guild_id=guild_id)}
             self.configs[guild_id] = TrackingConfig(
-                frozenset(settings.message_channel_ids), frozenset(settings.voice_channel_ids), frozenset(role_ids)
+                frozenset(settings.message_channel_ids),
+                frozenset(settings.voice_channel_ids),
+                frozenset(settings.tracked_category_ids),
+                frozenset(role_ids),
             )
         self._sync_guild(guild_id)
 
@@ -148,7 +152,7 @@ class TrackingCog(discord.Cog):
         async with self.flush_lock:
             finished, ongoing, messages = self.tracker.take(discord.utils.utcnow())
             try:
-                async with in_transaction(StaffVoiceSession._meta.default_connection) as connection:  # noqa: SLF001
+                async with in_transaction() as connection:
                     await StaffVoiceSession.bulk_create(
                         [StaffVoiceSession(**asdict(session)) for session in (*finished, *ongoing)],
                         on_conflict=["id"],
@@ -166,7 +170,7 @@ class TrackingCog(discord.Cog):
         config = self.configs.get(member.guild.id) if member is not None else None
         if member is None or config is None:
             return None
-        return counting_channel_id(member, config.voice_channel_ids, config.quota_role_ids)
+        return counting_channel_id(member, config.voice_channel_ids, config.category_ids, config.quota_role_ids)
 
     def _sync(self, members: Iterable[discord.Member]) -> None:
         now = discord.utils.utcnow()
@@ -180,9 +184,8 @@ class TrackingCog(discord.Cog):
         config = self.configs.get(guild_id)
         member_ids = {member_id for g, member_id in self.tracker.open if g == guild_id}
         if guild is not None and config is not None:
-            for channel_id in config.voice_channel_ids:
-                channel = guild.get_channel(channel_id)
-                if isinstance(channel, discord.VoiceChannel):
+            for channel in guild.voice_channels:
+                if is_tracked_channel(channel, config.voice_channel_ids, config.category_ids):
                     member_ids.update(member.id for member in channel.members)
         for member_id in member_ids:
             member = guild.get_member(member_id) if guild is not None else None
@@ -212,7 +215,12 @@ class TrackingCog(discord.Cog):
         if message.guild is None or author.bot or not isinstance(author, discord.Member):
             return
         config = self.configs.get(message.guild.id)
-        if config is None or message.channel.id not in config.message_channel_ids:
+        channel = message.channel
+        if (
+            config is None
+            or isinstance(channel, discord.DMChannel | discord.GroupChannel | discord.PartialMessageable)
+            or not is_tracked_channel(channel, config.message_channel_ids, config.category_ids)
+        ):
             return
         if any(role.id in config.quota_role_ids for role in author.roles):
             self.tracker.messages.append(

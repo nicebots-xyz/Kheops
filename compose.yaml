@@ -8,3 +8,11 @@ services:
     ports:
       - "6379:6379"
     command: --loglevel debug
+  db:
+    image: postgres:18
+    ports:
+      - "55432:5432"
+    environment:
+        POSTGRES_USER: postgres
+        POSTGRES_PASSWORD: postgres
+        POSTGRES_DB: postgres

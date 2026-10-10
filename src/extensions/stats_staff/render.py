@@ -8,7 +8,12 @@ from typing import TYPE_CHECKING
 
 import discord
 
-from src.database.models import StaffQuotaMode, StaffRoleQuota, StaffStatsSettings
+from src.database.models import (
+    DEFAULT_ET_SUBSTITUTION_PENALTY,
+    StaffQuotaMode,
+    StaffRoleQuota,
+    StaffStatsSettings,
+)
 
 from .logic import EUROPE_PARIS, StatsPeriod, period_start, previous_week_bounds, progress_bar, quota_score, trend_arrow
 from .stats import PERIOD_LABELS, get_stats
@@ -47,7 +52,7 @@ async def render_stats(
         return embed
 
     settings = await StaffStatsSettings.get_or_none(guild_id=member.guild.id)
-    penalty = settings.et_substitution_penalty if settings is not None else 1.25
+    penalty = settings.et_substitution_penalty if settings is not None else DEFAULT_ET_SUBSTITUTION_PENALTY
     score = score_for(quota, stats, penalty)
     passed = score >= 1
     mode = "ET" if quota.mode == StaffQuotaMode.ALL else "OU"

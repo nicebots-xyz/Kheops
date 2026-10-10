@@ -207,6 +207,7 @@ class ConfigPanelView(_Panel):
                     report_channel=f"<#{s.report_channel_id}>" if s.report_channel_id else t.not_set,
                     message_channels=", ".join(f"<#{c}>" for c in s.message_channel_ids) or t.none,
                     voice_channels=", ".join(f"<#{c}>" for c in s.voice_channel_ids) or t.none,
+                    categories=", ".join(f"<#{c}>" for c in s.tracked_category_ids) or t.none,
                     quotas=len(self.quotas),
                     penalty=f"{s.et_substitution_penalty * 100:g}",
                 )
@@ -217,6 +218,7 @@ class ConfigPanelView(_Panel):
             _SettingsSelect(self, "report_channel_id", discord.ChannelType.text),
             _SettingsSelect(self, "message_channel_ids", discord.ChannelType.text),
             _SettingsSelect(self, "voice_channel_ids", discord.ChannelType.voice),
+            _SettingsSelect(self, "tracked_category_ids", discord.ChannelType.category),
             _CallbackButton(t.open_quotas, self.open_quotas, discord.ButtonStyle.primary),
             _CallbackButton(t.edit_penalty, self.edit_penalty),
         ):

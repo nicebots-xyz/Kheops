@@ -132,8 +132,8 @@ strings:
 
   # Config panel
   config_summary:
-    en-US: "## Staff stats configuration\n- Responsible role: {responsible}\n- Weekly report channel: {report_channel}\n- Tracked channels (messages): {message_channels}\n- Tracked channels (voice): {voice_channels}\n- Roles with a quota: {quotas}\n- Substitution penalty (ET): {penalty}%"
-    fr: "## Configuration des stats staff\n- Rôle responsable : {responsible}\n- Salon de rapport hebdo : {report_channel}\n- Salons suivis (messages) : {message_channels}\n- Salons suivis (vocal) : {voice_channels}\n- Rôles avec quota configuré : {quotas}\n- Pénalité de substitution (ET) : {penalty}%"
+    en-US: "## Staff stats configuration\n- Responsible role: {responsible}\n- Weekly report channel: {report_channel}\n- Tracked channels (messages): {message_channels}\n- Tracked channels (voice): {voice_channels}\n- Tracked categories (all channels inside): {categories}\n- Roles with a quota: {quotas}\n- Substitution penalty (ET): {penalty}%"
+    fr: "## Configuration des stats staff\n- Rôle responsable : {responsible}\n- Salon de rapport hebdo : {report_channel}\n- Salons suivis (messages) : {message_channels}\n- Salons suivis (vocal) : {voice_channels}\n- Catégories suivies (tous les salons à l'intérieur) : {categories}\n- Rôles avec quota configuré : {quotas}\n- Pénalité de substitution (ET) : {penalty}%"
   not_set:
     en-US: "not set"
     fr: "non défini"
@@ -152,6 +152,9 @@ strings:
   placeholder_voice_channel_ids:
     en-US: "Change the tracked channels (voice)…"
     fr: "Changer les salons suivis (vocal)…"
+  placeholder_tracked_category_ids:
+    en-US: "Change the tracked categories (all channels inside)…"
+    fr: "Changer les catégories suivies (tous les salons à l'intérieur)…"
   open_quotas:
     en-US: "Manage quotas per role"
     fr: "Gérer les quotas par rôle"
