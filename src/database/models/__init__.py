@@ -21,10 +21,20 @@ from .channel_note import (
 )
 from .dormeur import Dormeur
 from .guild import Guild
+from .staff_stats import (
+    DEFAULT_ET_SUBSTITUTION_PENALTY,
+    StaffMemberRoleOverride,
+    StaffMessageEvent,
+    StaffQuotaMode,
+    StaffRoleQuota,
+    StaffStatsSettings,
+    StaffVoiceSession,
+)
 from .user import User
 
 __all__ = [
     "CONTENT_MAX_LENGTH_CHANNEL_NOTE",
+    "DEFAULT_ET_SUBSTITUTION_PENALTY",
     "FOOTER_MAX_LENGTH_CHANNEL_NOTE",
     "HEADER_MAX_LENGTH_CHANNEL_NOTE",
     "SLOTS_PER_DAY_CHANNEL_NOTE",
@@ -33,5 +43,11 @@ __all__ = [
     "ChannelNoteEvery",
     "Dormeur",
     "Guild",
+    "StaffMemberRoleOverride",
+    "StaffMessageEvent",
+    "StaffQuotaMode",
+    "StaffRoleQuota",
+    "StaffStatsSettings",
+    "StaffVoiceSession",
     "User",
 ]

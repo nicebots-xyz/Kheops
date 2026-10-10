@@ -38,6 +38,8 @@ extensions:
     enabled: true
   channel_note:
     enabled: true
+  stats_staff:
+    enabled: true
 
 bot:
   slash:
