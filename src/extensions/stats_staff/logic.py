@@ -43,14 +43,25 @@ def is_valid_voice_state(voice_state: discord.VoiceState, *, other_humans: int) 
     return other_humans > 0
 
 
+def is_tracked_channel(
+    channel: discord.abc.GuildChannel | discord.Thread, channel_ids: Collection[int], category_ids: Collection[int]
+) -> bool:
+    """Whether a channel is tracked, by being listed itself or belonging to a tracked category."""
+    return channel.id in channel_ids or channel.category_id in category_ids
+
+
 def counting_channel_id(
-    member: discord.Member, voice_channel_ids: Collection[int], quota_role_ids: Collection[int]
+    member: discord.Member,
+    voice_channel_ids: Collection[int],
+    category_ids: Collection[int],
+    quota_role_ids: Collection[int],
 ) -> int | None:
     """Return the tracked voice channel this member is counting in right now, if any.
 
     Args:
         member: The member, as currently cached.
         voice_channel_ids: The tracked voice channels.
+        category_ids: The categories tracked in full.
         quota_role_ids: The roles that have a quota.
 
     Returns:
@@ -60,7 +71,7 @@ def counting_channel_id(
     if member.bot or not any(role.id in quota_role_ids for role in member.roles):
         return None
     voice = member.voice
-    if voice is None or voice.channel is None or voice.channel.id not in voice_channel_ids:
+    if voice is None or voice.channel is None or not is_tracked_channel(voice.channel, voice_channel_ids, category_ids):
         return None
     other_humans = sum(1 for other in voice.channel.members if not other.bot and other.id != member.id)
     return voice.channel.id if is_valid_voice_state(voice, other_humans=other_humans) else None

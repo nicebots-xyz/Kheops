@@ -46,14 +46,15 @@ pages:
     description:
       en-US: |
         Admin command group to configure staff quota tracking: the responsible role, the
-        tracked message/voice channels, per-role quotas, the ET substitution penalty, and the
-        weekly report channel. Also lets you preview what the weekly report would currently
-        look like without waiting for Monday.
+        tracked message/voice channels, whole tracked categories (every channel inside counts),
+        per-role quotas, the ET substitution penalty, and the weekly report channel. Also lets
+        you preview what the weekly report would currently look like without waiting for Monday.
       fr: |
         Groupe de commandes admin pour configurer le suivi des quotas staff : le role
-        responsable, les salons de messages/vocal suivis, les quotas par role, la penalite de
-        substitution ET, et le salon de rapport hebdomadaire. Permet aussi de previsualiser le
-        rapport hebdomadaire sans attendre lundi.
+        responsable, les salons de messages/vocal suivis, des categories entieres suivies (tous
+        les salons a l'interieur comptent), les quotas par role, la penalite de substitution ET,
+        et le salon de rapport hebdomadaire. Permet aussi de previsualiser le rapport
+        hebdomadaire sans attendre lundi.
     category:
       en-US: "Staff Stats"
       fr: "Stats staff"

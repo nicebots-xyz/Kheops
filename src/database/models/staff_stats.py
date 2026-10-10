@@ -30,6 +30,9 @@ class StaffStatsSettings(Model):
 
     message_channel_ids: fields.Field[list[int]] = fields.JSONField(default=list)
     voice_channel_ids: fields.Field[list[int]] = fields.JSONField(default=list)
+    # Categories tracked in full: every text channel inside counts for messages and every voice
+    # channel inside counts for voice, on top of the channels listed above.
+    tracked_category_ids: fields.Field[list[int]] = fields.JSONField(default=list)
 
     # Applies to every ALL ("ET") quota: a shortfall on one side can be made up on the other side,
     # at this extra cost. See quota_score() in the stats_staff extension.

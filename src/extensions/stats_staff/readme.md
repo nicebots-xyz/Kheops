@@ -7,9 +7,11 @@ Suivi des quotas d'activité hebdomadaires du staff : messages et temps vocal «
 
 ## Ce que fait le module
 
-- **Messages** : comptés uniquement dans les salons choisis comme « salons suivis (messages) ».
-- **Vocal** : compté uniquement dans les « salons suivis (vocal) », tant que le membre n'est ni muet ni
-  sourd (lui-même ou par le serveur) et qu'au moins une autre personne (non-bot) est dans le salon.
+- **Messages** : comptés uniquement dans les salons choisis comme « salons suivis (messages) », ou dans
+  tout salon appartenant à une « catégorie suivie ».
+- **Vocal** : compté uniquement dans les « salons suivis (vocal) » ou tout salon vocal d'une « catégorie
+  suivie », tant que le membre n'est ni muet ni sourd (lui-même ou par le serveur) et qu'au moins une
+  autre personne (non-bot) est dans le salon.
 - **Quotas par rôle** : un nombre d'heures de vocal et un nombre de messages par semaine, combinés en :
   - **OU** : les deux se cumulent. Sur « 4h OU 100 messages », 2h + 50 messages = 50 % + 50 % = quota atteint.
     Un critère à 0 ne compte pas.
@@ -39,7 +41,8 @@ Noms par défaut en anglais, traduits en français via `translations.yml`.
 - `/stats-staff me [period]` (`moi`) : mes stats, réservé aux membres ayant un rôle à quota.
 - `/stats-staff view <member> [period]` (`voir`) : stats d'un membre, réservé aux admins et au rôle responsable.
 - `/stats-staff-admin config` : panel de configuration (rôle responsable, salon de rapport, salons suivis,
-  quotas, pénalité ET, assignations). Réservé aux admins ; délégable via les permissions de commandes du serveur.
+  catégories suivies, quotas, pénalité ET, assignations). Réservé aux admins ; délégable via les permissions
+  de commandes du serveur.
 - `/stats-staff-admin preview-report` (`apercu-rapport`) : aperçu du rapport de la semaine en cours.
 
 Tous les textes affichés sont dans `translations.yml` (section `strings`).
