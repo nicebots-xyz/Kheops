@@ -160,16 +160,17 @@ import discord
 from discord.ext import commands
 from typing import Dict, Any
 
+
 class MyFirstExtension(commands.Cog):
     def __init__(self, bot: discord.Bot):
         self.bot = bot
 
+
 def setup(bot: discord.Bot):
     bot.add_cog(MyFirstExtension(bot))
 
-default = {
-    "enabled": True
-}
+
+default = {"enabled": True}
 ```
 
 Let's break down what we've done here:
@@ -199,11 +200,12 @@ Add the following methods to your `MyFirstExtension` class in `main.py`:
 async def hello(self, ctx: discord.ApplicationContext):
     await ctx.respond(f"Hello, {ctx.author.name}!")
 
+
 @discord.slash_command(name="userinfo", description="Get information about a user")
 async def userinfo(
     self,
     ctx: discord.ApplicationContext,
-    user: discord.Option(discord.Member, "The user to get info about", default=None)
+    user: discord.Option(discord.Member, "The user to get info about", default=None),
 ):
     user = user or ctx.author
     embed = discord.Embed(title=f"User Info - {user.name}", color=user.color)
@@ -267,6 +269,7 @@ import discord
 from discord.ext import commands
 from typing import Dict, Any
 
+
 class MyFirstExtension(commands.Cog):
     def __init__(self, bot: discord.Bot):
         self.bot = bot
@@ -279,7 +282,7 @@ class MyFirstExtension(commands.Cog):
     async def userinfo(
         self,
         ctx: discord.ApplicationContext,
-        user: discord.Option(discord.Member, "The user to get info about", default=None)
+        user: discord.Option(discord.Member, "The user to get info about", default=None),
     ):
         user = user or ctx.author
         embed = discord.Embed(title=f"User Info - {user.name}", color=user.color)
@@ -294,12 +297,12 @@ class MyFirstExtension(commands.Cog):
     async def on_ready(self):
         print(f"Bot is ready! Logged in as {self.bot.user}")
 
+
 def setup(bot: discord.Bot):
     bot.add_cog(MyFirstExtension(bot))
 
-default = {
-    "enabled": True
-}
+
+default = {"enabled": True}
 ```
 
 ## Step 11: Running Your Bot

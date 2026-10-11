@@ -37,7 +37,7 @@ def _view(content: str, colour: discord.Colour | None = None) -> DesignerView:
     return DesignerView(Container[DesignerView](TextDisplay[DesignerView, Never](content), colour=colour))
 
 
-def _role_block(
+def _role_block(  # noqa: PLR0917
     t: Strings,
     quota: StaffRoleQuota,
     role: discord.Role,

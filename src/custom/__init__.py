@@ -143,7 +143,7 @@ class CustomBot(bridge.Bot):
     async def get_application_context(
         self,
         interaction: discord.Interaction,
-        cls: None | type[bridge.BridgeApplicationContext] = None,
+        cls: type[bridge.BridgeApplicationContext] | None = None,
     ) -> bridge.BridgeApplicationContext:
         cls = cls if cls is not None else ApplicationContext
         return await super().get_application_context(interaction, cls=cls)
@@ -152,7 +152,7 @@ class CustomBot(bridge.Bot):
     async def get_context(
         self,
         message: Message,
-        cls: None | type[bridge.BridgeExtContext] = None,
+        cls: type[bridge.BridgeExtContext] | None = None,
     ) -> BridgeExtContext:
         cls = cls if cls is not None else ExtContext
         ctx = await super().get_context(message, cls=cls)
