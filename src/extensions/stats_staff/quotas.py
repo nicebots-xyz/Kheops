@@ -45,6 +45,13 @@ async def member_quota_roles(guild: discord.Guild, quotas: list[StaffRoleQuota])
     Same resolution as `find_quota`/`members_by_quota` (override, else highest-position matching
     role) — exposed over HTTP so the dashboard never has to re-implement this ambiguity itself.
     """
+    # Unlike the other two callers above, this one is reached from an HTTP request rather than a
+    # Discord interaction, so there's no guarantee the gateway member cache is already warm for
+    # this guild by the time it runs (e.g. right after a restart). Force it so `guild.members`
+    # below is never silently empty/partial.
+    if guild.member_count is not None and len(guild.members) < guild.member_count:
+        await guild.chunk()
+
     overrides = dict(await StaffMemberRoleOverride.filter(guild_id=guild.id).values_list("member_id", "role_id"))
     quota_role_ids = {quota.role_id for quota in quotas}
     resolved: dict[int, int] = {}
