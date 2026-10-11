@@ -37,7 +37,7 @@ class AnnounceModal(DesignerModal):
         self.title_input = TextInput(required=True, style=InputTextStyle.short, max_length=256)
         self.add_item(Label(label=self.translations.announcement_title, item=self.title_input))
 
-        self.content_input = TextInput(required=True, style=InputTextStyle.paragraph, max_length=2048)
+        self.content_input = TextInput(required=True, style=InputTextStyle.paragraph, max_length=3072)
         self.add_item(Label(label=self.translations.announcement_content, item=self.content_input))
 
         self.footer_input = TextInput(required=False, style=InputTextStyle.short, max_length=512)
