@@ -47,9 +47,15 @@ class QuotaUpsertRequest(BaseModel):
     mode: StaffQuotaMode
 
 
+class MemberQuotaRoleResponse(BaseModel):
+    member_id: int
+    role_id: int
+
+
 __all__ = (
     "DailyHistoryEntry",
     "MemberHistoryResponse",
+    "MemberQuotaRoleResponse",
     "MemberStatsResponse",
     "QuotaResponse",
     "QuotaUpsertRequest",
