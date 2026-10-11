@@ -119,7 +119,7 @@ def setup_webserver(app: FastAPI, bot: discord.Bot) -> None:
 
     @router.get("/guilds/{guild_id}/members/quota-roles", response_model=list[MemberQuotaRoleResponse])
     async def list_member_quota_roles(guild_id: int) -> list[MemberQuotaRoleResponse]:
-        """The one quota role that applies to each staff member, already resolved.
+        """Resolve the one quota role that applies to each staff member.
 
         A member matching more than one configured `StaffRoleQuota` is ambiguous — the bot
         resolves it via an explicit `StaffMemberRoleOverride` (pinned in /stats-staff-admin
@@ -132,7 +132,9 @@ def setup_webserver(app: FastAPI, bot: discord.Bot) -> None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Guild not found")
         quotas = await StaffRoleQuota.filter(guild_id=guild_id)
         resolved = await member_quota_roles(guild, quotas)
-        return [MemberQuotaRoleResponse(member_id=member_id, role_id=role_id) for member_id, role_id in resolved.items()]
+        return [
+            MemberQuotaRoleResponse(member_id=member_id, role_id=role_id) for member_id, role_id in resolved.items()
+        ]
 
     app.include_router(router)
 
