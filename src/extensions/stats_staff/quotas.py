@@ -39,4 +39,22 @@ async def members_by_quota(guild: discord.Guild, quotas: list[StaffRoleQuota]) -
     return grouped
 
 
-__all__ = ("find_quota", "members_by_quota", "role_positions")
+async def member_quota_roles(guild: discord.Guild, quotas: list[StaffRoleQuota]) -> dict[int, int]:
+    """Resolve the one quota role that applies to each staff member, as member id to role id.
+
+    Same resolution as `find_quota`/`members_by_quota` (override, else highest-position matching
+    role) — exposed over HTTP so the dashboard never has to re-implement this ambiguity itself.
+    """
+    overrides = dict(await StaffMemberRoleOverride.filter(guild_id=guild.id).values_list("member_id", "role_id"))
+    quota_role_ids = {quota.role_id for quota in quotas}
+    resolved: dict[int, int] = {}
+    for member in guild.members:
+        if member.bot or not any(role.id in quota_role_ids for role in member.roles):
+            continue
+        quota = resolve_quota_for_member(role_positions(member), quotas, overrides.get(member.id))
+        if quota is not None:
+            resolved[member.id] = quota.role_id
+    return resolved
+
+
+__all__ = ("find_quota", "member_quota_roles", "members_by_quota", "role_positions")

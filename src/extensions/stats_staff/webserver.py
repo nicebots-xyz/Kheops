@@ -21,9 +21,11 @@ from src.database.models import Guild, StaffRoleQuota
 from src.extensions.dashboard_api.auth import require_api_key
 
 from .logic import EUROPE_PARIS, StatsPeriod, period_start
+from .quotas import member_quota_roles
 from .schemas import (
     DailyHistoryEntry,
     MemberHistoryResponse,
+    MemberQuotaRoleResponse,
     MemberStatsResponse,
     QuotaResponse,
     QuotaUpsertRequest,
@@ -114,6 +116,23 @@ def setup_webserver(app: FastAPI, bot: discord.Bot) -> None:
         if not deleted:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Quota not found")
         await _quotas_changed(bot, guild_id)
+
+    @router.get("/guilds/{guild_id}/members/quota-roles", response_model=list[MemberQuotaRoleResponse])
+    async def list_member_quota_roles(guild_id: int) -> list[MemberQuotaRoleResponse]:
+        """The one quota role that applies to each staff member, already resolved.
+
+        A member matching more than one configured `StaffRoleQuota` is ambiguous — the bot
+        resolves it via an explicit `StaffMemberRoleOverride` (pinned in /stats-staff-admin
+        config) or, absent one, their highest-position matching role (see
+        `resolve_quota_for_member`, logic.py). The dashboard must show the same quota the bot
+        actually evaluates, so it reads the resolution from here rather than re-implementing it.
+        """
+        guild = bot.get_guild(guild_id)
+        if guild is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Guild not found")
+        quotas = await StaffRoleQuota.filter(guild_id=guild_id)
+        resolved = await member_quota_roles(guild, quotas)
+        return [MemberQuotaRoleResponse(member_id=member_id, role_id=role_id) for member_id, role_id in resolved.items()]
 
     app.include_router(router)
 

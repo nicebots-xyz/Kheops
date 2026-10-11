@@ -61,6 +61,12 @@ un `guild_id` dans le chemin :
 - `PUT /guilds/{guild_id}/quotas/{role_id}` : crée ou met à jour le quota d'un rôle (404 si le rôle n'existe
   pas dans la guilde).
 - `DELETE /guilds/{guild_id}/quotas/{role_id}` : supprime le quota d'un rôle.
+- `GET /guilds/{guild_id}/members/quota-roles` : pour chaque membre ayant un quota applicable, le
+  `role_id` déjà résolu (`member_quota_roles()`, quotas.py — override pinné via `/stats-staff-admin
+  config` sinon rôle le plus haut placé parmi ceux à quota qu'il possède, voir
+  `resolve_quota_for_member()` dans logic.py). Le panel admin lit cette résolution plutôt que de la
+  redéviner lui-même (ex: un membre Modérateur + Modérateur twitch), pour afficher exactement le
+  même quota que celui évalué côté bot.
 
 Les lectures font un flush avant de répondre (données à jour à la seconde près), et les écritures de quotas
 préviennent le suivi tout de suite. Aucune route ne reflète les permissions Discord : l'autorisation se fait
