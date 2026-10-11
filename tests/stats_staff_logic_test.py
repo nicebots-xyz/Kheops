@@ -139,7 +139,7 @@ def test_quota_score_passes_exactly_when_the_old_rule_did() -> None:
         (ANY, 0, 0, 0, 0, 1.0),
     ],
 )
-def test_quota_score(
+def test_quota_score(  # noqa: PLR0917
     mode: StaffQuotaMode, messages: int, messages_required: int, voice: float, voice_required: int, expected: float
 ) -> None:
     assert score(mode, messages, messages_required, voice, voice_required) == pytest.approx(expected)

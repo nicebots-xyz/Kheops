@@ -225,7 +225,7 @@ class NameStyleCog(discord.Cog):
         name="namestyle",
         contexts={discord.InteractionContextType.guild},
     )
-    async def namestyle(
+    async def namestyle(  # noqa: PLR0917
         self,
         ctx: "custom.ApplicationContext",
         font_id: int | None = None,

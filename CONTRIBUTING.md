@@ -212,6 +212,7 @@ Créons une extension "hello" qui répond "Bonjour !" quand on tape `/hello`.
 ```python
 from . import main
 
+
 def setup(bot):
     """Fonction appelée par Botkit pour charger l'extension"""
     bot.add_cog(main.HelloCog(bot))
@@ -230,10 +231,7 @@ class HelloCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @discord.slash_command(
-        name="hello",
-        description="Le bot vous salue"
-    )
+    @discord.slash_command(name="hello", description="Le bot vous salue")
     async def hello(self, ctx: discord.ApplicationContext):
         """Commande /hello"""
         await ctx.respond("Bonjour ! 👋")

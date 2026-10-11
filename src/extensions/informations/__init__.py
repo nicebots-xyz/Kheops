@@ -100,7 +100,7 @@ class SendCog(discord.Cog):
         return [block for sublist in blocks for block in sublist], files
 
     @discord.slash_command(default_member_permissions=discord.Permissions(administrator=True))
-    async def informations_send(
+    async def informations_send(  # noqa: PLR0917
         self,
         ctx: custom.ApplicationContext,
         main: bool = True,

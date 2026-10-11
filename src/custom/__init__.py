@@ -3,7 +3,7 @@
 
 import contextlib
 from logging import getLogger
-from typing import TYPE_CHECKING, Any, TypeAlias, override
+from typing import TYPE_CHECKING, Any, TypeAlias, cast, override
 
 import aiocache
 import discord
@@ -143,7 +143,7 @@ class CustomBot(bridge.Bot):
     async def get_application_context(
         self,
         interaction: discord.Interaction,
-        cls: None | type[bridge.BridgeApplicationContext] = None,
+        cls: type[bridge.BridgeApplicationContext] | None = None,
     ) -> bridge.BridgeApplicationContext:
         cls = cls if cls is not None else ApplicationContext
         return await super().get_application_context(interaction, cls=cls)
@@ -152,7 +152,7 @@ class CustomBot(bridge.Bot):
     async def get_context(
         self,
         message: Message,
-        cls: None | type[bridge.BridgeExtContext] = None,
+        cls: type[bridge.BridgeExtContext] | None = None,
     ) -> BridgeExtContext:
         cls = cls if cls is not None else ExtContext
         ctx = await super().get_context(message, cls=cls)
@@ -200,6 +200,15 @@ class CustomBot(bridge.Bot):
         if self.ws is not None:  # pyright: ignore [reportUnnecessaryComparison]
             raise AttributeError("Cannot change intents after the connection is established.")
         self._connection._intents.value = value.value  # noqa: SLF001  # pyright: ignore [reportPrivateUsage]
+
+    def get_app_emoji(self, key: int | str) -> discord.AppEmoji | None:
+        if isinstance(key, int):
+            if (emoji := self.get_emoji(key)) in self.app_emojis:
+                return cast("discord.AppEmoji", emoji)
+        else:
+            with contextlib.suppress(StopIteration):
+                return next(emoji for emoji in self.app_emojis if emoji.name == key)
+        return None
 
 
 class CustomUvicornConfig(BaseUvicornConfig):
