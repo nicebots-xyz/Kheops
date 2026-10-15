@@ -123,21 +123,22 @@ def test_can_self_declare_matching_role() -> None:
     assert can_self_declare([2, 4], is_admin=False, settings=settings) is True  # pyright: ignore[reportArgumentType]
 
 
-def test_is_responsible_admin_always_true() -> None:
-    settings = _FakeSettings(allowed_role_ids=[], responsible_role_id=None)
-    assert is_responsible([], is_admin=True, settings=settings) is True  # pyright: ignore[reportArgumentType]
-
-
 def test_is_responsible_no_role_configured() -> None:
     settings = _FakeSettings(allowed_role_ids=[], responsible_role_id=None)
-    assert is_responsible([1, 2], is_admin=False, settings=settings) is False  # pyright: ignore[reportArgumentType]
+    assert is_responsible([1, 2], settings=settings) is False  # pyright: ignore[reportArgumentType]
 
 
 def test_is_responsible_matching_role() -> None:
     settings = _FakeSettings(allowed_role_ids=[], responsible_role_id=5)
-    assert is_responsible([5, 6], is_admin=False, settings=settings) is True  # pyright: ignore[reportArgumentType]
+    assert is_responsible([5, 6], settings=settings) is True  # pyright: ignore[reportArgumentType]
 
 
 def test_is_responsible_non_matching_role() -> None:
     settings = _FakeSettings(allowed_role_ids=[], responsible_role_id=5)
-    assert is_responsible([6, 7], is_admin=False, settings=settings) is False  # pyright: ignore[reportArgumentType]
+    assert is_responsible([6, 7], settings=settings) is False  # pyright: ignore[reportArgumentType]
+
+
+def test_is_responsible_admin_without_role_is_false() -> None:
+    """Deliberately not granted to admins — only the configured role, unlike other checks here."""
+    settings = _FakeSettings(allowed_role_ids=[], responsible_role_id=5)
+    assert is_responsible([1, 2], settings=settings) is False  # pyright: ignore[reportArgumentType]

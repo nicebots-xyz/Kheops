@@ -73,10 +73,12 @@ def can_self_declare(member_role_ids: Iterable[int], *, is_admin: bool, settings
     return bool(allowed.intersection(member_role_ids))
 
 
-def is_responsible(member_role_ids: Iterable[int], *, is_admin: bool, settings: AbsenceSettings) -> bool:
-    """Whether a member can permanently delete any absence (not just cancel their own)."""
-    if is_admin:
-        return True
+def is_responsible(member_role_ids: Iterable[int], *, settings: AbsenceSettings) -> bool:
+    """Whether a member can permanently delete any absence.
+
+    Deliberately not granted to admins automatically — only the specific role configured as
+    "staff responsible" gets this, unlike every other permission check in this extension.
+    """
     return settings.responsible_role_id is not None and settings.responsible_role_id in set(member_role_ids)
 
 

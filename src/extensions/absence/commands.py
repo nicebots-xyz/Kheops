@@ -76,7 +76,7 @@ class AbsenceCommandsCog(discord.Cog):
         if not can_self_declare((r.id for r in ctx.author.roles), is_admin=is_admin, settings=settings):
             await ctx.respond(t.no_permission_declare_self, ephemeral=True)
             return
-        can_delete = is_responsible((r.id for r in ctx.author.roles), is_admin=is_admin, settings=settings)
+        can_delete = is_responsible((r.id for r in ctx.author.roles), settings=settings)
         view = await AbsenceListView.build(
             bot=self.bot,
             guild_id=ctx.author.guild.id,
@@ -100,9 +100,8 @@ class AbsenceCommandsCog(discord.Cog):
         assert isinstance(ctx.author, discord.Member)
         assert ctx.guild is not None
         t = self.t(ctx)
-        is_admin = ctx.author.guild_permissions.administrator
         settings, _ = await AbsenceSettings.get_or_create(guild_id=ctx.guild.id)
-        can_delete = is_responsible((r.id for r in ctx.author.roles), is_admin=is_admin, settings=settings)
+        can_delete = is_responsible((r.id for r in ctx.author.roles), settings=settings)
         view = await AbsenceListView.build(
             bot=self.bot, guild_id=ctx.guild.id, member_id=membre.id, t=t, can_manage=True, can_delete=can_delete
         )
