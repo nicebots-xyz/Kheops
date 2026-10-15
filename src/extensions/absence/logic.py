@@ -1,16 +1,11 @@
 # SPDX-License-Identifier: MIT
 # Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
 
-from __future__ import annotations
-
+from collections.abc import Iterable
 from datetime import date, datetime
 from enum import StrEnum
-from typing import TYPE_CHECKING
 
-if TYPE_CHECKING:
-    from collections.abc import Iterable
-
-    from src.database.models import Absence, AbsenceSettings
+from src.database.models import Absence, AbsenceSettings
 
 DATE_FORMAT = "%d/%m/%Y"
 

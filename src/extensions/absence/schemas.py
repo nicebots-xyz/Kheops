@@ -6,9 +6,21 @@
 from datetime import date
 from uuid import UUID
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 from src.database.models import REASON_MAX_LENGTH_ABSENCE
+
+
+class _RequiresReason(BaseModel):
+    reason: str = Field(min_length=1, max_length=REASON_MAX_LENGTH_ABSENCE)
+
+    @field_validator("reason")
+    @classmethod
+    def _reason_not_blank(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("reason must not be blank")
+        return stripped
 
 
 class AbsenceResponse(BaseModel):
@@ -21,18 +33,16 @@ class AbsenceResponse(BaseModel):
     cancelled: bool
 
 
-class AbsenceCreateRequest(BaseModel):
+class AbsenceCreateRequest(_RequiresReason):
     member_id: int
     start_date: date
     end_date: date
-    reason: str = Field("", max_length=REASON_MAX_LENGTH_ABSENCE)
     created_by_id: int
 
 
-class AbsenceUpdateRequest(BaseModel):
+class AbsenceUpdateRequest(_RequiresReason):
     start_date: date
     end_date: date
-    reason: str = Field("", max_length=REASON_MAX_LENGTH_ABSENCE)
 
 
 class AbsenceSettingsResponse(BaseModel):

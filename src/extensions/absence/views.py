@@ -1,8 +1,6 @@
 # SPDX-License-Identifier: MIT
 # Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
 
-from __future__ import annotations
-
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING, Never, final, override
 
@@ -13,7 +11,7 @@ from src.database.models import Absence, AbsenceSettings
 
 from .announce import remove_announcement, sync_announcement
 from .logic import AbsenceStatus, absence_status, duration_days, is_backdated, parse_date
-from .queries import find_overlap
+from .queries import OverlapError, create_absence, get_or_create_settings, restore_absence, update_absence_dates
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -32,7 +30,9 @@ def _text(content: str) -> Container[DesignerView]:
 class _CallbackButton(discord.ui.Button[DesignerView]):
     """A button that runs `action(interaction)`; avoids one subclass per button."""
 
-    def __init__(self, label: str, action: _Action, style: discord.ButtonStyle = discord.ButtonStyle.secondary) -> None:
+    def __init__(
+        self, label: str, action: "_Action", style: discord.ButtonStyle = discord.ButtonStyle.secondary
+    ) -> None:
         super().__init__(label=label, style=style)
         self.action = action
 
@@ -52,9 +52,9 @@ class AbsenceModal(DesignerModal):
         guild_id: int,
         member_id: int,
         created_by_id: int,
-        t: Strings,
+        t: "Strings",
         absence: Absence | None = None,
-        panel: AbsenceListView | None = None,
+        panel: "AbsenceListView | None" = None,
     ) -> None:
         self.bot = bot
         self.guild_id = guild_id
@@ -101,36 +101,36 @@ class AbsenceModal(DesignerModal):
         if self.absence is None and is_backdated(start, datetime.now(tz=UTC).date()):
             await interaction.respond(self.t.invalid_past, ephemeral=True)
             return
-        overlap = await find_overlap(
-            self.guild_id, self.member_id, start, end, exclude_id=self.absence.id if self.absence else None
-        )
-        if overlap is not None:
+
+        reason = (self.reason_input.value or "").strip()
+        if not reason:
+            await interaction.respond(self.t.invalid_blank_reason, ephemeral=True)
+            return
+
+        try:
+            if self.absence is None:
+                absence = await create_absence(
+                    guild_id=self.guild_id,
+                    member_id=self.member_id,
+                    start=start,
+                    end=end,
+                    reason=reason,
+                    created_by_id=self.created_by_id,
+                )
+            else:
+                absence = self.absence
+                await update_absence_dates(absence, start=start, end=end, reason=reason)
+        except OverlapError as e:
             await interaction.respond(
                 self.t.invalid_overlap.format(
-                    start=overlap.start_date.strftime("%d/%m/%Y"), end=overlap.end_date.strftime("%d/%m/%Y")
+                    start=e.conflicting.start_date.strftime("%d/%m/%Y"),
+                    end=e.conflicting.end_date.strftime("%d/%m/%Y"),
                 ),
                 ephemeral=True,
             )
             return
 
-        reason = (self.reason_input.value or "").strip()
-        if self.absence is None:
-            absence = await Absence.create(
-                guild_id=self.guild_id,
-                member_id=self.member_id,
-                start_date=start,
-                end_date=end,
-                reason=reason,
-                created_by_id=self.created_by_id,
-            )
-        else:
-            absence = self.absence
-            absence.start_date = start
-            absence.end_date = end
-            absence.reason = reason
-            await absence.save(update_fields=["start_date", "end_date", "reason"])
-
-        settings, _ = await AbsenceSettings.get_or_create(guild_id=self.guild_id)
+        settings = await get_or_create_settings(self.guild_id)
         await sync_announcement(self.bot, absence, settings)
 
         if self.panel is not None:
@@ -161,7 +161,7 @@ class AbsenceListView(DesignerView):
         bot: discord.Client,
         guild_id: int,
         member_id: int,
-        t: Strings,
+        t: "Strings",
         absences: list[Absence],
         hidden_history_count: int,
         can_manage: bool,
@@ -180,8 +180,8 @@ class AbsenceListView(DesignerView):
 
     @classmethod
     async def build(
-        cls, *, bot: discord.Client, guild_id: int, member_id: int, t: Strings, can_manage: bool, can_delete: bool
-    ) -> AbsenceListView:
+        cls, *, bot: discord.Client, guild_id: int, member_id: int, t: "Strings", can_manage: bool, can_delete: bool
+    ) -> "AbsenceListView":
         absences, hidden = await _load_absences(guild_id, member_id)
         return cls(
             bot=bot,
@@ -207,20 +207,20 @@ class AbsenceListView(DesignerView):
             by_status[absence_status(absence, today)].append(absence)
 
         sections = (
-            (t.section_active, [*by_status[AbsenceStatus.ONGOING], *by_status[AbsenceStatus.UPCOMING]], True),
-            (t.section_past, by_status[AbsenceStatus.PAST], False),
-            (t.section_cancelled, by_status[AbsenceStatus.CANCELLED], False),
+            (t.section_active, [*by_status[AbsenceStatus.ONGOING], *by_status[AbsenceStatus.UPCOMING]], "active"),
+            (t.section_past, by_status[AbsenceStatus.PAST], "past"),
+            (t.section_cancelled, by_status[AbsenceStatus.CANCELLED], "cancelled"),
         )
 
         items: list[discord.ui.ViewItem[DesignerView]] = []
-        for title, group, editable in sections:
+        for title, group, kind in sections:
             if not group:
                 continue
             if items:
                 items.append(Separator[DesignerView]())
             items.append(TextDisplay[DesignerView, Never](f"### {title}"))
             for absence in group:
-                items.extend(self._absence_items(absence, editable=editable))
+                items.extend(self._absence_items(absence, kind=kind))
 
         if self.hidden_history_count:
             items.append(Separator[DesignerView]())
@@ -228,7 +228,7 @@ class AbsenceListView(DesignerView):
 
         self.add_item(Container[DesignerView](*items))
 
-    def _absence_items(self, absence: Absence, *, editable: bool) -> list[discord.ui.ViewItem[DesignerView]]:
+    def _absence_items(self, absence: Absence, *, kind: str) -> list[discord.ui.ViewItem[DesignerView]]:
         t = self.t
         days = duration_days(absence.start_date, absence.end_date)
         items: list[discord.ui.ViewItem[DesignerView]] = [
@@ -243,16 +243,18 @@ class AbsenceListView(DesignerView):
             )
         ]
         buttons: list[discord.ui.Button[DesignerView]] = []
-        if self.can_manage and editable:
+        if self.can_manage and kind == "active":
             buttons.append(_CallbackButton(t.edit, self._edit(absence)))
             buttons.append(_CallbackButton(t.cancel, self._cancel(absence), discord.ButtonStyle.danger))
+        if self.can_manage and kind == "cancelled":
+            buttons.append(_CallbackButton(t.restore, self._restore(absence)))
         if self.can_delete:
             buttons.append(_CallbackButton(t.delete, self._delete(absence), discord.ButtonStyle.danger))
         if buttons:
             items.append(ActionRow[DesignerView](*buttons))
         return items
 
-    def _edit(self, absence: Absence) -> _Action:
+    def _edit(self, absence: Absence) -> "_Action":
         async def action(interaction: discord.Interaction) -> None:
             await interaction.response.send_modal(
                 AbsenceModal(
@@ -268,7 +270,7 @@ class AbsenceListView(DesignerView):
 
         return action
 
-    def _cancel(self, absence: Absence) -> _Action:
+    def _cancel(self, absence: Absence) -> "_Action":
         async def action(interaction: discord.Interaction) -> None:
             absence.cancelled_at = datetime.now(tz=UTC)
             await absence.save(update_fields=["cancelled_at"])
@@ -277,7 +279,26 @@ class AbsenceListView(DesignerView):
 
         return action
 
-    def _delete(self, absence: Absence) -> _Action:
+    def _restore(self, absence: Absence) -> "_Action":
+        async def action(interaction: discord.Interaction) -> None:
+            try:
+                await restore_absence(absence)
+            except OverlapError as e:
+                await interaction.response.send_message(
+                    self.t.invalid_overlap.format(
+                        start=e.conflicting.start_date.strftime("%d/%m/%Y"),
+                        end=e.conflicting.end_date.strftime("%d/%m/%Y"),
+                    ),
+                    ephemeral=True,
+                )
+                return
+            settings = await get_or_create_settings(self.guild_id)
+            await sync_announcement(self.bot, absence, settings)
+            await self.refresh(interaction)
+
+        return action
+
+    def _delete(self, absence: Absence) -> "_Action":
         async def action(interaction: discord.Interaction) -> None:
             await remove_announcement(self.bot, absence)
             await absence.delete()
@@ -304,13 +325,13 @@ async def _load_absences(guild_id: int, member_id: int) -> tuple[list[Absence], 
         .order_by("start_date", "end_date")
         .limit(MAX_ACTIVE_DISPLAYED)
     )
-    history_total = await Absence.filter(guild_id=guild_id, member_id=member_id).count() - len(active)
-    history = await (
-        Absence.filter(guild_id=guild_id, member_id=member_id)
-        .exclude(id__in=[a.id for a in active])
-        .order_by("-start_date", "-end_date")
-        .limit(MAX_HISTORY_DISPLAYED)
+    # Everything that isn't active (past or cancelled) — filtered directly by status, not by
+    # excluding the (possibly truncated) `active` id list, so overflow active rows never leak in.
+    history_query = Absence.filter(guild_id=guild_id, member_id=member_id).exclude(
+        cancelled_at__isnull=True, end_date__gte=today
     )
+    history_total = await history_query.count()
+    history = await history_query.order_by("-start_date", "-end_date").limit(MAX_HISTORY_DISPLAYED)
     hidden = max(history_total - len(history), 0)
     return [*active, *history], hidden
 
@@ -319,7 +340,7 @@ async def _load_absences(guild_id: int, member_id: int) -> tuple[list[Absence], 
 class _SettingsSelect(discord.ui.Select[DesignerView]):
     """Edits one `AbsenceSettings` field. Only that field is saved on change."""
 
-    def __init__(self, panel: ConfigPanelView, field: str, channel_type: discord.ChannelType | None = None) -> None:
+    def __init__(self, panel: "ConfigPanelView", field: str, channel_type: discord.ChannelType | None = None) -> None:
         current: int | list[int] | None = getattr(panel.settings, field)
         self.many = isinstance(current, list)
         ids = current if isinstance(current, list) else [current] if current else []
@@ -358,7 +379,7 @@ class _SettingsSelect(discord.ui.Select[DesignerView]):
 class ConfigPanelView(DesignerView):
     """Admin panel: who can self-declare, and where absences get announced."""
 
-    def __init__(self, guild_id: int, t: Strings, settings: AbsenceSettings) -> None:
+    def __init__(self, guild_id: int, t: "Strings", settings: AbsenceSettings) -> None:
         super().__init__(timeout=300)
         self.guild_id = guild_id
         self.t = t
@@ -366,8 +387,8 @@ class ConfigPanelView(DesignerView):
         self.render()
 
     @classmethod
-    async def build(cls, guild_id: int, t: Strings) -> ConfigPanelView:
-        settings, _ = await AbsenceSettings.get_or_create(guild_id=guild_id)
+    async def build(cls, guild_id: int, t: "Strings") -> "ConfigPanelView":
+        settings = await get_or_create_settings(guild_id)
         return cls(guild_id, t, settings)
 
     def render(self) -> None:

@@ -9,20 +9,18 @@ Mounted under `/absence/v1` and protected by the shared
 dashboard and the bot always show the same thing (see `announce.py`).
 """
 
-from __future__ import annotations
-
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
-from uuid import UUID  # noqa: TC003 - FastAPI resolves path-param types at runtime, needs a real import
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 
-from src.database.models import Absence, AbsenceSettings
+from src.database.models import Absence
 from src.extensions.dashboard_api.auth import require_api_key
 
 from .announce import remove_announcement, sync_announcement
 from .logic import is_backdated
-from .queries import find_overlap
+from .queries import OverlapError, create_absence, get_or_create_settings, restore_absence, update_absence_dates
 from .schemas import (
     AbsenceCreateRequest,
     AbsenceResponse,
@@ -47,10 +45,15 @@ def _to_response(absence: Absence) -> AbsenceResponse:
     )
 
 
-def setup_webserver(app: FastAPI, bot: discord.Client) -> None:  # noqa: PLR0915 - one router, each route is a few lines
+def _conflict(e: OverlapError) -> HTTPException:
+    period = f"{e.conflicting.start_date.isoformat()} -> {e.conflicting.end_date.isoformat()}"
+    return HTTPException(status.HTTP_409_CONFLICT, f"Overlaps with absence {e.conflicting.id} ({period})")
+
+
+def setup_webserver(app: FastAPI, bot: "discord.Client") -> None:  # noqa: PLR0915 - one router, each route is a few lines
     router = APIRouter(prefix="/absence/v1", dependencies=[Depends(require_api_key)])
 
-    @router.get("/guilds/{guild_id}/absences", response_model=list[AbsenceResponse])
+    @router.get("/guilds/{guild_id}/absences")
     async def list_absences(guild_id: int, member_id: int | None = None) -> list[AbsenceResponse]:
         query = Absence.filter(guild_id=guild_id)
         if member_id is not None:
@@ -58,43 +61,41 @@ def setup_webserver(app: FastAPI, bot: discord.Client) -> None:  # noqa: PLR0915
         absences = await query.order_by("-start_date")
         return [_to_response(absence) for absence in absences]
 
-    @router.post("/guilds/{guild_id}/absences", response_model=AbsenceResponse, status_code=status.HTTP_201_CREATED)
-    async def create_absence(guild_id: int, payload: AbsenceCreateRequest) -> AbsenceResponse:
+    @router.post("/guilds/{guild_id}/absences", status_code=status.HTTP_201_CREATED)
+    async def create_absence_route(guild_id: int, payload: AbsenceCreateRequest) -> AbsenceResponse:
         if payload.end_date < payload.start_date:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "end_date must not be before start_date")
         if is_backdated(payload.start_date, datetime.now(tz=UTC).date()):
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "start_date must not be in the past")
-        if await find_overlap(guild_id, payload.member_id, payload.start_date, payload.end_date) is not None:
-            raise HTTPException(status.HTTP_409_CONFLICT, "Overlaps with an existing absence for this member")
-        absence = await Absence.create(
-            guild_id=guild_id,
-            member_id=payload.member_id,
-            start_date=payload.start_date,
-            end_date=payload.end_date,
-            reason=payload.reason,
-            created_by_id=payload.created_by_id,
-        )
-        settings, _ = await AbsenceSettings.get_or_create(guild_id=guild_id)
+        try:
+            absence = await create_absence(
+                guild_id=guild_id,
+                member_id=payload.member_id,
+                start=payload.start_date,
+                end=payload.end_date,
+                reason=payload.reason,
+                created_by_id=payload.created_by_id,
+            )
+        except OverlapError as e:
+            raise _conflict(e) from e
+        settings = await get_or_create_settings(guild_id)
         await sync_announcement(bot, absence, settings)
         return _to_response(absence)
 
-    @router.put("/guilds/{guild_id}/absences/{absence_id}", response_model=AbsenceResponse)
-    async def update_absence(guild_id: int, absence_id: UUID, payload: AbsenceUpdateRequest) -> AbsenceResponse:
+    @router.put("/guilds/{guild_id}/absences/{absence_id}")
+    async def update_absence_route(guild_id: int, absence_id: UUID, payload: AbsenceUpdateRequest) -> AbsenceResponse:
         if payload.end_date < payload.start_date:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "end_date must not be before start_date")
         absence = await Absence.get_or_none(id=absence_id, guild_id=guild_id)
         if absence is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Absence not found")
-        overlap = await find_overlap(
-            guild_id, absence.member_id, payload.start_date, payload.end_date, exclude_id=absence.id
-        )
-        if overlap is not None:
-            raise HTTPException(status.HTTP_409_CONFLICT, "Overlaps with an existing absence for this member")
-        absence.start_date = payload.start_date
-        absence.end_date = payload.end_date
-        absence.reason = payload.reason
-        await absence.save(update_fields=["start_date", "end_date", "reason"])
-        settings, _ = await AbsenceSettings.get_or_create(guild_id=guild_id)
+        if absence.cancelled_at is not None:
+            raise HTTPException(status.HTTP_409_CONFLICT, "Absence is cancelled — restore it before editing")
+        try:
+            await update_absence_dates(absence, start=payload.start_date, end=payload.end_date, reason=payload.reason)
+        except OverlapError as e:
+            raise _conflict(e) from e
+        settings = await get_or_create_settings(guild_id)
         await sync_announcement(bot, absence, settings)
         return _to_response(absence)
 
@@ -107,6 +108,21 @@ def setup_webserver(app: FastAPI, bot: discord.Client) -> None:  # noqa: PLR0915
         await absence.save(update_fields=["cancelled_at"])
         await remove_announcement(bot, absence)
 
+    @router.post("/guilds/{guild_id}/absences/{absence_id}/restore")
+    async def restore_absence_route(guild_id: int, absence_id: UUID) -> AbsenceResponse:
+        absence = await Absence.get_or_none(id=absence_id, guild_id=guild_id)
+        if absence is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Absence not found")
+        if absence.cancelled_at is None:
+            raise HTTPException(status.HTTP_409_CONFLICT, "Absence is not cancelled")
+        try:
+            await restore_absence(absence)
+        except OverlapError as e:
+            raise _conflict(e) from e
+        settings = await get_or_create_settings(guild_id)
+        await sync_announcement(bot, absence, settings)
+        return _to_response(absence)
+
     @router.delete("/guilds/{guild_id}/absences/{absence_id}/permanent", status_code=status.HTTP_204_NO_CONTENT)
     async def delete_absence(guild_id: int, absence_id: UUID) -> None:
         """Permanently remove an absence — the "staff responsible" capability, not a regular cancel."""
@@ -116,18 +132,18 @@ def setup_webserver(app: FastAPI, bot: discord.Client) -> None:  # noqa: PLR0915
         await remove_announcement(bot, absence)
         await absence.delete()
 
-    @router.get("/guilds/{guild_id}/settings", response_model=AbsenceSettingsResponse)
+    @router.get("/guilds/{guild_id}/settings")
     async def get_settings(guild_id: int) -> AbsenceSettingsResponse:
-        settings, _ = await AbsenceSettings.get_or_create(guild_id=guild_id)
+        settings = await get_or_create_settings(guild_id)
         return AbsenceSettingsResponse(
             allowed_role_ids=settings.allowed_role_ids,
             announce_channel_id=settings.announce_channel_id,
             responsible_role_id=settings.responsible_role_id,
         )
 
-    @router.put("/guilds/{guild_id}/settings", response_model=AbsenceSettingsResponse)
+    @router.put("/guilds/{guild_id}/settings")
     async def update_settings(guild_id: int, payload: AbsenceSettingsUpdateRequest) -> AbsenceSettingsResponse:
-        settings, _ = await AbsenceSettings.get_or_create(guild_id=guild_id)
+        settings = await get_or_create_settings(guild_id)
         settings.allowed_role_ids = payload.allowed_role_ids
         settings.announce_channel_id = payload.announce_channel_id
         settings.responsible_role_id = payload.responsible_role_id

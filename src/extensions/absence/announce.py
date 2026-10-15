@@ -8,23 +8,17 @@ from either side always produces the same Discord-visible result. The public mes
 shows the member and their dates — never the reason.
 """
 
-from __future__ import annotations
-
-from datetime import UTC, datetime, time
-from typing import TYPE_CHECKING, Never
+from datetime import UTC, date, datetime, time
+from typing import Never
 
 import discord
 from discord.ui import Container, DesignerView, TextDisplay
 from discord.utils import format_dt
 
+from src.database.models import Absence, AbsenceSettings
 from src.log import logger as base_logger
 
 from .logic import duration_days
-
-if TYPE_CHECKING:
-    from datetime import date
-
-    from src.database.models import Absence, AbsenceSettings
 
 logger = base_logger.getChild("absence")
 
