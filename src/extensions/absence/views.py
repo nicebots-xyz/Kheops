@@ -11,7 +11,15 @@ from src.database.models import Absence, AbsenceSettings
 
 from .announce import remove_announcement, sync_announcement
 from .logic import AbsenceStatus, absence_status, duration_days, is_backdated, parse_date
-from .queries import OverlapError, create_absence, get_or_create_settings, restore_absence, update_absence_dates
+from .queries import (
+    CancelledError,
+    OverlapError,
+    cancel_absence,
+    create_absence,
+    get_or_create_settings,
+    restore_absence,
+    update_absence_dates,
+)
 
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
@@ -128,6 +136,9 @@ class AbsenceModal(DesignerModal):
                 ),
                 ephemeral=True,
             )
+            return
+        except CancelledError:
+            await interaction.respond(self.t.invalid_cancelled, ephemeral=True)
             return
 
         settings = await get_or_create_settings(self.guild_id)
@@ -272,8 +283,7 @@ class AbsenceListView(DesignerView):
 
     def _cancel(self, absence: Absence) -> "_Action":
         async def action(interaction: discord.Interaction) -> None:
-            absence.cancelled_at = datetime.now(tz=UTC)
-            await absence.save(update_fields=["cancelled_at"])
+            await cancel_absence(absence)
             await remove_announcement(self.bot, absence)
             await self.refresh(interaction)
 

@@ -10,6 +10,10 @@ from pydantic import BaseModel, Field, field_validator
 
 from src.database.models import REASON_MAX_LENGTH_ABSENCE
 
+#: Discord role-select menus cap at 25 options — the config panel can't render/save more than
+#: that, so the dashboard shouldn't be able to persist settings it can't display either.
+MAX_ALLOWED_ROLES = 25
+
 
 class _RequiresReason(BaseModel):
     reason: str = Field(min_length=1, max_length=REASON_MAX_LENGTH_ABSENCE)
@@ -52,7 +56,7 @@ class AbsenceSettingsResponse(BaseModel):
 
 
 class AbsenceSettingsUpdateRequest(BaseModel):
-    allowed_role_ids: list[int]
+    allowed_role_ids: list[int] = Field(max_length=MAX_ALLOWED_ROLES)
     announce_channel_id: int | None
     responsible_role_id: int | None
 

@@ -65,6 +65,9 @@ commands:
           invalid_overlap: &invalid_overlap
             en-US: "This overlaps with an existing absence ({start} → {end}). Edit or cancel it first."
             fr: "Ça chevauche une absence déjà enregistrée ({start} → {end}). Modifie-la ou annule-la d'abord."
+          invalid_cancelled: &invalid_cancelled
+            en-US: "This absence was cancelled in the meantime — restore it before editing."
+            fr: "Cette absence a été annulée entre-temps — restaure-la avant de la modifier."
           saved: &saved
             en-US: "Absence saved — you will be absent {days} day{plural}."
             fr: "Absence enregistrée — tu seras absent {days} jour{plural}."
@@ -87,6 +90,7 @@ commands:
           invalid_past: *invalid_past
           invalid_blank_reason: *invalid_blank_reason
           invalid_overlap: *invalid_overlap
+          invalid_cancelled: *invalid_cancelled
           saved: *saved
           # List view strings — shared with absence-admin list, aliased below.
           no_absences: &no_absences
@@ -157,6 +161,7 @@ commands:
           invalid_past: *invalid_past
           invalid_blank_reason: *invalid_blank_reason
           invalid_overlap: *invalid_overlap
+          invalid_cancelled: *invalid_cancelled
           saved: *saved
           no_absences: *no_absences
           hidden_history: *hidden_history

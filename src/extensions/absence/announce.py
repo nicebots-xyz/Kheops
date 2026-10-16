@@ -8,12 +8,11 @@ from either side always produces the same Discord-visible result. The public mes
 shows the member and their dates — never the reason.
 """
 
-from datetime import UTC, date, datetime, time
+from datetime import date
 from typing import Never
 
 import discord
 from discord.ui import Container, DesignerView, TextDisplay
-from discord.utils import format_dt
 
 from src.database.models import Absence, AbsenceSettings
 from src.log import logger as base_logger
@@ -26,7 +25,9 @@ ABSENCE_COLOUR = discord.Colour.from_rgb(237, 139, 54)  # warm orange — distin
 
 
 def _day(value: date) -> str:
-    return format_dt(datetime.combine(value, time.min, tzinfo=UTC), style="D")
+    # Plain text, not Discord's <t:...> timestamp: that renders in each viewer's local timezone,
+    # which can shift a date-only value to the adjacent calendar day near midnight UTC.
+    return value.strftime("%d/%m/%Y")
 
 
 def _view(absence: Absence) -> DesignerView:
@@ -62,6 +63,10 @@ async def sync_announcement(bot: discord.Client, absence: Absence, settings: Abs
             await existing.edit(view=_view(absence))
         except (discord.Forbidden, discord.HTTPException):
             logger.warning(f"Could not edit announcement message for absence {absence.id}, re-posting")
+            try:
+                await existing.delete()
+            except (discord.NotFound, discord.Forbidden, discord.HTTPException):
+                logger.warning(f"Could not delete stale announcement message for absence {absence.id}")
         else:
             return
 

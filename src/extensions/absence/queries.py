@@ -10,7 +10,7 @@ is vulnerable to that race, including the "member has zero rows yet" case where 
 would have nothing to lock onto.
 """
 
-from datetime import date
+from datetime import UTC, date, datetime
 from uuid import UUID
 
 from tortoise.backends.base.client import BaseDBAsyncClient
@@ -36,6 +36,10 @@ class OverlapError(Exception):
     def __init__(self, conflicting: Absence) -> None:
         super().__init__(f"Overlaps with absence {conflicting.id}")
         self.conflicting = conflicting
+
+
+class CancelledError(Exception):
+    """Raised when trying to edit an absence that turned out to be cancelled."""
 
 
 async def find_overlap(
@@ -97,12 +101,19 @@ async def create_absence(
 async def update_absence_dates(absence: Absence, *, start: date, end: date, reason: str) -> None:
     """Update an absence's dates/reason, atomically rejecting overlaps.
 
+    Re-checks `cancelled_at` under the same lock (not just whatever the caller fetched earlier),
+    so a concurrent cancellation can't be silently overwritten by a stale edit.
+
     Raises:
         OverlapError: If this would overlap another existing non-cancelled absence for this member.
+        CancelledError: If the absence was cancelled since the caller last read it.
 
     """
     async with in_transaction() as conn:
         await _lock_member(conn, absence.guild_id, absence.member_id)
+        await absence.refresh_from_db(using_db=conn, fields=["cancelled_at"])
+        if absence.cancelled_at is not None:
+            raise CancelledError
         conflict = await find_overlap(
             absence.guild_id, absence.member_id, start, end, exclude_id=absence.id, using_db=conn
         )
@@ -112,6 +123,18 @@ async def update_absence_dates(absence: Absence, *, start: date, end: date, reas
         absence.end_date = end
         absence.reason = reason
         await absence.save(using_db=conn, update_fields=["start_date", "end_date", "reason"])
+
+
+async def cancel_absence(absence: Absence) -> None:
+    """Cancel an absence under the same per-member lock as create/update/restore.
+
+    Without the lock, a concurrent update/restore could commit and re-sync the public
+    announcement right after this removes it, effectively undoing the cancellation.
+    """
+    async with in_transaction() as conn:
+        await _lock_member(conn, absence.guild_id, absence.member_id)
+        absence.cancelled_at = datetime.now(tz=UTC)
+        await absence.save(using_db=conn, update_fields=["cancelled_at"])
 
 
 async def restore_absence(absence: Absence) -> None:
@@ -138,7 +161,9 @@ async def restore_absence(absence: Absence) -> None:
 
 
 __all__ = (
+    "CancelledError",
     "OverlapError",
+    "cancel_absence",
     "create_absence",
     "find_overlap",
     "get_or_create_settings",

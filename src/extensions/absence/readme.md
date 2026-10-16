@@ -17,8 +17,10 @@ Permet aux membres du staff de déclarer leurs absences proprement, avec une ann
   Ces deux règles ne s'appliquent qu'à la création — modifier une absence déjà en cours/passée
   reste possible.
 - **Annonce publique** : si un salon d'annonce est configuré, une carte Discord est postée (nom,
-  dates au format natif Discord, durée en jours) — jamais la raison. Mise à jour en cas de
-  modification des dates, supprimée en cas d'annulation ou de suppression définitive.
+  dates au format `JJ/MM/AAAA`, durée en jours) — jamais la raison. Dates en texte simple plutôt
+  qu'au format natif Discord (`<t:...>`) pour éviter un décalage d'un jour selon le fuseau horaire
+  du lecteur. Mise à jour en cas de modification des dates, supprimée en cas d'annulation ou de
+  suppression définitive.
 - **Raison privée** : visible uniquement par les admins et par le membre concerné, jamais affichée
   publiquement.
 - **`/absence mine`** : liste groupée en trois sections (en cours/à venir, passées, annulées), les
@@ -49,10 +51,19 @@ readme). Toutes prennent un `guild_id` dans le chemin. Chaque écriture met auss
 d'annonce Discord correspondant, pour que le Dashboard et Discord restent toujours synchronisés :
 
 - `GET /guilds/{guild_id}/absences?member_id=...` : liste des absences (reason incluse).
-- `POST /guilds/{guild_id}/absences` : crée une absence (mêmes validations que la modale Discord).
-- `PUT /guilds/{guild_id}/absences/{id}` : modifie une absence (dates, raison).
+- `POST /guilds/{guild_id}/absences` : crée une absence (mêmes validations que la modale Discord ;
+  409 en cas de chevauchement, protégé contre les écritures concurrentes par un verrou transactionnel
+  par membre).
+- `PUT /guilds/{guild_id}/absences/{id}` : modifie une absence (dates, raison) ; 409 si l'absence a
+  été annulée entre-temps.
 - `DELETE /guilds/{guild_id}/absences/{id}` : annule une absence (soft-delete, garde l'historique).
-- `DELETE /guilds/{guild_id}/absences/{id}/permanent` : supprime définitivement une absence.
+- `POST /guilds/{guild_id}/absences/{id}/restore` : annule une annulation (re-vérifie les
+  chevauchements).
+- `DELETE /guilds/{guild_id}/absences/{id}/permanent?actor_id=...` : supprime définitivement une
+  absence. `actor_id` (l'utilisateur du Dashboard à l'origine de l'action) est obligatoire : ses
+  rôles sont vérifiés côté bot pour confirmer qu'il a bien le rôle **Responsable staff** configuré —
+  la clé API seule ne suffit pas, elle authentifie le backend du Dashboard, pas l'utilisateur final.
 - `GET /guilds/{guild_id}/settings` / `PUT /guilds/{guild_id}/settings` : lit/écrit les rôles
   autorisés, le salon d'annonce et le rôle responsable — les mêmes réglages que
-  `/absence-admin config`.
+  `/absence-admin config`. L'écriture valide que le salon et les rôles appartiennent bien à la
+  guilde, et plafonne `allowed_role_ids` à 25 (limite d'un menu déroulant Discord).
