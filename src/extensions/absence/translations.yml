@@ -1,0 +1,202 @@
+# SPDX-License-Identifier: MIT
+# Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
+commands:
+  absence:
+    name:
+      en-US: "absence"
+      fr: "absence"
+    description:
+      en-US: "Declare and manage staff absences"
+      fr: "Déclarer et gérer les absences du staff"
+    commands:
+      declare:
+        name:
+          en-US: "declare"
+          fr: "declarer"
+        description:
+          en-US: "Declare an absence"
+          fr: "Déclarer une absence"
+        options:
+          membre:
+            name:
+              en-US: "member"
+              fr: "membre"
+            description:
+              en-US: "Declare for this member instead of yourself (admins only)"
+              fr: "Déclarer pour ce membre plutôt que pour soi-même (admins uniquement)"
+        strings:
+          # Shared by every command that can open AbsenceModal (declare/mine/absence-admin list) —
+          # duplicated per command.strings since ctx.translations only resolves the invoking
+          # command's own block, not the top-level strings: section. Aliased with YAML anchors so
+          # the French/English text itself is only written once.
+          no_permission_declare_self: &no_permission_declare_self
+            en-US: "You don't have a role allowed to declare an absence."
+            fr: "Tu n'as pas de rôle autorisé à déclarer une absence."
+          no_permission_declare_other: &no_permission_declare_other
+            en-US: "Only admins can declare an absence for someone else."
+            fr: "Seuls les admins peuvent déclarer une absence pour quelqu'un d'autre."
+          declare_modal_title: &declare_modal_title
+            en-US: "Declare an absence"
+            fr: "Déclarer une absence"
+          edit_modal_title: &edit_modal_title
+            en-US: "Edit an absence"
+            fr: "Modifier une absence"
+          modal_start_date: &modal_start_date
+            en-US: "Start date"
+            fr: "Date de début"
+          modal_end_date: &modal_end_date
+            en-US: "End date (inclusive)"
+            fr: "Date de fin (incluse)"
+          modal_reason: &modal_reason
+            en-US: "Reason (private)"
+            fr: "Raison (privée)"
+          modal_reason_description: &modal_reason_description
+            en-US: "Only visible to admins and to you — never shown publicly."
+            fr: "Visible uniquement par les admins et par toi — jamais affichée publiquement."
+          invalid_range: &invalid_range
+            en-US: "The end date must not be before the start date."
+            fr: "La date de fin ne doit pas être avant la date de début."
+          invalid_past: &invalid_past
+            en-US: "The start date can't be in the past — you can't backdate a new absence."
+            fr: "La date de début ne peut pas être dans le passé — tu ne peux pas antidater une nouvelle absence."
+          invalid_blank_reason: &invalid_blank_reason
+            en-US: "The reason can't be empty."
+            fr: "La raison ne peut pas être vide."
+          invalid_overlap: &invalid_overlap
+            en-US: "This overlaps with an existing absence ({start} → {end}). Edit or cancel it first."
+            fr: "Ça chevauche une absence déjà enregistrée ({start} → {end}). Modifie-la ou annule-la d'abord."
+          invalid_cancelled: &invalid_cancelled
+            en-US: "This absence was cancelled in the meantime — restore it before editing."
+            fr: "Cette absence a été annulée entre-temps — restaure-la avant de la modifier."
+          saved: &saved
+            en-US: "Absence saved — you will be absent {days} day{plural}."
+            fr: "Absence enregistrée — tu seras absent {days} jour{plural}."
+      mine:
+        name:
+          en-US: "mine"
+          fr: "mes-absences"
+        description:
+          en-US: "View and manage my own absences"
+          fr: "Voir et gérer mes propres absences"
+        strings:
+          no_permission_declare_self: *no_permission_declare_self
+          declare_modal_title: *declare_modal_title
+          edit_modal_title: *edit_modal_title
+          modal_start_date: *modal_start_date
+          modal_end_date: *modal_end_date
+          modal_reason: *modal_reason
+          modal_reason_description: *modal_reason_description
+          invalid_range: *invalid_range
+          invalid_past: *invalid_past
+          invalid_blank_reason: *invalid_blank_reason
+          invalid_overlap: *invalid_overlap
+          invalid_cancelled: *invalid_cancelled
+          saved: *saved
+          # List view strings — shared with absence-admin list, aliased below.
+          no_absences: &no_absences
+            en-US: "- No absence recorded."
+            fr: "- Aucune absence enregistrée."
+          hidden_history: &hidden_history
+            en-US: "-# … and {count} older past/cancelled absence(s) not shown here."
+            fr: "-# … et {count} absence(s) passée(s)/annulée(s) plus ancienne(s) non affichée(s) ici."
+          absence_line: &absence_line
+            en-US: "**{start} → {end}** · {days} day{plural}\n-# Reason: {reason}"
+            fr: "**{start} → {end}** · {days} jour{plural}\n-# Raison : {reason}"
+          section_active: &section_active
+            en-US: "Ongoing / upcoming"
+            fr: "En cours / à venir"
+          section_past: &section_past
+            en-US: "Past"
+            fr: "Passées"
+          section_cancelled: &section_cancelled
+            en-US: "Cancelled"
+            fr: "Annulées"
+          no_reason: &no_reason
+            en-US: "none given"
+            fr: "aucune indiquée"
+          edit: &edit
+            en-US: "Edit"
+            fr: "Modifier"
+          cancel: &cancel
+            en-US: "Cancel"
+            fr: "Annuler"
+          restore: &restore
+            en-US: "Restore"
+            fr: "Restaurer"
+          delete: &delete
+            en-US: "Delete permanently"
+            fr: "Supprimer définitivement"
+
+  absence-admin:
+    name:
+      en-US: "absence-admin"
+      fr: "absence-admin"
+    description:
+      en-US: "Absence module administration"
+      fr: "Administration du module absence"
+    commands:
+      list:
+        name:
+          en-US: "list"
+          fr: "liste"
+        description:
+          en-US: "View and manage a member's absences"
+          fr: "Voir et gérer les absences d'un membre"
+        options:
+          membre:
+            name:
+              en-US: "member"
+              fr: "membre"
+            description:
+              en-US: "Member to look up"
+              fr: "Membre à consulter"
+        strings:
+          declare_modal_title: *declare_modal_title
+          edit_modal_title: *edit_modal_title
+          modal_start_date: *modal_start_date
+          modal_end_date: *modal_end_date
+          modal_reason: *modal_reason
+          modal_reason_description: *modal_reason_description
+          invalid_range: *invalid_range
+          invalid_past: *invalid_past
+          invalid_blank_reason: *invalid_blank_reason
+          invalid_overlap: *invalid_overlap
+          invalid_cancelled: *invalid_cancelled
+          saved: *saved
+          no_absences: *no_absences
+          hidden_history: *hidden_history
+          absence_line: *absence_line
+          section_active: *section_active
+          section_past: *section_past
+          section_cancelled: *section_cancelled
+          no_reason: *no_reason
+          edit: *edit
+          cancel: *cancel
+          restore: *restore
+          delete: *delete
+      config:
+        name:
+          en-US: "config"
+          fr: "config"
+        description:
+          en-US: "Configure who can self-declare, the announcement channel, and the staff responsible role"
+          fr: "Configurer qui peut se déclarer, le salon d'annonce et le rôle responsable staff"
+        strings:
+          config_summary:
+            en-US: "## Absence configuration\n- Roles allowed to self-declare: {allowed_roles}\n- Announcement channel: {announce_channel}\n- Staff responsible (can permanently delete absences): {responsible_role}"
+            fr: "## Configuration du module absence\n- Rôles autorisés à se déclarer : {allowed_roles}\n- Salon d'annonce : {announce_channel}\n- Responsable staff (peut supprimer définitivement) : {responsible_role}"
+          not_set:
+            en-US: "not set"
+            fr: "non défini"
+          none:
+            en-US: "none"
+            fr: "aucun"
+          placeholder_allowed_role_ids:
+            en-US: "Change the roles allowed to self-declare…"
+            fr: "Changer les rôles autorisés à se déclarer…"
+          placeholder_announce_channel_id:
+            en-US: "Change the announcement channel…"
+            fr: "Changer le salon d'annonce…"
+          placeholder_responsible_role_id:
+            en-US: "Change the staff responsible role…"
+            fr: "Changer le rôle responsable staff…"

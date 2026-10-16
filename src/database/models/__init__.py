@@ -1,5 +1,12 @@
 # SPDX-License-Identifier: MIT
 # Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
+from .absence import (
+    REASON_MAX_LENGTH as REASON_MAX_LENGTH_ABSENCE,
+)
+from .absence import (
+    Absence,
+    AbsenceSettings,
+)
 from .channel_note import (
     CONTENT_MAX_LENGTH as CONTENT_MAX_LENGTH_CHANNEL_NOTE,
 )
@@ -37,8 +44,11 @@ __all__ = [
     "DEFAULT_ET_SUBSTITUTION_PENALTY",
     "FOOTER_MAX_LENGTH_CHANNEL_NOTE",
     "HEADER_MAX_LENGTH_CHANNEL_NOTE",
+    "REASON_MAX_LENGTH_ABSENCE",
     "SLOTS_PER_DAY_CHANNEL_NOTE",
     "SLOTS_PER_WEEK_CHANNEL_NOTE",
+    "Absence",
+    "AbsenceSettings",
     "ChannelNote",
     "ChannelNoteEvery",
     "Dormeur",
