@@ -16,7 +16,7 @@ from uuid import UUID
 from tortoise.backends.base.client import BaseDBAsyncClient
 from tortoise.transactions import in_transaction
 
-from src.database.models import Absence, AbsenceSettings, Guild
+from src.database.models import Absence, AbsenceKind, AbsenceSettings, Guild
 
 from .logic import dates_overlap
 
@@ -73,7 +73,15 @@ async def _lock_member(conn: BaseDBAsyncClient, guild_id: int, member_id: int) -
 
 
 async def create_absence(
-    *, guild_id: int, member_id: int, start: date, end: date, reason: str, created_by_id: int
+    *,
+    guild_id: int,
+    member_id: int,
+    start: date,
+    end: date,
+    reason: str,
+    created_by_id: int,
+    kind: AbsenceKind = AbsenceKind.FULL,
+    availability_note: str | None = None,
 ) -> Absence:
     """Create an absence, atomically rejecting overlaps even under concurrent writers.
 
@@ -94,12 +102,22 @@ async def create_absence(
             end_date=end,
             reason=reason,
             created_by_id=created_by_id,
+            kind=kind,
+            availability_note=availability_note,
             using_db=conn,
         )
 
 
-async def update_absence_dates(absence: Absence, *, start: date, end: date, reason: str) -> None:
-    """Update an absence's dates/reason, atomically rejecting overlaps.
+async def update_absence_dates(
+    absence: Absence,
+    *,
+    start: date,
+    end: date,
+    reason: str,
+    kind: AbsenceKind = AbsenceKind.FULL,
+    availability_note: str | None = None,
+) -> None:
+    """Update an absence's dates/reason/kind, atomically rejecting overlaps.
 
     Re-checks `cancelled_at` under the same lock (not just whatever the caller fetched earlier),
     so a concurrent cancellation can't be silently overwritten by a stale edit.
@@ -122,7 +140,11 @@ async def update_absence_dates(absence: Absence, *, start: date, end: date, reas
         absence.start_date = start
         absence.end_date = end
         absence.reason = reason
-        await absence.save(using_db=conn, update_fields=["start_date", "end_date", "reason"])
+        absence.kind = kind
+        absence.availability_note = availability_note
+        await absence.save(
+            using_db=conn, update_fields=["start_date", "end_date", "reason", "kind", "availability_note"]
+        )
 
 
 async def cancel_absence(absence: Absence) -> None:

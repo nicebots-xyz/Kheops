@@ -15,7 +15,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 
-from src.database.models import Absence, AbsenceSettings
+from src.database.models import Absence, AbsenceKind, AbsenceSettings
 from src.extensions.dashboard_api.auth import require_api_key
 
 from .announce import remove_announcement, sync_announcement
@@ -50,6 +50,8 @@ def _to_response(absence: Absence) -> AbsenceResponse:
         reason=absence.reason,
         created_by_id=absence.created_by_id,
         cancelled=absence.cancelled_at is not None,
+        kind=absence.kind,
+        availability_note=absence.availability_note,
     )
 
 
@@ -94,6 +96,8 @@ def setup_webserver(app: FastAPI, bot: "discord.Client") -> None:  # noqa: PLR09
                 end=payload.end_date,
                 reason=payload.reason,
                 created_by_id=payload.created_by_id,
+                kind=payload.kind,
+                availability_note=payload.availability_note if payload.kind == AbsenceKind.PARTIAL else None,
             )
         except OverlapError as e:
             raise _conflict(e) from e
@@ -109,7 +113,14 @@ def setup_webserver(app: FastAPI, bot: "discord.Client") -> None:  # noqa: PLR09
         if absence is None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Absence not found")
         try:
-            await update_absence_dates(absence, start=payload.start_date, end=payload.end_date, reason=payload.reason)
+            await update_absence_dates(
+                absence,
+                start=payload.start_date,
+                end=payload.end_date,
+                reason=payload.reason,
+                kind=payload.kind,
+                availability_note=payload.availability_note if payload.kind == AbsenceKind.PARTIAL else None,
+            )
         except OverlapError as e:
             raise _conflict(e) from e
         except CancelledError as e:
