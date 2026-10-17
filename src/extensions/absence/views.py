@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Never, final, override
 import discord
 from discord.ui import ActionRow, Container, DesignerModal, DesignerView, Separator, TextDisplay
 
-from src.database.models import Absence, AbsenceSettings
+from src.database.models import AVAILABILITY_NOTE_MAX_LENGTH_ABSENCE, Absence, AbsenceKind, AbsenceSettings
 
 from .announce import remove_announcement, sync_announcement
 from .logic import AbsenceStatus, absence_status, duration_days, is_backdated, parse_date
@@ -89,10 +89,37 @@ class AbsenceModal(DesignerModal):
             max_length=500,
             value=absence.reason if absence else "",
         )
+        current_kind = absence.kind if absence else AbsenceKind.FULL
+        self.kind_select = discord.ui.StringSelect(
+            options=[
+                discord.SelectOption(
+                    label=t.kind_full, value=AbsenceKind.FULL.value, default=current_kind == AbsenceKind.FULL
+                ),
+                discord.SelectOption(
+                    label=t.kind_partial,
+                    value=AbsenceKind.PARTIAL.value,
+                    default=current_kind == AbsenceKind.PARTIAL,
+                ),
+            ]
+        )
+        self.availability_note_input = discord.ui.TextInput(
+            style=discord.InputTextStyle.paragraph,
+            required=False,
+            max_length=AVAILABILITY_NOTE_MAX_LENGTH_ABSENCE,
+            value=(absence.availability_note or "") if absence else "",
+        )
         self.add_item(discord.ui.Label(label=t.modal_start_date, item=self.start_input))
         self.add_item(discord.ui.Label(label=t.modal_end_date, item=self.end_input))
         self.add_item(
             discord.ui.Label(label=t.modal_reason, description=t.modal_reason_description, item=self.reason_input)
+        )
+        self.add_item(discord.ui.Label(label=t.modal_kind, description=t.modal_kind_description, item=self.kind_select))
+        self.add_item(
+            discord.ui.Label(
+                label=t.modal_availability_note,
+                description=t.modal_availability_note_description,
+                item=self.availability_note_input,
+            )
         )
 
     @override
@@ -115,6 +142,13 @@ class AbsenceModal(DesignerModal):
             await interaction.respond(self.t.invalid_blank_reason, ephemeral=True)
             return
 
+        kind = AbsenceKind(self.kind_select.values[0]) if self.kind_select.values else AbsenceKind.FULL
+        availability_note = (self.availability_note_input.value or "").strip() or None
+        if kind == AbsenceKind.FULL:
+            # Only shown publicly for partial absences — drop it rather than keep a stale value
+            # around if the member switches back to "full" after having typed one.
+            availability_note = None
+
         try:
             if self.absence is None:
                 absence = await create_absence(
@@ -124,10 +158,14 @@ class AbsenceModal(DesignerModal):
                     end=end,
                     reason=reason,
                     created_by_id=self.created_by_id,
+                    kind=kind,
+                    availability_note=availability_note,
                 )
             else:
                 absence = self.absence
-                await update_absence_dates(absence, start=start, end=end, reason=reason)
+                await update_absence_dates(
+                    absence, start=start, end=end, reason=reason, kind=kind, availability_note=availability_note
+                )
         except OverlapError as e:
             await interaction.respond(
                 self.t.invalid_overlap.format(
@@ -242,17 +280,18 @@ class AbsenceListView(DesignerView):
     def _absence_items(self, absence: Absence, *, kind: str) -> list[discord.ui.ViewItem[DesignerView]]:
         t = self.t
         days = duration_days(absence.start_date, absence.end_date)
-        items: list[discord.ui.ViewItem[DesignerView]] = [
-            TextDisplay[DesignerView, Never](
-                t.absence_line.format(
-                    start=absence.start_date.strftime("%d/%m/%Y"),
-                    end=absence.end_date.strftime("%d/%m/%Y"),
-                    days=days,
-                    plural="" if days == 1 else "s",
-                    reason=absence.reason or t.no_reason,
-                )
-            )
-        ]
+        kind_label = t.kind_partial if absence.kind == AbsenceKind.PARTIAL else t.kind_full
+        line = t.absence_line.format(
+            start=absence.start_date.strftime("%d/%m/%Y"),
+            end=absence.end_date.strftime("%d/%m/%Y"),
+            days=days,
+            plural="" if days == 1 else "s",
+            kind=kind_label,
+            reason=absence.reason or t.no_reason,
+        )
+        if absence.kind == AbsenceKind.PARTIAL and absence.availability_note:
+            line += "\n" + t.availability_note_line.format(note=absence.availability_note)
+        items: list[discord.ui.ViewItem[DesignerView]] = [TextDisplay[DesignerView, Never](line)]
         buttons: list[discord.ui.Button[DesignerView]] = []
         if self.can_manage and kind == "active":
             buttons.append(_CallbackButton(t.edit, self._edit(absence)))

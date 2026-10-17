@@ -53,6 +53,24 @@ commands:
           modal_reason_description: &modal_reason_description
             en-US: "Only visible to admins and to you — never shown publicly."
             fr: "Visible uniquement par les admins et par toi — jamais affichée publiquement."
+          modal_kind: &modal_kind
+            en-US: "Type"
+            fr: "Type"
+          modal_kind_description: &modal_kind_description
+            en-US: "Fully unavailable, or just harder to reach (classes, events, …)?"
+            fr: "Totalement indisponible, ou juste plus difficile à contacter (cours, événements, …) ?"
+          kind_full: &kind_full
+            en-US: "Full absence"
+            fr: "Absence totale"
+          kind_partial: &kind_partial
+            en-US: "Reduced availability"
+            fr: "Disponibilité réduite"
+          modal_availability_note: &modal_availability_note
+            en-US: "Availability note (public, only if reduced)"
+            fr: "Note de disponibilité (publique, si réduite)"
+          modal_availability_note_description: &modal_availability_note_description
+            en-US: "Shown publicly if reduced — e.g. \"evenings only\". Ignored for a full absence."
+            fr: "Affichée publiquement si dispo réduite — ex. \"le soir seulement\". Ignorée sinon."
           invalid_range: &invalid_range
             en-US: "The end date must not be before the start date."
             fr: "La date de fin ne doit pas être avant la date de début."
@@ -86,6 +104,12 @@ commands:
           modal_end_date: *modal_end_date
           modal_reason: *modal_reason
           modal_reason_description: *modal_reason_description
+          modal_kind: *modal_kind
+          modal_kind_description: *modal_kind_description
+          kind_full: *kind_full
+          kind_partial: *kind_partial
+          modal_availability_note: *modal_availability_note
+          modal_availability_note_description: *modal_availability_note_description
           invalid_range: *invalid_range
           invalid_past: *invalid_past
           invalid_blank_reason: *invalid_blank_reason
@@ -100,8 +124,11 @@ commands:
             en-US: "-# … and {count} older past/cancelled absence(s) not shown here."
             fr: "-# … et {count} absence(s) passée(s)/annulée(s) plus ancienne(s) non affichée(s) ici."
           absence_line: &absence_line
-            en-US: "**{start} → {end}** · {days} day{plural}\n-# Reason: {reason}"
-            fr: "**{start} → {end}** · {days} jour{plural}\n-# Raison : {reason}"
+            en-US: "**{start} → {end}** · {days} day{plural} · {kind}\n-# Reason: {reason}"
+            fr: "**{start} → {end}** · {days} jour{plural} · {kind}\n-# Raison : {reason}"
+          availability_note_line: &availability_note_line
+            en-US: "-# Availability: {note}"
+            fr: "-# Disponibilité : {note}"
           section_active: &section_active
             en-US: "Ongoing / upcoming"
             fr: "En cours / à venir"
@@ -157,6 +184,12 @@ commands:
           modal_end_date: *modal_end_date
           modal_reason: *modal_reason
           modal_reason_description: *modal_reason_description
+          modal_kind: *modal_kind
+          modal_kind_description: *modal_kind_description
+          kind_full: *kind_full
+          kind_partial: *kind_partial
+          modal_availability_note: *modal_availability_note
+          modal_availability_note_description: *modal_availability_note_description
           invalid_range: *invalid_range
           invalid_past: *invalid_past
           invalid_blank_reason: *invalid_blank_reason
@@ -166,6 +199,7 @@ commands:
           no_absences: *no_absences
           hidden_history: *hidden_history
           absence_line: *absence_line
+          availability_note_line: *availability_note_line
           section_active: *section_active
           section_past: *section_past
           section_cancelled: *section_cancelled

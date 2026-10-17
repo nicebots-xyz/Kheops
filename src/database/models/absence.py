@@ -2,6 +2,7 @@
 # Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
 
 from datetime import date, datetime
+from enum import StrEnum
 from uuid import UUID
 
 from tortoise import fields
@@ -10,6 +11,12 @@ from tortoise.models import Model
 from .guild import Guild
 
 REASON_MAX_LENGTH = 500
+AVAILABILITY_NOTE_MAX_LENGTH = 300
+
+
+class AbsenceKind(StrEnum):
+    FULL = "full"
+    PARTIAL = "partial"
 
 
 class AbsenceSettings(Model):
@@ -35,6 +42,13 @@ class Absence(Model):
     end_date: fields.Field[date] = fields.DateField()
     reason: fields.Field[str] = fields.CharField(max_length=REASON_MAX_LENGTH, default="")
 
+    # FULL = member fully unavailable; PARTIAL = reduced/harder-to-reach availability (e.g. busy
+    # with classes). `availability_note` is public when PARTIAL (unlike `reason`, which never is).
+    kind: AbsenceKind = fields.CharEnumField(enum_type=AbsenceKind, default=AbsenceKind.FULL)
+    availability_note: fields.Field[str | None] = fields.CharField(  # pyright: ignore[reportAssignmentType]
+        max_length=AVAILABILITY_NOTE_MAX_LENGTH, null=True
+    )
+
     # Self-declared, or the admin who declared it on the member's behalf.
     created_by_id: fields.Field[int] = fields.BigIntField()
 
@@ -52,4 +66,4 @@ class Absence(Model):
         indexes: tuple[tuple[str, ...], ...] = (("guild_id", "member_id"),)
 
 
-__all__ = ("REASON_MAX_LENGTH", "Absence", "AbsenceSettings")
+__all__ = ("AVAILABILITY_NOTE_MAX_LENGTH", "REASON_MAX_LENGTH", "Absence", "AbsenceKind", "AbsenceSettings")

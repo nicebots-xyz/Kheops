@@ -14,14 +14,15 @@ from typing import Never
 import discord
 from discord.ui import Container, DesignerView, TextDisplay
 
-from src.database.models import Absence, AbsenceSettings
+from src.database.models import Absence, AbsenceKind, AbsenceSettings
 from src.log import logger as base_logger
 
 from .logic import duration_days
 
 logger = base_logger.getChild("absence")
 
-ABSENCE_COLOUR = discord.Colour.from_rgb(237, 139, 54)  # warm orange — distinct from other modules' cards
+ABSENCE_COLOUR = discord.Colour.from_rgb(220, 53, 34)  # red — fully unavailable
+PARTIAL_ABSENCE_COLOUR = discord.Colour.from_rgb(237, 139, 54)  # warm orange — reduced availability
 
 
 def _day(value: date) -> str:
@@ -33,12 +34,21 @@ def _day(value: date) -> str:
 def _view(absence: Absence) -> DesignerView:
     days = duration_days(absence.start_date, absence.end_date)
     suffix = "" if days == 1 else "s"
-    content = (
-        f"## 📅 Absence signalée\n"
-        f"<@{absence.member_id}> est absent(e) du {_day(absence.start_date)} au {_day(absence.end_date)}\n"
-        f"-# Durée : **{days} jour{suffix}**"
-    )
-    return DesignerView(Container[DesignerView](TextDisplay[DesignerView, Never](content), colour=ABSENCE_COLOUR))
+    if absence.kind == AbsenceKind.PARTIAL:
+        title = "## 🟠 Disponibilité réduite signalée"
+        body = (
+            f"<@{absence.member_id}> a une disponibilité réduite du "
+            f"{_day(absence.start_date)} au {_day(absence.end_date)}"
+        )
+        colour = PARTIAL_ABSENCE_COLOUR
+        note_line = f"\n-# {absence.availability_note}" if absence.availability_note else ""
+    else:
+        title = "## 🔴 Absence signalée"
+        body = f"<@{absence.member_id}> est absent(e) du {_day(absence.start_date)} au {_day(absence.end_date)}"
+        colour = ABSENCE_COLOUR
+        note_line = ""
+    content = f"{title}\n{body}\n-# Durée : **{days} jour{suffix}**{note_line}"
+    return DesignerView(Container[DesignerView](TextDisplay[DesignerView, Never](content), colour=colour))
 
 
 async def _existing_message(bot: discord.Client, absence: Absence) -> discord.Message | None:
