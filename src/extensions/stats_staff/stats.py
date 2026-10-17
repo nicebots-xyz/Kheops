@@ -8,12 +8,15 @@ from typing import TYPE_CHECKING
 
 import discord
 from tortoise.functions import Count
+from tortoise.transactions import in_transaction
 
 from src.database.models import Guild, StaffMessageEvent, StaffStatsSettings, StaffVoiceSession
 
 from .logic import StatsPeriod
 
 if TYPE_CHECKING:
+    from tortoise.backends.base.client import BaseDBAsyncClient
+
     from src.i18n.classes import RawTranslation, TranslationWrapper
 
     type Strings = TranslationWrapper[dict[str, RawTranslation]]
@@ -64,6 +67,55 @@ async def get_or_create_settings(guild_id: int) -> StaffStatsSettings:
     return settings
 
 
+async def _lock_guild_settings(conn: BaseDBAsyncClient, guild_id: int) -> None:
+    """Postgres advisory lock scoped to one guild's stats settings.
+
+    Without it, two concurrent writers (e.g. two dashboard requests, or a dashboard request
+    landing at the same time as a Discord-side edit in `ConfigPanelView`) could both read the
+    same row and have the slower one's `save()` silently overwrite the other's change — a plain
+    read-modify-write is vulnerable to that even though each request only touches one row. Same
+    technique as `_lock_member` in absence/queries.py, scoped by guild id instead of member id.
+    """
+    await conn.execute_query(
+        "SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", [f"staff_stats_settings:{guild_id}"]
+    )
+
+
+async def update_settings(
+    guild_id: int,
+    *,
+    responsible_role_id: int | None,
+    report_channel_id: int | None,
+    message_channel_ids: list[int],
+    voice_channel_ids: list[int],
+    tracked_category_ids: list[int],
+    et_substitution_penalty: float,
+) -> StaffStatsSettings:
+    """Atomically replace a guild's stats settings under the per-guild lock (see `_lock_guild_settings`)."""
+    async with in_transaction() as conn:
+        await Guild.get_or_create(id=guild_id, using_db=conn)
+        await _lock_guild_settings(conn, guild_id)
+        settings, _ = await StaffStatsSettings.get_or_create(guild_id=guild_id, using_db=conn)
+        settings.responsible_role_id = responsible_role_id
+        settings.report_channel_id = report_channel_id
+        settings.message_channel_ids = message_channel_ids
+        settings.voice_channel_ids = voice_channel_ids
+        settings.tracked_category_ids = tracked_category_ids
+        settings.et_substitution_penalty = et_substitution_penalty
+        await settings.save(
+            using_db=conn,
+            update_fields=[
+                "responsible_role_id",
+                "report_channel_id",
+                "message_channel_ids",
+                "voice_channel_ids",
+                "tracked_category_ids",
+                "et_substitution_penalty",
+            ],
+        )
+        return settings
+
+
 async def get_stats(guild_id: int, start: datetime | None, end: datetime) -> dict[int, tuple[int, float]]:
     """Count every member's messages and voice minutes between `start` and `end`.
 
@@ -106,4 +158,11 @@ async def get_daily_history(guild_id: int, member_id: int, start: date, end: dat
     return [(row["day"], int(row["messages"]), float(row["seconds"]) / 60) for row in rows]
 
 
-__all__ = ("PERIOD_CHOICES", "PERIOD_LABELS", "get_daily_history", "get_or_create_settings", "get_stats")
+__all__ = (
+    "PERIOD_CHOICES",
+    "PERIOD_LABELS",
+    "get_daily_history",
+    "get_or_create_settings",
+    "get_stats",
+    "update_settings",
+)

@@ -13,11 +13,11 @@ the router-level dependency below.
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import TYPE_CHECKING
 
+import discord
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 
-from src.database.models import Guild, StaffRoleQuota
+from src.database.models import Guild, StaffRoleQuota, StaffStatsSettings
 from src.extensions.dashboard_api.auth import require_api_key
 
 from .logic import EUROPE_PARIS, StatsPeriod, period_start
@@ -29,12 +29,57 @@ from .schemas import (
     MemberStatsResponse,
     QuotaResponse,
     QuotaUpsertRequest,
+    StaffStatsSettingsResponse,
+    StaffStatsSettingsUpdateRequest,
 )
-from .stats import get_daily_history, get_stats
+from .stats import get_daily_history, get_or_create_settings, get_stats, update_settings
 from .tracking import TrackingCog
 
-if TYPE_CHECKING:
-    import discord
+
+def _settings_response(settings: StaffStatsSettings) -> StaffStatsSettingsResponse:
+    return StaffStatsSettingsResponse(
+        responsible_role_id=settings.responsible_role_id,
+        report_channel_id=settings.report_channel_id,
+        message_channel_ids=settings.message_channel_ids,
+        voice_channel_ids=settings.voice_channel_ids,
+        tracked_category_ids=settings.tracked_category_ids,
+        et_substitution_penalty=settings.et_substitution_penalty,
+    )
+
+
+def validate_settings_update(guild: discord.Guild, payload: StaffStatsSettingsUpdateRequest) -> None:
+    """Check a settings update against the real guild, raising HTTPException(400) on the first bad field.
+
+    Mirrors the checks the Discord-side config panel gets for free from its role/channel select
+    menus (`ConfigPanelView`, views.py) — those only ever offer roles/channels that exist in the
+    guild, so this is the dashboard's equivalent gate.
+    """
+    if payload.responsible_role_id is not None and guild.get_role(payload.responsible_role_id) is None:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "responsible_role_id must be a role in this guild")
+    if payload.report_channel_id is not None:
+        channel = guild.get_channel(payload.report_channel_id)
+        if not isinstance(channel, discord.TextChannel):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "report_channel_id must be a text channel in this guild")
+    bad_message = [c for c in payload.message_channel_ids if not isinstance(guild.get_channel(c), discord.TextChannel)]
+    if bad_message:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, f"message_channel_ids not text channels in this guild: {bad_message}"
+        )
+    bad_voice = [c for c in payload.voice_channel_ids if not isinstance(guild.get_channel(c), discord.VoiceChannel)]
+    if bad_voice:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, f"voice_channel_ids not voice channels in this guild: {bad_voice}"
+        )
+    bad_category = [
+        c for c in payload.tracked_category_ids if not isinstance(guild.get_channel(c), discord.CategoryChannel)
+    ]
+    if bad_category:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, f"tracked_category_ids not categories in this guild: {bad_category}"
+        )
+    if payload.et_substitution_penalty < 1.0:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "et_substitution_penalty must be at least 1.0 (100%)")
+
 
 MAX_HISTORY_DAYS = 366
 
@@ -135,6 +180,29 @@ def setup_webserver(app: FastAPI, bot: discord.Bot) -> None:
         return [
             MemberQuotaRoleResponse(member_id=member_id, role_id=role_id) for member_id, role_id in resolved.items()
         ]
+
+    @router.get("/guilds/{guild_id}/config", response_model=StaffStatsSettingsResponse)
+    async def get_config(guild_id: int) -> StaffStatsSettingsResponse:
+        return _settings_response(await get_or_create_settings(guild_id))
+
+    @router.put("/guilds/{guild_id}/config", response_model=StaffStatsSettingsResponse)
+    async def update_config(guild_id: int, payload: StaffStatsSettingsUpdateRequest) -> StaffStatsSettingsResponse:
+        guild = bot.get_guild(guild_id)
+        if guild is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "Guild not found")
+        validate_settings_update(guild, payload)
+
+        settings = await update_settings(
+            guild_id,
+            responsible_role_id=payload.responsible_role_id,
+            report_channel_id=payload.report_channel_id,
+            message_channel_ids=payload.message_channel_ids,
+            voice_channel_ids=payload.voice_channel_ids,
+            tracked_category_ids=payload.tracked_category_ids,
+            et_substitution_penalty=payload.et_substitution_penalty,
+        )
+        await _quotas_changed(bot, guild_id)
+        return _settings_response(settings)
 
     app.include_router(router)
 
