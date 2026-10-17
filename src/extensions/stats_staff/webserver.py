@@ -13,8 +13,8 @@ the router-level dependency below.
 from __future__ import annotations
 
 from datetime import date, datetime
-from typing import TYPE_CHECKING
 
+import discord
 from fastapi import APIRouter, Depends, FastAPI, HTTPException, status
 
 from src.database.models import Guild, StaffRoleQuota, StaffStatsSettings
@@ -32,11 +32,8 @@ from .schemas import (
     StaffStatsSettingsResponse,
     StaffStatsSettingsUpdateRequest,
 )
-from .stats import get_daily_history, get_or_create_settings, get_stats
+from .stats import get_daily_history, get_or_create_settings, get_stats, update_settings
 from .tracking import TrackingCog
-
-if TYPE_CHECKING:
-    import discord
 
 
 def _settings_response(settings: StaffStatsSettings) -> StaffStatsSettingsResponse:
@@ -57,8 +54,6 @@ def validate_settings_update(guild: discord.Guild, payload: StaffStatsSettingsUp
     menus (`ConfigPanelView`, views.py) — those only ever offer roles/channels that exist in the
     guild, so this is the dashboard's equivalent gate.
     """
-    import discord  # noqa: PLC0415 - only needed for these isinstance checks
-
     if payload.responsible_role_id is not None and guild.get_role(payload.responsible_role_id) is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "responsible_role_id must be a role in this guild")
     if payload.report_channel_id is not None:
@@ -197,22 +192,14 @@ def setup_webserver(app: FastAPI, bot: discord.Bot) -> None:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Guild not found")
         validate_settings_update(guild, payload)
 
-        settings = await get_or_create_settings(guild_id)
-        settings.responsible_role_id = payload.responsible_role_id
-        settings.report_channel_id = payload.report_channel_id
-        settings.message_channel_ids = payload.message_channel_ids
-        settings.voice_channel_ids = payload.voice_channel_ids
-        settings.tracked_category_ids = payload.tracked_category_ids
-        settings.et_substitution_penalty = payload.et_substitution_penalty
-        await settings.save(
-            update_fields=[
-                "responsible_role_id",
-                "report_channel_id",
-                "message_channel_ids",
-                "voice_channel_ids",
-                "tracked_category_ids",
-                "et_substitution_penalty",
-            ]
+        settings = await update_settings(
+            guild_id,
+            responsible_role_id=payload.responsible_role_id,
+            report_channel_id=payload.report_channel_id,
+            message_channel_ids=payload.message_channel_ids,
+            voice_channel_ids=payload.voice_channel_ids,
+            tracked_category_ids=payload.tracked_category_ids,
+            et_substitution_penalty=payload.et_substitution_penalty,
         )
         await _quotas_changed(bot, guild_id)
         return _settings_response(settings)
