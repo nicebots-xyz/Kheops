@@ -69,6 +69,13 @@ commands:
         description:
           en-US: "Preview what the weekly report would currently look like, without waiting for Monday"
           fr: "Voir à quoi ressemblerait le rapport hebdomadaire maintenant, sans attendre lundi"
+      resend-last-week:
+        name:
+          en-US: "resend-last-week"
+          fr: "renvoyer-semaine"
+        description:
+          en-US: "Send last week's report again to the configured channel"
+          fr: "Renvoyer le rapport de la semaine dernière dans le salon configuré"
 
 strings:
   # Commands
@@ -78,6 +85,12 @@ strings:
   no_permission_view:
     en-US: "You don't have permission to view another member's statistics."
     fr: "Tu n'as pas la permission de voir les statistiques d'un autre membre."
+  report_channel_not_set:
+    en-US: "Set a weekly report channel in `/stats-staff-admin config` first."
+    fr: "Configure d'abord un salon de rapport hebdomadaire dans `/stats-staff-admin config`."
+  report_resent:
+    en-US: "Last week's report was sent to {channel}."
+    fr: "Le rapport de la semaine dernière a été envoyé dans {channel}."
 
   # Shared
   quota_requirement:

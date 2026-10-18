@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, time, timedelta
+from datetime import datetime, time
 from typing import TYPE_CHECKING, Never, final
 
 import discord
@@ -15,7 +15,7 @@ from src.database.models import StaffQuotaMode, StaffRoleQuota, StaffStatsSettin
 from src.i18n.classes import apply_locale
 from src.log import logger as base_logger
 
-from .logic import EUROPE_PARIS, chunk_text_lines, progress_bar, trend_arrow, week_start
+from .logic import EUROPE_PARIS, chunk_text_lines, last_completed_week_bounds, progress_bar, trend_arrow
 from .quotas import members_by_quota
 from .render import score_for
 from .stats import get_stats
@@ -154,11 +154,10 @@ class ReportCog(discord.Cog):
         if now.weekday() != 0:
             return
         await self.tracking.flush()
-        end = week_start(now)
-        start = end - timedelta(days=7)
+        period, comparison = last_completed_week_bounds(now)
         for settings in await StaffStatsSettings.filter(report_channel_id__isnull=False):
             try:
-                await self.send_report(settings, (start, end), (start - timedelta(days=7), start))
+                await self.send_report(settings, period, comparison)
             except Exception:
                 logger.exception(f"Failed to send the weekly staff report for guild {settings.guild_id}")
 

@@ -19,8 +19,9 @@ def setup(bot: custom.Bot, config: dict[str, Any]) -> None:  # pyright: ignore[r
     tracking = TrackingCog(bot)
     strings = config.get("translations") or {}
     bot.add_cog(tracking)
-    bot.add_cog(ReportCog(bot, tracking, strings))
-    bot.add_cog(CommandsCog(bot, tracking, strings))
+    report = ReportCog(bot, tracking, strings)
+    bot.add_cog(report)
+    bot.add_cog(CommandsCog(bot, tracking, report, strings))
 
 
 __all__ = ("default", "setup", "setup_webserver")
