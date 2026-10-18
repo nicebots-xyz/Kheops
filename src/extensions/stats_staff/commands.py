@@ -11,10 +11,10 @@ import discord
 from src.database.models import StaffRoleQuota, StaffStatsSettings
 from src.i18n.classes import apply_locale
 
-from .logic import EUROPE_PARIS, StatsPeriod, previous_week_bounds, week_start
+from .logic import EUROPE_PARIS, StatsPeriod, last_completed_week_bounds, previous_week_bounds, week_start
 from .quotas import find_quota
 from .render import render_stats
-from .report import build_report
+from .report import ReportCog, build_report
 from .stats import PERIOD_CHOICES, get_or_create_settings
 from .views import ConfigPanelView
 
@@ -28,9 +28,12 @@ if TYPE_CHECKING:
 
 @final
 class CommandsCog(discord.Cog):
-    def __init__(self, bot: custom.Bot, tracking: TrackingCog, strings: dict[str, RawTranslation]) -> None:
+    def __init__(
+        self, bot: custom.Bot, tracking: TrackingCog, report: ReportCog, strings: dict[str, RawTranslation]
+    ) -> None:
         self.bot: custom.Bot = bot
         self.tracking: TrackingCog = tracking
+        self.report: ReportCog = report
         self.strings: dict[str, RawTranslation] = strings
 
     def t(self, ctx: custom.ApplicationContext) -> Strings:
@@ -100,6 +103,21 @@ class CommandsCog(discord.Cog):
         views = await build_report(ctx.guild, settings, self.t(ctx), (week_start(now), now), previous_week_bounds(now))
         for view in views:
             await ctx.respond(view=view, ephemeral=True)
+
+    @stats_staff_admin.command(
+        name="resend-last-week", description="Send last week's report again to the configured channel"
+    )
+    async def resend_last_week(self, ctx: custom.ApplicationContext) -> None:
+        assert ctx.guild is not None
+        await ctx.defer(ephemeral=True)
+        settings = await StaffStatsSettings.get_or_none(guild_id=ctx.guild.id)
+        if settings is None or settings.report_channel_id is None:
+            await ctx.respond(self.t(ctx).report_channel_not_set, ephemeral=True)
+            return
+        await self.tracking.flush()
+        period, comparison = last_completed_week_bounds(datetime.now(tz=EUROPE_PARIS))
+        await self.report.send_report(settings, period, comparison)
+        await ctx.respond(self.t(ctx).report_resent.format(channel=f"<#{settings.report_channel_id}>"), ephemeral=True)
 
 
 __all__ = ("CommandsCog",)

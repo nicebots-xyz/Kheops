@@ -83,6 +83,13 @@ def week_start(now: datetime) -> datetime:
     return datetime.combine(today - timedelta(days=today.weekday()), time.min, tzinfo=EUROPE_PARIS)
 
 
+def last_completed_week_bounds(now: datetime) -> tuple[tuple[datetime, datetime], tuple[datetime, datetime]]:
+    """Return the last complete Monday-to-Monday week and the week before it for comparison."""
+    end = week_start(now)
+    start = end - timedelta(days=7)
+    return (start, end), (start - timedelta(days=7), start)
+
+
 def previous_week_bounds(now: datetime) -> tuple[datetime, datetime]:
     """Return last week's start and the same elapsed point in it.
 

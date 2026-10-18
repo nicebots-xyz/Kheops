@@ -14,6 +14,7 @@ from src.extensions.stats_staff.logic import (
     StatsPeriod,
     chunk_text_lines,
     is_valid_voice_state,
+    last_completed_week_bounds,
     period_start,
     previous_week_bounds,
     progress_bar,
@@ -55,6 +56,22 @@ def score(mode: StaffQuotaMode, messages: int, messages_required: int, voice: fl
 @pytest.mark.parametrize("now", [paris(2026, 3, 16, 10, 0), paris(2026, 3, 22, 23, 0)])
 def test_week_start(now: datetime) -> None:
     assert week_start(now) == paris(2026, 3, 16, 0, 0)
+
+
+@pytest.mark.parametrize(
+    ("now", "expected"),
+    [
+        (paris(2026, 3, 18, 12, 0), ((paris(2026, 3, 9), paris(2026, 3, 16)), (paris(2026, 3, 2), paris(2026, 3, 9)))),
+        (
+            paris(2026, 3, 30, 0, 5),
+            ((paris(2026, 3, 23), paris(2026, 3, 30)), (paris(2026, 3, 16), paris(2026, 3, 23))),
+        ),
+    ],
+)
+def test_last_completed_week_bounds(
+    now: datetime, expected: tuple[tuple[datetime, datetime], tuple[datetime, datetime]]
+) -> None:
+    assert last_completed_week_bounds(now) == expected
 
 
 @pytest.mark.parametrize(
