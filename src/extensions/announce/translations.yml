@@ -18,6 +18,9 @@ commands:
       roles_to_mention:
         en-US: "Roles to mention"
         fr: "Roles à mentionner"
+      ping_everyone:
+        en-US: "Ping everyone"
+        fr: "Mentionner tout le monde"
       announcement_title:
         en-US: "Announcement title"
         fr: "Titre de l'annonce"
