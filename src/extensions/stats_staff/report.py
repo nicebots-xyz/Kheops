@@ -56,7 +56,7 @@ def _role_block(  # noqa: PLR0917
         score = score_for(quota, (messages, voice_minutes), penalty)
         passed += score >= 1
         emoji = "✅" if score >= 1 else "❌"
-        if messages == 0 and voice_minutes == 0:
+        if messages == 0 and voice_minutes == 0 and (quota.messages_required > 0 or quota.voice_minutes_required > 0):
             inactive.append(member)
             emoji = "🚨"
         last_score = score_for(quota, previous.get(member.id, (0, 0.0)), penalty)

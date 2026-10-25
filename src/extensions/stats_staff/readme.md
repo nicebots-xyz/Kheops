@@ -22,8 +22,9 @@ Suivi des quotas d'activité hebdomadaires du staff : messages et temps vocal «
   - Un quota à 0 des deux côtés est toujours atteint.
   - La barre de progression affiche exactement le score qui décide du ✅/❌ (≥ 100 % = atteint).
 - **Rapport hebdomadaire** : chaque lundi à 00:05 (Europe/Paris), pour la semaine qui vient de finir, dans le
-  salon de rapport. Un message d'en-tête, puis un message par rôle. Les membres sans aucune activité sont
-  marqués 🚨 et listés dans une alerte en tête du rapport.
+  salon de rapport. Un message d'en-tête, puis un message par rôle. Les membres sans aucune activité avec un
+  quota non nul sont marqués 🚨 et listés dans une alerte en tête du rapport. Avec un quota 0 ET 0 ou 0 OU 0,
+  ils sont marqués ✅ même sans activité.
   **Seul le rôle responsable est pingé** (ni les rôles du staff, ni les membres listés). Pour changer ça,
   voir le commentaire dans `report.py` (`send_report`).
   Si le bot est éteint pile à 00:05 un lundi, le rapport de cette semaine n'est pas envoyé ;
