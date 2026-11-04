@@ -1,0 +1,131 @@
+# SPDX-License-Identifier: MIT
+# Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
+commands:
+  poll:
+    name:
+      en-US: "poll"
+      fr: "sondage"
+    description:
+      en-US: "Create a native poll with an hour-precise end date"
+      fr: "Créer un sondage natif avec une date de fin à l'heure près"
+    strings:
+      panel_title:
+        en-US: "-# 📊 Poll builder"
+        fr: "-# 📊 Création de sondage"
+      no_question:
+        en-US: "## *No question yet*"
+        fr: "## *Aucune question*"
+      answers_title:
+        en-US: "**Answers** ({count}/{max})"
+        fr: "**Réponses** ({count}/{max})"
+      no_answers:
+        en-US: "*No answers yet*"
+        fr: "*Aucune réponse*"
+      end_title:
+        en-US: "**End**"
+        fr: "**Fin**"
+      end_not_set:
+        en-US: "*No end date yet*"
+        fr: "*Aucune date de fin*"
+      end_requested:
+        en-US: "Requested: {date} at {time} ({timezone})"
+        fr: "Demandée : {date} à {time} ({timezone})"
+      end_effective:
+        en-US: "Duration: {hours} h\nActual end: <t:{timestamp}:F> (<t:{timestamp}:R>)"
+        fr: "Durée : {hours} h\nFin réelle : <t:{timestamp}:F> (<t:{timestamp}:R>)"
+      end_in_past:
+        en-US: "⚠️ This date is already past."
+        fr: "⚠️ Cette date est déjà passée."
+      end_too_far:
+        en-US: "⚠️ A poll can't last more than {max} hours ({days} days)."
+        fr: "⚠️ Un sondage ne peut pas durer plus de {max} heures ({days} jours)."
+      mode_single:
+        en-US: "Single answer"
+        fr: "Une seule réponse"
+      mode_multiple:
+        en-US: "Multiple answers allowed"
+        fr: "Plusieurs réponses possibles"
+      edit_settings:
+        en-US: "Question and end"
+        fr: "Question et fin"
+      add_answer:
+        en-US: "Add an answer"
+        fr: "Ajouter une réponse"
+      edit_answer_placeholder:
+        en-US: "Edit an answer"
+        fr: "Modifier une réponse"
+      remove_answer_placeholder:
+        en-US: "Remove an answer"
+        fr: "Supprimer une réponse"
+      send:
+        en-US: "Send the poll"
+        fr: "Envoyer le sondage"
+      cancel:
+        en-US: "Cancel"
+        fr: "Annuler"
+      cancelled:
+        en-US: "Poll creation cancelled."
+        fr: "Création du sondage annulée."
+      sent:
+        en-US: "✅ [Poll sent]({url}) for {hours} h, until <t:{timestamp}:F>."
+        fr: "✅ [Sondage envoyé]({url}) pour {hours} h, jusqu'au <t:{timestamp}:F>."
+      send_failed:
+        en-US: "⚠️ Discord refused the poll: {error}"
+        fr: "⚠️ Discord a refusé le sondage : {error}"
+      settings_modal_title:
+        en-US: "Poll question and end"
+        fr: "Question et fin du sondage"
+      question_label:
+        en-US: "Question"
+        fr: "Question"
+      date_label:
+        en-US: "End date"
+        fr: "Date de fin"
+      date_description:
+        en-US: "Format DD/MM/YYYY, timezone {timezone}"
+        fr: "Format JJ/MM/AAAA, fuseau {timezone}"
+      date_placeholder:
+        en-US: "31/12/2026"
+        fr: "31/12/2026"
+      time_label:
+        en-US: "End time"
+        fr: "Heure de fin"
+      time_description:
+        en-US: "Format HH:MM, rounded up to the next full hour of duration"
+        fr: "Format HH:MM, arrondie à l'heure de durée supérieure"
+      time_placeholder:
+        en-US: "18:30"
+        fr: "18:30"
+      multiselect_label:
+        en-US: "Multiple answers"
+        fr: "Réponses multiples"
+      multiselect_description:
+        en-US: "Members can pick several answers"
+        fr: "Les membres peuvent choisir plusieurs réponses"
+      invalid_end_format:
+        en-US: "⚠️ Invalid end date. Use DD/MM/YYYY and HH:MM."
+        fr: "⚠️ Date de fin invalide. Utilise JJ/MM/AAAA et HH:MM."
+      answer_modal_add_title:
+        en-US: "Add an answer"
+        fr: "Ajouter une réponse"
+      answer_modal_edit_title:
+        en-US: "Edit an answer"
+        fr: "Modifier une réponse"
+      emoji_label:
+        en-US: "Emoji"
+        fr: "Emoji"
+      emoji_description:
+        en-US: "A custom emoji ID, or the emoji itself"
+        fr: "L'ID d'un emoji personnalisé, ou l'emoji lui-même"
+      emoji_placeholder:
+        en-US: "123456789012345678 or 🎃"
+        fr: "123456789012345678 ou 🎃"
+      answer_label:
+        en-US: "Answer"
+        fr: "Réponse"
+      invalid_emoji:
+        en-US: "⚠️ This is not an emoji. Use a custom emoji ID or paste the emoji itself."
+        fr: "⚠️ Ce n'est pas un emoji. Utilise l'ID d'un emoji personnalisé ou colle l'emoji lui-même."
+      too_many_answers:
+        en-US: "⚠️ A poll can't have more than {max} answers."
+        fr: "⚠️ Un sondage ne peut pas avoir plus de {max} réponses."
