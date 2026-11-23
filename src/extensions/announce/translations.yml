@@ -6,27 +6,203 @@ commands:
       en-US: "announce"
       fr: "annonce"
     description:
-      en-US: "Create and send an announcement"
-      fr: "Créer et envoyer une annonce"
-    strings:
-      announcement_signature:
-        en-US: "-# Annonce effectuée par {author.mention}"
-        fr: "-# Annonce effectuée par {author.mention}"
-      modal_title:
-        en-US: "Create an announcement"
-        fr: "Créer une annonce"
-      roles_to_mention:
-        en-US: "Roles to mention"
-        fr: "Roles à mentionner"
-      announcement_title:
-        en-US: "Announcement title"
-        fr: "Titre de l'annonce"
-      announcement_content:
-        en-US: "Announcement content"
-        fr: "Contenu de l'annonce"
-      announcement_footer:
-        en-US: "Announcement footer"
-        fr: "Footer de l'annonce"
-      announcement_image:
-        en-US: "Announcement image"
-        fr: "Image de l'annonce"
+      en-US: "Create and schedule announcements"
+      fr: "Créer et programmer des annonces"
+    commands:
+      creer:
+        name:
+          en-US: "create"
+          fr: "creer"
+        description:
+          en-US: "Create or schedule an announcement"
+          fr: "Créer ou programmer une annonce"
+        strings:
+          no_permission: &no_permission
+            en-US: "You don't have a role allowed to schedule an announcement."
+            fr: "Tu n'as pas de rôle autorisé à programmer une annonce."
+          panel_title: &panel_title
+            en-US: "## Announcement builder"
+            fr: "## Composition de l'annonce"
+          channel_label: &channel_label
+            en-US: "Channel"
+            fr: "Salon"
+          no_channel: &no_channel
+            en-US: "*(no channel selected)*"
+            fr: "*(aucun salon sélectionné)*"
+          no_title: &no_title
+            en-US: "*(no title yet)*"
+            fr: "*(pas encore de titre)*"
+          no_content: &no_content
+            en-US: "*(no content yet)*"
+            fr: "*(pas encore de contenu)*"
+          schedule_label: &schedule_label
+            en-US: "Sending"
+            fr: "Envoi"
+          schedule_not_set: &schedule_not_set
+            en-US: "right away, once sent"
+            fr: "tout de suite, une fois envoyée"
+          schedule_required: &schedule_required
+            en-US: "a date/time is required (only admins can send instantly)"
+            fr: "une date/heure est requise (seuls les admins peuvent envoyer instantanément)"
+          schedule_summary: &schedule_summary
+            en-US: "<t:{timestamp}:F> (<t:{timestamp}:R>)"
+            fr: "<t:{timestamp}:F> (<t:{timestamp}:R>)"
+          edit_content: &edit_content
+            en-US: "Edit content"
+            fr: "Modifier le contenu"
+          edit_schedule: &edit_schedule
+            en-US: "Edit schedule"
+            fr: "Modifier la programmation"
+          preview: &preview
+            en-US: "Preview"
+            fr: "Aperçu"
+          preview_label: &preview_label
+            en-US: "Preview — this is not sent yet:"
+            fr: "Aperçu — ce n'est pas encore envoyé :"
+          cancel: &cancel
+            en-US: "Cancel"
+            fr: "Annuler"
+          cancelled: &cancelled
+            en-US: "Cancelled."
+            fr: "Annulée."
+          send_now_action: &send_now_action
+            en-US: "Send now"
+            fr: "Envoyer maintenant"
+          schedule_action: &schedule_action
+            en-US: "Schedule"
+            fr: "Programmer"
+          sent: &sent
+            en-US: "✅ Announcement sent."
+            fr: "✅ Annonce envoyée."
+          scheduled: &scheduled
+            en-US: "📅 Announcement scheduled for <t:{timestamp}:F>."
+            fr: "📅 Annonce programmée pour le <t:{timestamp}:F>."
+          channel_placeholder: &channel_placeholder
+            en-US: "Choose the channel to post in…"
+            fr: "Choisir le salon où publier…"
+          roles_placeholder: &roles_placeholder
+            en-US: "Roles to mention (optional)…"
+            fr: "Rôles à mentionner (optionnel)…"
+          content_modal_title: &content_modal_title
+            en-US: "Announcement content"
+            fr: "Contenu de l'annonce"
+          announcement_title: &announcement_title
+            en-US: "Title"
+            fr: "Titre"
+          announcement_content: &announcement_content
+            en-US: "Content"
+            fr: "Contenu"
+          announcement_footer: &announcement_footer
+            en-US: "Footer"
+            fr: "Pied de page"
+          announcement_image: &announcement_image
+            en-US: "Image"
+            fr: "Image"
+          announcement_image_description: &announcement_image_description
+            en-US: "Replaces the current image, if any."
+            fr: "Remplace l'image actuelle, s'il y en a une."
+          schedule_modal_title: &schedule_modal_title
+            en-US: "Schedule"
+            fr: "Programmation"
+          schedule_date: &schedule_date
+            en-US: "Date"
+            fr: "Date"
+          schedule_date_description: &schedule_date_description
+            en-US: "\"DD/MM/YYYY\", timezone {timezone}. Leave both fields empty to send right away (admins only)."
+            fr: "\"JJ/MM/AAAA\", fuseau {timezone}. Laisse les deux champs vides pour envoyer tout de suite (admins uniquement)."
+          schedule_time: &schedule_time
+            en-US: "Time (24h)"
+            fr: "Heure (24h)"
+          schedule_in_past: &schedule_in_past
+            en-US: "That date/time is already past."
+            fr: "Cette date/heure est déjà passée."
+      historique:
+        name:
+          en-US: "history"
+          fr: "historique"
+        description:
+          en-US: "View, cancel or duplicate recent announcements"
+          fr: "Voir, annuler ou dupliquer les annonces récentes"
+        strings:
+          no_permission: *no_permission
+          panel_title: *panel_title
+          channel_label: *channel_label
+          no_channel: *no_channel
+          no_title: *no_title
+          no_content: *no_content
+          schedule_label: *schedule_label
+          schedule_not_set: *schedule_not_set
+          schedule_required: *schedule_required
+          schedule_summary: *schedule_summary
+          edit_content: *edit_content
+          edit_schedule: *edit_schedule
+          preview: *preview
+          preview_label: *preview_label
+          cancel: *cancel
+          cancelled: *cancelled
+          send_now_action: *send_now_action
+          schedule_action: *schedule_action
+          sent: *sent
+          scheduled: *scheduled
+          channel_placeholder: *channel_placeholder
+          roles_placeholder: *roles_placeholder
+          content_modal_title: *content_modal_title
+          announcement_title: *announcement_title
+          announcement_content: *announcement_content
+          announcement_footer: *announcement_footer
+          announcement_image: *announcement_image
+          announcement_image_description: *announcement_image_description
+          schedule_modal_title: *schedule_modal_title
+          schedule_date: *schedule_date
+          schedule_date_description: *schedule_date_description
+          schedule_time: *schedule_time
+          schedule_in_past: *schedule_in_past
+          no_announcements:
+            en-US: "No announcements yet."
+            fr: "Aucune annonce pour l'instant."
+          status_scheduled:
+            en-US: "📅 Scheduled"
+            fr: "📅 Programmée"
+          status_sent:
+            en-US: "✅ Sent"
+            fr: "✅ Envoyée"
+          status_cancelled:
+            en-US: "🚫 Cancelled"
+            fr: "🚫 Annulée"
+          status_failed:
+            en-US: "⚠️ Failed"
+            fr: "⚠️ Échec"
+          history_line:
+            en-US: "**{title}** — {status} — {channel} — <t:{timestamp}:f>"
+            fr: "**{title}** — {status} — {channel} — <t:{timestamp}:f>"
+          duplicate:
+            en-US: "Duplicate"
+            fr: "Dupliquer"
+          cancel_scheduled:
+            en-US: "Cancel"
+            fr: "Annuler"
+  announce-admin:
+    name:
+      en-US: "announce-admin"
+      fr: "annonce-admin"
+    description:
+      en-US: "Announce module administration"
+      fr: "Administration du module annonce"
+    commands:
+      config:
+        name:
+          en-US: "config"
+          fr: "config"
+        description:
+          en-US: "Configure who can schedule announcements besides admins"
+          fr: "Configurer qui peut programmer des annonces en plus des admins"
+        strings:
+          config_summary:
+            en-US: "## Announce configuration\n- Roles allowed to schedule (besides admins): {allowed_roles}"
+            fr: "## Configuration du module annonce\n- Rôles autorisés à programmer (en plus des admins) : {allowed_roles}"
+          none:
+            en-US: "none"
+            fr: "aucun"
+          placeholder_allowed_role_ids:
+            en-US: "Change the roles allowed to schedule…"
+            fr: "Changer les rôles autorisés à programmer…"
