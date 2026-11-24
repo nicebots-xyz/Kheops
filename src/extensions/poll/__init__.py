@@ -7,6 +7,7 @@ import discord
 from src import custom
 
 from .config import PollConfig
+from .translations import PollCommandStrings
 from .views import PollBuilderView
 
 default: dict[str, str | bool] = {"enabled": False, "timezone": "Europe/Paris"}
@@ -24,7 +25,7 @@ class PollCog(discord.Cog):
         default_member_permissions=discord.Permissions(administrator=True),
         contexts={discord.InteractionContextType.guild},
     )
-    async def poll(self, ctx: custom.ApplicationContext) -> None:
+    async def poll(self, ctx: custom.ApplicationContext[PollCommandStrings]) -> None:
         await ctx.respond(view=PollBuilderView(self.bot, ctx.translations, self.config.tz), ephemeral=True)
 
 

@@ -32,9 +32,9 @@ if TYPE_CHECKING:
     from zoneinfo import ZoneInfo
 
     from src import custom
-    from src.i18n.classes import RawTranslation, TranslationWrapper
 
-    type Strings = TranslationWrapper[dict[str, RawTranslation]]
+    from .translations import PollCommandStrings as Strings
+
     type _Action = Callable[[discord.Interaction], Awaitable[None]]
 
 BUILDER_TIMEOUT = 15 * 60

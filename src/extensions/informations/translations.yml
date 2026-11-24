@@ -94,115 +94,115 @@ commands:
   informations_send:
     name:
       en-US: "informations_send"
-      fr-FR: "informations_send"
+      fr: "informations_send"
     description:
       en-US: "Sends informations about the server in the current channel."
-      fr-FR: "Envoie des informations sur le serveur dans le salon actuel."
+      fr: "Envoie des informations sur le serveur dans le salon actuel."
     options:
       main:
         name:
           en-US: "main"
-          fr-FR: "principale"
+          fr: "principale"
         description:
           en-US: "Sends the main information section."
-          fr-FR: "Envoie la section d'informations principale."
+          fr: "Envoie la section d'informations principale."
       networks:
         name:
           en-US: "networks"
-          fr-FR: "réseaux"
+          fr: "réseaux"
         description:
           en-US: "Sends the social networks information section."
-          fr-FR: "Envoie la section des réseaux sociaux."
+          fr: "Envoie la section des réseaux sociaux."
       tipeee_text:
         name:
           en-US: "tipee_text"
-          fr-FR: "tipee_text"
+          fr: "tipee_text"
         description:
           en-US: "Sends the Tipeee text section."
-          fr-FR: "Envoie la section du texte Tipeee."
+          fr: "Envoie la section du texte Tipeee."
       level_roles:
         name:
           en-US: "level_roles"
-          fr-FR: "rôles_niveaux"
+          fr: "rôles_niveaux"
         description:
           en-US: "Sends the leveled roles information section."
-          fr-FR: "Envoie la section des rôles de niveau."
+          fr: "Envoie la section des rôles de niveau."
       vc_roles:
         name:
           en-US: "vc_roles"
-          fr-FR: "rôles_vocaux"
+          fr: "rôles_vocaux"
         description:
           en-US: "Sends the voice activity roles information section."
-          fr-FR: "Envoie la section des rôles d'activité vocale."
+          fr: "Envoie la section des rôles d'activité vocale."
       recruiting:
         name:
           en-US: "recruiting"
-          fr-FR: "recrutement"
+          fr: "recrutement"
         description:
           en-US: "Sends the recruiting information section."
-          fr-FR: "Envoie la section de recrutement."
+          fr: "Envoie la section de recrutement."
       self_text:
         name:
           en-US: "self_text"
-          fr-FR: "self_text"
+          fr: "self_text"
         description:
           en-US: "Sends the information about the bot section."
-          fr-FR: "Envoie la section d'informations à propos du bot."
+          fr: "Envoie la section d'informations à propos du bot."
       recruiting_num_mods:
         name:
           en-US: "recruiting_num_mods"
-          fr-FR: "recruiting_num_mods"
+          fr: "recruiting_num_mods"
         description:
           en-US: "Number of moderator positions currently open for recruiting."
-          fr-FR: "Nombre de postes de modérateur actuellement ouverts pour le recrutement."
+          fr: "Nombre de postes de modérateur actuellement ouverts pour le recrutement."
       recruiting_num_anim:
         name:
           en-US: "recruiting_num_anim"
-          fr-FR: "recruiting_num_anim"
+          fr: "recruiting_num_anim"
         description:
           en-US: "Number of animator positions currently open for recruiting."
-          fr-FR: "Nombre de postes d'animateur actuellement ouverts pour le recrutement."
+          fr: "Nombre de postes d'animateur actuellement ouverts pour le recrutement."
       recruiting_num_happymanager:
         name:
           en-US: "recruiting_num_happymanager"
-          fr-FR: "recruiting_num_happymanager"
+          fr: "recruiting_num_happymanager"
         description:
           en-US: "Number of happy manager positions currently open for recruiting."
-          fr-FR: "Nombre de postes de happy manager actuellement ouverts pour le recrutement."
+          fr: "Nombre de postes de happy manager actuellement ouverts pour le recrutement."
       recruiting_num_twitchmoderator:
         name:
           en-US: "recruiting_num_twitchmoderator"
-          fr-FR: "recruiting_num_twitchmoderator"
+          fr: "recruiting_num_twitchmoderator"
         description:
           en-US: "Number of Twitch moderator positions currently open for recruiting."
-          fr-FR: "Nombre de postes de modérateur Twitch actuellement ouverts pour le recrutement."
+          fr: "Nombre de postes de modérateur Twitch actuellement ouverts pour le recrutement."
       recruiting_num_technical:
         name:
           en-US: "recruiting_num_technical"
-          fr-FR: "recruiting_num_technical"
+          fr: "recruiting_num_technical"
         description:
           en-US: "Number of technical staff positions currently open for recruiting."
-          fr-FR: "Nombre de postes staff technique actuellement ouverts pour le recrutement."
+          fr: "Nombre de postes staff technique actuellement ouverts pour le recrutement."
       message_url:
         name:
           en-US: "message_url"
-          fr-FR: "message_url"
+          fr: "message_url"
         description:
           en-US: "URL of the message to edit, if any."
-          fr-FR: "URL du message à éditer, si applicable."
+          fr: "URL du message à éditer, si applicable."
     strings:
       <<: *info_reusable_strings
       message_sent:
         en-US: "Information section sent successfully."
-        fr-FR: "Section d'informations envoyée avec succès."
+        fr: "Section d'informations envoyée avec succès."
 
   informations:
     name:
       en-US: "informations"
-      fr-FR: "informations"
+      fr: "informations"
     description:
       en-US: "Shows informations about the server."
-      fr-FR: "Affiche des informations sur le serveur."
+      fr: "Affiche des informations sur le serveur."
     strings:
       <<: *info_reusable_strings
 

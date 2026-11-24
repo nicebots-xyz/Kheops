@@ -11,20 +11,20 @@ from discord.ext import tasks
 from discord.ui import Container, DesignerView, TextDisplay
 from discord.utils import format_dt
 
+from src import i18n
 from src.database.models import StaffQuotaMode, StaffRoleQuota, StaffStatsSettings
-from src.i18n.classes import apply_locale
 from src.log import logger as base_logger
 
 from .logic import EUROPE_PARIS, chunk_text_lines, last_completed_week_bounds, progress_bar, trend_arrow
 from .quotas import members_by_quota
 from .render import score_for
 from .stats import get_stats
+from .translations import ExtensionStrings
 
 if TYPE_CHECKING:
     from src import custom
     from src.i18n.classes import RawTranslation
 
-    from .stats import Strings
     from .tracking import TrackingCog
 
 logger = base_logger.getChild("stats_staff")
@@ -38,7 +38,7 @@ def _view(content: str, colour: discord.Colour | None = None) -> DesignerView:
 
 
 def _role_block(  # noqa: PLR0917
-    t: Strings,
+    t: ExtensionStrings,
     quota: StaffRoleQuota,
     role: discord.Role,
     members: list[discord.Member],
@@ -85,7 +85,7 @@ def _role_block(  # noqa: PLR0917
 async def build_report(
     guild: discord.Guild,
     settings: StaffStatsSettings,
-    t: Strings,
+    t: ExtensionStrings,
     period: tuple[datetime, datetime],
     comparison: tuple[datetime, datetime],
 ) -> list[DesignerView]:
@@ -167,7 +167,7 @@ class ReportCog(discord.Cog):
         guild = self.bot.get_guild(settings.guild_id)
         if guild is None or settings.report_channel_id is None:
             return
-        t = apply_locale(self.strings, guild.preferred_locale)
+        t = i18n.typed(i18n.apply_locale(self.strings, guild.preferred_locale), ExtensionStrings)
         views = await build_report(guild, settings, t, period, comparison)
         channel = self.bot.get_partial_messageable(settings.report_channel_id)
         # The weekly report pings ONLY the responsible role: not the staff roles in the headers, not the

@@ -17,10 +17,6 @@ from .logic import StatsPeriod
 if TYPE_CHECKING:
     from tortoise.backends.base.client import BaseDBAsyncClient
 
-    from src.i18n.classes import RawTranslation, TranslationWrapper
-
-    type Strings = TranslationWrapper[dict[str, RawTranslation]]
-
 PERIOD_CHOICES = [
     discord.OptionChoice("Semaine en cours", StatsPeriod.WEEK.value),
     discord.OptionChoice("Mois en cours", StatsPeriod.MONTH.value),

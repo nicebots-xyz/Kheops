@@ -18,7 +18,8 @@ from discord.ui import (
 from discord.ui.label import Label
 
 from src import custom
-from src.i18n.classes import RawTranslation, TranslationWrapper
+
+from .translations import AnnounceCommandStrings
 
 default: dict[str, bool] = {"enabled": True}
 
@@ -26,7 +27,7 @@ default: dict[str, bool] = {"enabled": True}
 @final
 class AnnounceModal(DesignerModal):
     @override
-    def __init__(self, bot: custom.Bot, translations: TranslationWrapper[dict[str, RawTranslation]]) -> None:
+    def __init__(self, bot: custom.Bot, translations: AnnounceCommandStrings) -> None:
         self.translations = translations
         self.bot = bot
         super().__init__(title=self.translations.modal_title)
@@ -92,7 +93,7 @@ class AnnounceCog(discord.Cog):
         super().__init__()
 
     @discord.slash_command(default_member_permissions=discord.Permissions(administrator=True))
-    async def announce(self, ctx: custom.ApplicationContext) -> None:
+    async def announce(self, ctx: custom.ApplicationContext[AnnounceCommandStrings]) -> None:
         if ctx.channel is None:
             return
         await ctx.send_modal(AnnounceModal(self.bot, ctx.translations))

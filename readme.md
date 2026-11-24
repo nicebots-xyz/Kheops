@@ -208,7 +208,7 @@ Copyright: 2024-2026 NiceBots.xyz
 
 # Botkit
 
-Botkit is a **Python 3.12** layout and runtime for **Discord** bots using **[py-cord](https://github.com/Pycord-Development/pycord)** (bridge bot, optional prefix commands), optional **FastAPI** + Uvicorn, YAML configuration with **`BOTKIT__`** environment overrides, per-extension **i18n**, optional **Tortoise ORM**, and a first-party **extension** model under `src/extensions/`.
+Botkit is a **Python 3.12** layout and runtime for **Discord** bots using **[py-cord](https://github.com/Pycord-Development/pycord)** (application commands), optional **FastAPI** + Uvicorn, YAML configuration with **`BOTKIT__`** environment overrides, per-extension **i18n**, optional **Tortoise ORM**, and a first-party **extension** model under `src/extensions/`.
 
 It is a **framework and template**, not a single finished bot product.
 
@@ -250,6 +250,10 @@ Bundled extensions under `src/extensions/` may include their own short `readme.m
 - `pdm run start` — run the bot / backend entrypoint (`python src`)
 - `pdm run convert-config` — convert between `config.yml` and `BOTKIT__` env files
 - `pdm run check-listings` — optional dev tool for bot listing pages (see docs)
+
+## Changelogs and releases
+
+Botkit and bots built on it share one changelog setup (entries in `.tegami/`, versions in `releases/`): [Changelogs and releases](https://docs.nicebots.xyz/botkit/releases/).
 
 ## Contributing to Botkit
 
