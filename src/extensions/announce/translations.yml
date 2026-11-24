@@ -157,14 +157,17 @@ strings:
     en-US: "24/12/2026"
     fr: "24/12/2026"
   schedule_date_description:
-    en-US: "\"DD/MM/YYYY\", timezone {timezone}. Leave both fields empty to send right away (admins only)."
-    fr: "\"JJ/MM/AAAA\", fuseau {timezone}. Laisse les deux champs vides pour envoyer tout de suite (admins uniquement)."
+    en-US: "\"DD/MM/YYYY\", timezone {timezone}."
+    fr: "\"JJ/MM/AAAA\", fuseau {timezone}."
   schedule_time:
     en-US: "Time (24h)"
     fr: "Heure (24h)"
   schedule_time_placeholder:
     en-US: "18:30"
     fr: "18:30"
+  schedule_send_now_hint:
+    en-US: "Leave both fields empty to send right away."
+    fr: "Laisse les deux champs vides pour envoyer tout de suite."
   invalid_date:
     en-US: "The date must look like \"DD/MM/YYYY\", for example \"24/12/2026\"."
     fr: "Le format attendu est \"JJ/MM/AAAA\", par exemple \"24/12/2026\"."

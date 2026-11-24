@@ -207,6 +207,9 @@ class ExtensionStrings(Protocol):
     def schedule_time_placeholder(self) -> str: ...
 
     @property
+    def schedule_send_now_hint(self) -> str: ...
+
+    @property
     def invalid_date(self) -> str: ...
 
     @property

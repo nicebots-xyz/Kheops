@@ -224,7 +224,13 @@ class AnnounceScheduleModal(DesignerModal):
                 item=self.date_input,
             )
         )
-        self.add_item(Label(label=t.schedule_time, item=self.time_input))
+        self.add_item(
+            Label(
+                label=t.schedule_time,
+                description=None if panel.must_schedule else t.schedule_send_now_hint,
+                item=self.time_input,
+            )
+        )
 
     @override
     async def callback(self, interaction: discord.Interaction) -> None:
