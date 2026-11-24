@@ -3,12 +3,15 @@
 
 from collections.abc import Callable, Sequence
 from functools import partial
-from typing import Literal, Protocol, overload
+from typing import TYPE_CHECKING, Literal, Protocol, cast, overload
 
 from discord.ext import commands
 
 from src import custom
 from src.database.models import Guild, User
+
+if TYPE_CHECKING:
+    from discord.ext.commands._types import Check
 
 
 async def _preload_user(ctx: custom.ApplicationContext, prefetch_related: Sequence[str]) -> Literal[True]:
@@ -107,9 +110,11 @@ def preload_x[T](
     if prefetch_related is None:
         prefetch_related = []
 
-    func = partial(preloader, prefetch_related=prefetch_related)
+    async def predicate(ctx: custom.ApplicationContext) -> bool:
+        return await preloader(ctx, prefetch_related)
 
-    check_decorator = commands.check(func)
+    # py-cord types `Check` for prefix command contexts only, application command checks get an ApplicationContext.
+    check_decorator = commands.check(cast("Check", predicate))
 
     return check_decorator(f) if f is not None else check_decorator
 

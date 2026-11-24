@@ -8,22 +8,161 @@ from typing import Protocol, final, override
 
 
 @final
-class AnnounceCommandAnnouncementSignature(str):
+class ExtensionSignature(str):
     __slots__ = ()
 
     @override
     def format(self, *, author: object) -> str: ...
 
 
-class AnnounceCommandStrings(Protocol):
+@final
+class ExtensionScheduleSummary(str):
+    __slots__ = ()
+
+    @override
+    def format(self, *, timestamp: object) -> str: ...
+
+
+@final
+class ExtensionScheduled(str):
+    __slots__ = ()
+
+    @override
+    def format(self, *, timestamp: object) -> str: ...
+
+
+@final
+class ExtensionChangesSaved(str):
+    __slots__ = ()
+
+    @override
+    def format(self, *, timestamp: object) -> str: ...
+
+
+@final
+class ExtensionImageTooLarge(str):
+    __slots__ = ()
+
+    @override
+    def format(self, *, max_size: object) -> str: ...
+
+
+@final
+class ExtensionTextTooLong(str):
+    __slots__ = ()
+
+    @override
+    def format(self, *, length: object, max_length: object) -> str: ...
+
+
+@final
+class ExtensionScheduleDateDescription(str):
+    __slots__ = ()
+
+    @override
+    def format(self, *, timezone: object) -> str: ...
+
+
+@final
+class ExtensionHistoryLine(str):
+    __slots__ = ()
+
+    @override
+    def format(self, *, title: object, status: object, channel: object, timestamp: object) -> str: ...
+
+
+@final
+class ExtensionConfigSummary(str):
+    __slots__ = ()
+
+    @override
+    def format(self, *, allowed_roles: object) -> str: ...
+
+
+class ExtensionStrings(Protocol):
     @property
-    def announcement_signature(self) -> AnnounceCommandAnnouncementSignature: ...
+    def signature(self) -> ExtensionSignature: ...
 
     @property
-    def modal_title(self) -> str: ...
+    def no_permission(self) -> str: ...
 
     @property
-    def roles_to_mention(self) -> str: ...
+    def panel_title(self) -> str: ...
+
+    @property
+    def channel_label(self) -> str: ...
+
+    @property
+    def no_channel(self) -> str: ...
+
+    @property
+    def no_title(self) -> str: ...
+
+    @property
+    def no_content(self) -> str: ...
+
+    @property
+    def schedule_label(self) -> str: ...
+
+    @property
+    def schedule_not_set(self) -> str: ...
+
+    @property
+    def schedule_required(self) -> str: ...
+
+    @property
+    def schedule_summary(self) -> ExtensionScheduleSummary: ...
+
+    @property
+    def edit_content(self) -> str: ...
+
+    @property
+    def edit_schedule(self) -> str: ...
+
+    @property
+    def preview(self) -> str: ...
+
+    @property
+    def preview_label(self) -> str: ...
+
+    @property
+    def cancel(self) -> str: ...
+
+    @property
+    def cancelled(self) -> str: ...
+
+    @property
+    def send_now_action(self) -> str: ...
+
+    @property
+    def schedule_action(self) -> str: ...
+
+    @property
+    def sent(self) -> str: ...
+
+    @property
+    def send_failed(self) -> str: ...
+
+    @property
+    def scheduled(self) -> ExtensionScheduled: ...
+
+    @property
+    def save_changes(self) -> str: ...
+
+    @property
+    def changes_saved(self) -> ExtensionChangesSaved: ...
+
+    @property
+    def not_scheduled(self) -> str: ...
+
+    @property
+    def channel_placeholder(self) -> str: ...
+
+    @property
+    def roles_placeholder(self) -> str: ...
+
+    @property
+    def content_modal_title(self) -> str: ...
 
     @property
     def announcement_title(self) -> str: ...
@@ -36,3 +175,81 @@ class AnnounceCommandStrings(Protocol):
 
     @property
     def announcement_image(self) -> str: ...
+
+    @property
+    def announcement_image_description(self) -> str: ...
+
+    @property
+    def invalid_image(self) -> str: ...
+
+    @property
+    def image_too_large(self) -> ExtensionImageTooLarge: ...
+
+    @property
+    def text_too_long(self) -> ExtensionTextTooLong: ...
+
+    @property
+    def schedule_modal_title(self) -> str: ...
+
+    @property
+    def schedule_date(self) -> str: ...
+
+    @property
+    def schedule_date_placeholder(self) -> str: ...
+
+    @property
+    def schedule_date_description(self) -> ExtensionScheduleDateDescription: ...
+
+    @property
+    def schedule_time(self) -> str: ...
+
+    @property
+    def schedule_time_placeholder(self) -> str: ...
+
+    @property
+    def invalid_date(self) -> str: ...
+
+    @property
+    def invalid_time(self) -> str: ...
+
+    @property
+    def schedule_in_past(self) -> str: ...
+
+    @property
+    def no_announcements(self) -> str: ...
+
+    @property
+    def status_scheduled(self) -> str: ...
+
+    @property
+    def status_sending(self) -> str: ...
+
+    @property
+    def status_sent(self) -> str: ...
+
+    @property
+    def status_cancelled(self) -> str: ...
+
+    @property
+    def status_failed(self) -> str: ...
+
+    @property
+    def history_line(self) -> ExtensionHistoryLine: ...
+
+    @property
+    def duplicate(self) -> str: ...
+
+    @property
+    def edit(self) -> str: ...
+
+    @property
+    def cancel_scheduled(self) -> str: ...
+
+    @property
+    def config_summary(self) -> ExtensionConfigSummary: ...
+
+    @property
+    def none(self) -> str: ...
+
+    @property
+    def placeholder_allowed_role_ids(self) -> str: ...

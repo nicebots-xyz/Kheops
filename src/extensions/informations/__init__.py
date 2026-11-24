@@ -117,7 +117,7 @@ class SendCog(discord.Cog):
         recruiting_num_technical: int = 2,
         message_url: str | None = None,
     ) -> None:
-        if ctx.guild is None:
+        if ctx.guild is None or not isinstance(ctx.channel, discord.abc.Messageable):
             return
 
         components, files = await self.build_message(

@@ -9,16 +9,19 @@ rolling its own check. Its own `setup_webserver` only adds a `/dashboard_api/v1/
 useful to verify a deployed API key works before any real route is wired up.
 """
 
-from typing import Any
+from typing import TYPE_CHECKING
 
 from fastapi import APIRouter, Depends, FastAPI
 
 from .auth import configure, require_api_key
 
+if TYPE_CHECKING:
+    from src.startup.types import ExtensionConfig
+
 default = {"enabled": False}
 
 
-def setup_webserver(app: FastAPI, config: dict[str, Any]) -> None:  # pyright: ignore[reportExplicitAny]
+def setup_webserver(app: FastAPI, config: "ExtensionConfig") -> None:
     configure(config)
     router = APIRouter(prefix="/dashboard_api/v1", dependencies=[Depends(require_api_key)])
 

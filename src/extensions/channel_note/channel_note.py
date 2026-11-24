@@ -279,7 +279,11 @@ class ChannelNoteCog(discord.Cog):
                 skip = False
                 if not note.force_resend:
                     async for message in channel.history(limit=HISTORY_NOSEND_LIMIT):  # pyright: ignore[reportAttributeAccessIssue]
-                        if message.author.id == self.bot.user.id and _is_note_message(message, note):
+                        if (
+                            self.bot.user is not None
+                            and message.author.id == self.bot.user.id
+                            and _is_note_message(message, note)
+                        ):
                             logger.info(f"Message {message.id} is this note's own message, skipping")
                             skip = True
                             break

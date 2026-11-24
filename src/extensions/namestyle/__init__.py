@@ -104,6 +104,7 @@ class NameStyleCog(discord.Cog):
         primary_color: str | None,
         secondary_color: str | None,
     ) -> list[int] | None:
+        assert ctx.guild is not None  # only called once `namestyle` checked it
         colors: list[int] = []
         try:
             if primary_color:
@@ -133,6 +134,7 @@ class NameStyleCog(discord.Cog):
         secondary_color: str | None,
         clear: bool,
     ) -> tuple[dict[str, object], dict[str, object]] | None:
+        assert ctx.guild is not None  # only called once `namestyle` checked it
         if clear:
             return self.get_clear_payload(), {}
 
@@ -161,6 +163,7 @@ class NameStyleCog(discord.Cog):
         ctx: "custom.ApplicationContext",
         payload: dict[str, object],
     ) -> tuple[int, dict[str, object] | None]:
+        assert ctx.guild is not None  # only called once `namestyle` checked it
         token = getattr(self.bot.http, "token", None)
         if not token:
             logger.error("namestyle missing bot token user=%s guild=%s", ctx.author.id, ctx.guild.id)
@@ -205,6 +208,7 @@ class NameStyleCog(discord.Cog):
         payload: dict[str, object],
         style_payload: dict[str, object],
     ) -> tuple[int, dict[str, object] | None]:
+        assert ctx.guild is not None  # only called once `namestyle` checked it
         status, response = await self.patch_member_style(ctx=ctx, payload=payload)
         if status >= 400 or clear or not style_payload:
             return status, response

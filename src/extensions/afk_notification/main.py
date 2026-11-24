@@ -4,7 +4,7 @@
 import asyncio
 from datetime import datetime, time, timedelta
 from logging import getLogger
-from typing import Self, final, override
+from typing import Self, cast, final, override
 
 import discord
 from discord.ext import tasks
@@ -80,7 +80,7 @@ class NotifyView(discord.ui.DesignerView):
             else:
                 logger.info(f"Disconnected {self.member} ({self.member.id}) from voice channel {voice_channel}")
                 try:
-                    await voice_channel.send(
+                    await cast("discord.VoiceChannel | discord.StageChannel", voice_channel).send(
                         f"{self.member.mention}, tu as été AFK pendant trop longtemps."
                         + " Je t'ai déconnecté du salon vocal."
                     )
@@ -147,7 +147,9 @@ class AfkNotif(discord.Cog):
                 logger.info(f"Sending AFK notification to {member} ({member.id}) in {member.voice.channel}")
                 view = NotifyView(member, self.config, self.bot)
                 try:
-                    await member.voice.channel.send(view=view, delete_after=self.config.afk_reminder_timeout * 2)
+                    await cast("discord.VoiceChannel | discord.StageChannel", member.voice.channel).send(
+                        view=view, delete_after=self.config.afk_reminder_timeout * 2
+                    )
                 except discord.Forbidden:
                     logger.exception(f"Missing permission to send message in {member.voice.channel}")
                     view.task.cancel()
