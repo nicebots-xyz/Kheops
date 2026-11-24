@@ -17,7 +17,7 @@ from src.database.models import (
     ChannelNote,
     ChannelNoteEvery,
 )
-from src.i18n.classes import RawTranslation, TranslationWrapper
+from src.i18n import Strings
 from src.log import logger as base_logger
 
 from .config import ChannelNoteConfig
@@ -55,7 +55,7 @@ class ChannelNoteConfigModal(discord.ui.DesignerModal):
     def __init__(
         self,
         bot: custom.Bot,
-        translations: TranslationWrapper[dict[str, RawTranslation]],
+        translations: Strings,
         note: ChannelNote | None = None,
     ) -> None:
         self.translations = translations

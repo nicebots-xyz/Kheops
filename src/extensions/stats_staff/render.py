@@ -19,7 +19,7 @@ from .logic import EUROPE_PARIS, StatsPeriod, period_start, previous_week_bounds
 from .stats import PERIOD_LABELS, get_stats
 
 if TYPE_CHECKING:
-    from .stats import Strings
+    from .translations import ExtensionStrings as Strings
 
 
 def score_for(quota: StaffRoleQuota, stats: tuple[int, float], penalty: float) -> float:

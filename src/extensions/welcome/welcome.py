@@ -6,7 +6,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 
 import discord
-from discord.ext import commands
 
 from src.log import logger as base_logger
 
@@ -43,7 +42,7 @@ def render_template(template: str, member: discord.Member) -> str:
     return str(template).format_map(vars_)
 
 
-class WelcomeCog(commands.Cog):
+class WelcomeCog(discord.Cog):
     def __init__(self, bot: discord.Bot, config: dict[str, Any]) -> None:
         self.bot = bot
 
@@ -53,7 +52,7 @@ class WelcomeCog(commands.Cog):
 
         self.translations: dict[str, dict[str, str]] = config.get("translations") or {}
 
-    @commands.Cog.listener()
+    @discord.Cog.listener()
     async def on_member_join(self, member: discord.Member) -> None:
         if not self.enabled or not self.channel_id or not self.message:
             return

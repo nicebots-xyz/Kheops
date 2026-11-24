@@ -64,12 +64,11 @@ __all__ = ["default", "setup"]
 ```python
 # main.py
 import discord
-from discord.ext import commands
 
 from src import custom
 
 
-class HelloCog(commands.Cog):
+class HelloCog(discord.Cog):
     def __init__(self, bot: custom.Bot) -> None:
         self.bot = bot
 
@@ -93,7 +92,6 @@ Discord command and health route (pattern from the bundled **ping** extension):
 
 ```python
 import discord
-from discord.ext import bridge, commands
 from fastapi import FastAPI
 
 from src import custom
@@ -102,18 +100,18 @@ from src.log import logger
 default = {"enabled": True}
 
 
-class BridgePing(commands.Cog):
+class Ping(discord.Cog):
     def __init__(self, bot: custom.Bot) -> None:
         self.bot = bot
 
-    @bridge.bridge_command()
-    async def ping(self, ctx: custom.Context, *, ephemeral: bool = False) -> None:
+    @discord.slash_command()
+    async def ping(self, ctx: custom.ApplicationContext, ephemeral: bool = False) -> None:
         await ctx.defer(ephemeral=ephemeral)
         await ctx.respond(f"Pong! {round(self.bot.latency * 1000)}ms", ephemeral=ephemeral)
 
 
 def setup(bot: custom.Bot) -> None:
-    bot.add_cog(BridgePing(bot))
+    bot.add_cog(Ping(bot))
 
 
 def setup_webserver(app: FastAPI, bot: discord.Bot) -> None:
@@ -157,7 +155,7 @@ Config keys are lowercase. Strings from **`translations.yml`** appear as **`conf
 
 ## Translations
 
-Optional **`translations.yml`** next to the extension, or **`src/translations/<name>.yml`**.
+Optional **`translations.yml`** next to the extension, or **`src/translations/<name>.yml`**. With both, the second overrides the first, so a bot can adapt the strings of an extension it shares with other bots ([details](i18n.md#overriding-the-translations-of-an-extension)).
 
 Without it, the extension still loads; you just won't get localized command names or **`ctx.translations`**. See [Internationalization](i18n.md).
 

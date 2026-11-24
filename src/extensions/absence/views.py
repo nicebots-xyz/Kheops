@@ -24,9 +24,8 @@ from .queries import (
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
-    from src.i18n.classes import RawTranslation, TranslationWrapper
+    from src.i18n import Strings
 
-    type Strings = TranslationWrapper[dict[str, RawTranslation]]
     type _Action = Callable[[discord.Interaction], Awaitable[None]]
 
 
