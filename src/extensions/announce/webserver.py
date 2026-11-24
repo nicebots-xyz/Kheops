@@ -19,7 +19,13 @@ from fastapi.responses import StreamingResponse
 from src.database.models import Announcement, AnnouncementStatus
 from src.extensions.dashboard_api.auth import require_api_key
 
-from .queries import cancel_announcement, create_announcement, get_or_create_settings, list_announcements
+from .queries import (
+    cancel_announcement,
+    create_announcement,
+    get_or_create_settings,
+    list_announcements,
+    update_announcement,
+)
 from .schemas import AnnouncementResponse, AnnounceSettingsResponse, AnnounceSettingsUpdateRequest
 from .send import send_announcement
 
@@ -49,7 +55,7 @@ _NOT_FOUND = HTTPException(status.HTTP_404_NOT_FOUND, "Announcement not found")
 _NOT_SCHEDULED = HTTPException(status.HTTP_409_CONFLICT, "Announcement is not scheduled")
 
 
-def setup_webserver(app: FastAPI, bot: "discord.Client") -> None:
+def setup_webserver(app: FastAPI, bot: "discord.Client") -> None:  # noqa: PLR0915 - one router, each route is a few lines
     router = APIRouter(prefix="/announce/v1", dependencies=[Depends(require_api_key)])
 
     @router.get("/guilds/{guild_id}/announcements")
@@ -88,6 +94,44 @@ def setup_webserver(app: FastAPI, bot: "discord.Client") -> None:
         )
         if scheduled_for is None:
             await send_announcement(bot, announcement)
+        return _to_response(announcement)
+
+    @router.put("/guilds/{guild_id}/announcements/{announcement_id}")
+    async def update_announcement_route(
+        guild_id: int,
+        announcement_id: UUID,
+        channel_id: Annotated[int, Form()],
+        title: Annotated[str, Form()],
+        content: Annotated[str, Form()],
+        scheduled_for: Annotated[datetime, Form()],
+        footer: Annotated[str | None, Form()] = None,
+        role_ids_to_mention: Annotated[list[int], Form()] = [],  # noqa: B006 - FastAPI needs a literal default here  # pyright: ignore[reportCallInDefaultInitializer]
+        clear_image: Annotated[bool, Form()] = False,
+        image: Annotated[UploadFile | None, File()] = None,
+    ) -> AnnouncementResponse:
+        announcement = await Announcement.get_or_none(id=announcement_id, guild_id=guild_id)
+        if announcement is None:
+            raise _NOT_FOUND
+        if announcement.status != AnnouncementStatus.SCHEDULED:
+            raise _NOT_SCHEDULED
+        if scheduled_for <= datetime.now(tz=UTC):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "scheduled_for must be in the future")
+
+        image_data = await image.read() if image is not None and image.filename else None
+        image_filename = image.filename if image is not None and image.filename else None
+
+        announcement = await update_announcement(
+            announcement,
+            channel_id=channel_id,
+            title=title,
+            content=content,
+            footer=footer or None,
+            role_ids_to_mention=role_ids_to_mention,
+            scheduled_for=scheduled_for,
+            image_data=image_data,
+            image_filename=image_filename,
+            clear_image=clear_image,
+        )
         return _to_response(announcement)
 
     @router.get("/guilds/{guild_id}/announcements/{announcement_id}/image")

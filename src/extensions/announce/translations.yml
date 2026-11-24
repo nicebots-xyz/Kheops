@@ -77,6 +77,12 @@ commands:
           scheduled: &scheduled
             en-US: "📅 Announcement scheduled for <t:{timestamp}:F>."
             fr: "📅 Annonce programmée pour le <t:{timestamp}:F>."
+          save_changes: &save_changes
+            en-US: "Save changes"
+            fr: "Enregistrer les modifications"
+          changes_saved: &changes_saved
+            en-US: "✅ Changes saved, still scheduled for <t:{timestamp}:F>."
+            fr: "✅ Modifications enregistrées, toujours programmée pour le <t:{timestamp}:F>."
           channel_placeholder: &channel_placeholder
             en-US: "Choose the channel to post in…"
             fr: "Choisir le salon où publier…"
@@ -144,6 +150,8 @@ commands:
           schedule_action: *schedule_action
           sent: *sent
           scheduled: *scheduled
+          save_changes: *save_changes
+          changes_saved: *changes_saved
           channel_placeholder: *channel_placeholder
           roles_placeholder: *roles_placeholder
           content_modal_title: *content_modal_title
@@ -178,6 +186,9 @@ commands:
           duplicate:
             en-US: "Duplicate"
             fr: "Dupliquer"
+          edit:
+            en-US: "Edit"
+            fr: "Modifier"
           cancel_scheduled:
             en-US: "Cancel"
             fr: "Annuler"

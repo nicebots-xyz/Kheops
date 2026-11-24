@@ -77,6 +77,53 @@ async def cancel_announcement(announcement: Announcement) -> None:
     await announcement.save(update_fields=["status"])
 
 
+async def update_announcement(
+    announcement: Announcement,
+    *,
+    channel_id: int,
+    title: str,
+    content: str,
+    footer: str | None,
+    role_ids_to_mention: list[int],
+    scheduled_for: datetime,
+    image_data: bytes | None,
+    image_filename: str | None,
+    clear_image: bool,
+) -> Announcement:
+    """Overwrite a still-scheduled announcement's fields in place.
+
+    Only ever called on a `SCHEDULED` row (checked by the caller) — editing a sent/cancelled/
+    failed announcement doesn't make sense, there's nothing left to change before. `image_data`
+    replaces the stored image when a new file was uploaded; `clear_image` removes it without a
+    replacement; leaving both unset keeps the existing image untouched.
+    """
+    announcement.channel_id = channel_id
+    announcement.title = title
+    announcement.content = content
+    announcement.footer = footer
+    announcement.role_ids_to_mention = role_ids_to_mention
+    announcement.scheduled_for = scheduled_for
+    update_fields = [
+        "channel_id",
+        "title",
+        "content",
+        "footer",
+        "role_ids_to_mention",
+        "scheduled_for",
+        "updated_at",
+    ]
+    if image_data is not None:
+        announcement.image_data = image_data
+        announcement.image_filename = image_filename
+        update_fields += ["image_data", "image_filename"]
+    elif clear_image:
+        announcement.image_data = None
+        announcement.image_filename = None
+        update_fields += ["image_data", "image_filename"]
+    await announcement.save(update_fields=update_fields)
+    return announcement
+
+
 __all__ = (
     "MAX_HISTORY_DISPLAYED",
     "cancel_announcement",
@@ -84,4 +131,5 @@ __all__ = (
     "due_announcements",
     "get_or_create_settings",
     "list_announcements",
+    "update_announcement",
 )

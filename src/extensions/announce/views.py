@@ -20,7 +20,13 @@ from src.database.models import (
 )
 
 from .logic import parse_date, parse_time
-from .queries import cancel_announcement, create_announcement, get_or_create_settings, list_announcements
+from .queries import (
+    cancel_announcement,
+    create_announcement,
+    get_or_create_settings,
+    list_announcements,
+    update_announcement,
+)
 from .send import build_view, send_announcement
 
 if TYPE_CHECKING:
@@ -230,6 +236,7 @@ class AnnounceBuilderView(DesignerView):
         is_admin: bool,
         must_schedule: bool,
         prefill: Announcement | None = None,
+        editing: Announcement | None = None,
     ) -> None:
         super().__init__(timeout=BUILDER_TIMEOUT, disable_on_timeout=True)
         self.bot = bot
@@ -243,16 +250,22 @@ class AnnounceBuilderView(DesignerView):
         self.must_schedule = must_schedule
         self.error: str | None = None
 
-        self.title = prefill.title if prefill else ""
-        self.content = prefill.content if prefill else ""
-        self.footer = prefill.footer if prefill else None
-        self.channel_id = prefill.channel_id if prefill else None
-        self.role_ids = list(prefill.role_ids_to_mention) if prefill else []
-        self.image_data = prefill.image_data if prefill else None
-        self.image_filename = prefill.image_filename if prefill else None
-        #: A duplicate always starts as a fresh, unscheduled draft — reusing the source
-        #: announcement's (likely already past) date would silently misfire.
-        self.scheduled_for: datetime | None = None
+        #: Set when this panel edits an already-`SCHEDULED` row in place (as opposed to `prefill`,
+        #: which only copies values into a brand-new draft — see `_duplicate`/`_edit` on
+        #: `AnnounceListView`). `send()` updates this row instead of inserting a new one.
+        self.editing = editing
+        source = editing or prefill
+        self.title = source.title if source else ""
+        self.content = source.content if source else ""
+        self.footer = source.footer if source else None
+        self.channel_id = source.channel_id if source else None
+        self.role_ids = list(source.role_ids_to_mention) if source else []
+        self.image_data = source.image_data if source else None
+        self.image_filename = source.image_filename if source else None
+        #: Editing keeps the original date (it's still in the future, the row is still
+        #: `SCHEDULED`); a duplicate always starts as a fresh, unscheduled draft instead — reusing
+        #: the source announcement's date there would silently misfire once it's already past.
+        self.scheduled_for: datetime | None = editing.scheduled_for if editing else None
 
         self.render()
 
@@ -294,7 +307,9 @@ class AnnounceBuilderView(DesignerView):
 
         ready = bool(self.title) and bool(self.content) and self.channel_id is not None
         ready = ready and (self.scheduled_for is not None or not self.must_schedule)
-        send_label = t.schedule_action if self.scheduled_for else t.send_now_action
+        send_label = (
+            t.save_changes if self.editing else (t.schedule_action if self.scheduled_for else t.send_now_action)
+        )
         self.add_item(
             ActionRow[DesignerView](
                 _CallbackButton(send_label, self.send, discord.ButtonStyle.success, disabled=not ready),
@@ -346,6 +361,31 @@ class AnnounceBuilderView(DesignerView):
             return
 
         await interaction.response.defer()
+
+        if self.editing is not None:
+            assert self.scheduled_for is not None  # must_schedule=True whenever editing
+            await update_announcement(
+                self.editing,
+                channel_id=self.channel_id,
+                title=self.title,
+                content=self.content,
+                footer=self.footer,
+                role_ids_to_mention=self.role_ids,
+                scheduled_for=self.scheduled_for,
+                image_data=self.image_data if self.image_data is not self.editing.image_data else None,
+                image_filename=self.image_filename,
+                clear_image=self.image_data is None and self.editing.image_data is not None,
+            )
+            self.stop()
+            self.clear_items()
+            self.add_item(
+                Container[DesignerView](
+                    _text(self.t.changes_saved.format(timestamp=int(self.scheduled_for.timestamp())))
+                )
+            )
+            await interaction.edit_original_response(view=self)
+            return
+
         announcement = await create_announcement(
             guild_id=self.guild_id,
             channel_id=self.channel_id,
@@ -455,6 +495,7 @@ class AnnounceListView(DesignerView):
         row: list[discord.ui.ViewItem[DesignerView]] = [_text(line)]
         buttons: list[discord.ui.Button[DesignerView]] = [_CallbackButton(t.duplicate, self._duplicate(announcement))]
         if announcement.status == AnnouncementStatus.SCHEDULED:
+            buttons.append(_CallbackButton(t.edit, self._edit(announcement), discord.ButtonStyle.primary))
             buttons.append(_CallbackButton(t.cancel_scheduled, self._cancel(announcement), discord.ButtonStyle.danger))
             if self.is_admin:
                 buttons.append(
@@ -474,6 +515,26 @@ class AnnounceListView(DesignerView):
                 is_admin=self.is_admin,
                 must_schedule=self.must_schedule,
                 prefill=announcement,
+            )
+            await interaction.response.send_message(view=panel, ephemeral=True)
+
+        return action
+
+    def _edit(self, announcement: Announcement) -> _Action:
+        async def action(interaction: discord.Interaction) -> None:
+            panel = AnnounceBuilderView(
+                bot=self.bot,
+                guild_id=self.guild_id,
+                created_by_id=self.created_by_id,
+                t=self.t,
+                tz=self.tz,
+                is_admin=self.is_admin,
+                #: Editing a row that's already `SCHEDULED` must never turn it into an instant
+                #: send — force the date/time to stay required regardless of the editor's own
+                #: admin status (unlike a fresh `/announce creer`, where only non-admins are
+                #: forced to schedule).
+                must_schedule=True,
+                editing=announcement,
             )
             await interaction.response.send_message(view=panel, ephemeral=True)
 

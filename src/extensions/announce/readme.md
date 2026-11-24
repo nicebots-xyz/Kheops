@@ -34,10 +34,15 @@ journalisée pour garder un historique consultable et dupliquable.
   retenté indéfiniment.
 - **Historique** : `/announce historique` liste les annonces récentes (programmées, envoyées,
   annulées, échouées) avec, par entrée, "Dupliquer" (réouvre le panneau prérempli — jamais avec
-  l'ancienne date, toujours comme un nouveau brouillon) et, pour les `SCHEDULED`, "Annuler" et
-  (admins) "Envoyer maintenant".
-- **Rien d'automatique au-delà de l'envoi** : une fois envoyée, une annonce n'est plus modifiable
-  depuis ce module (le message Discord peut toujours être édité/supprimé manuellement).
+  l'ancienne date, toujours comme un nouveau brouillon) et, pour les `SCHEDULED`, "Modifier",
+  "Annuler" et (admins) "Envoyer maintenant".
+- **Modification avant envoi** : "Modifier" (ou l'équivalent côté Dashboard) ouvre le même panneau
+  que la création, préempli avec les valeurs actuelles de l'annonce (contrairement à "Dupliquer",
+  qui modifie la ligne en base en place plutôt que d'en créer une nouvelle). La date/heure reste
+  toujours obligatoire ici, même pour un admin — une annonce déjà `SCHEDULED` ne doit jamais
+  repasser en "envoi instantané" via une édition. Seule une annonce encore `SCHEDULED` peut être
+  modifiée (409 sinon, même règle que l'annulation) ; une fois envoyée, elle ne l'est plus depuis
+  ce module (le message Discord peut toujours être édité/supprimé manuellement).
 
 ## Commandes
 
@@ -56,6 +61,11 @@ readme). Toutes prennent un `guild_id` dans le chemin :
   corps JSON) puisqu'un upload d'image peut l'accompagner. `scheduled_for` absent ou passé =
   envoi immédiat tout de suite après création ; une valeur future = programmée (reprise par la
   boucle planifiée).
+- `PUT /guilds/{guild_id}/announcements/{id}` : modifie une annonce encore `SCHEDULED` en place
+  (409 sinon). Même format `multipart/form-data` que la création ; `scheduled_for` est ici
+  obligatoire (une édition ne peut jamais transformer une annonce programmée en envoi instantané).
+  `clear_image=true` retire l'image existante sans la remplacer ; un nouveau fichier `image` la
+  remplace ; absent des deux, l'image actuelle est conservée telle quelle.
 - `GET /guilds/{guild_id}/announcements/{id}/image` : l'image stockée, en binaire brut.
 - `DELETE /guilds/{guild_id}/announcements/{id}` : annule une annonce encore `SCHEDULED` (409
   sinon — une annonce déjà envoyée/annulée/échouée ne peut pas être ré-annulée).
