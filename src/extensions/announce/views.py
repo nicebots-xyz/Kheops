@@ -35,6 +35,7 @@ if TYPE_CHECKING:
 
     from src import custom
     from src.i18n import Strings
+
     type _Action = Callable[[discord.Interaction], Awaitable[None]]
 
 BUILDER_TIMEOUT = 15 * 60
