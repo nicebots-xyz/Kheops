@@ -3,8 +3,11 @@
 
 from dataclasses import dataclass
 from datetime import date, time
+from pathlib import Path
+from zoneinfo import available_timezones
 
 import pytest
+import yaml
 
 from src.database.models import TITLE_MAX_LENGTH_ANNOUNCEMENT
 from src.extensions.announce.logic import can_schedule, parse_date, parse_time, sanitize_image_filename
@@ -87,3 +90,18 @@ def test_text_length_counts_every_text_display() -> None:
     )
     rendered = ["<@&1> <@&22>", "# " + "T" * TITLE_MAX_LENGTH_ANNOUNCEMENT, "c" * 10, "-# f", "by <@333>"]
     assert length == sum(len(text) for text in rendered)
+
+
+_LABEL_DESCRIPTION_MAX_LENGTH = 100
+_ANNOUNCE_TRANSLATIONS = Path("src/extensions/announce/translations.yml")
+
+
+@pytest.mark.parametrize(
+    "key", ["announcement_image_description", "schedule_date_description", "schedule_send_now_hint"]
+)
+def test_label_descriptions_fit_discord_limit(key: str) -> None:
+    strings: dict[str, dict[str, str]] = yaml.safe_load(_ANNOUNCE_TRANSLATIONS.read_text(encoding="utf-8"))["strings"]
+    longest_timezone = max(available_timezones(), key=len)
+    for locale, value in strings[key].items():
+        rendered = value.format(timezone=longest_timezone)
+        assert len(rendered) <= _LABEL_DESCRIPTION_MAX_LENGTH, f"{key} [{locale}] is {len(rendered)} characters"
