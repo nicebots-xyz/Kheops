@@ -1,68 +1,96 @@
 # SPDX-License-Identifier: MIT
 # Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
 
+import re
 from collections.abc import Iterable
 from datetime import date, datetime, time
+from pathlib import PurePath
 
-from src.database.models import AnnounceSettings
+from src.database.models import (
+    IMAGE_EXTENSIONS_ANNOUNCEMENT,
+    IMAGE_FILENAME_MAX_LENGTH_ANNOUNCEMENT,
+    AnnounceSettings,
+)
 
 DATE_FORMAT = "%d/%m/%Y"
 TIME_FORMAT = "%H:%M"
 
+_UNSAFE_FILENAME_CHARS = re.compile(r"[^A-Za-z0-9_-]+")
+_DEFAULT_IMAGE_STEM = "image"
+
 
 def parse_date(value: str) -> date:
-    """Parse a "JJ/MM/AAAA" string.
+    """Parse a date in `DATE_FORMAT`.
+
+    Args:
+        value: The text typed by the member.
+
+    Returns:
+        The parsed date.
 
     Raises:
-        ValueError: If `value` is not in "JJ/MM/AAAA" format.
+        ValueError: If `value` is not in `DATE_FORMAT`.
 
     """
-    try:
-        return datetime.strptime(value.strip(), DATE_FORMAT).date()  # noqa: DTZ007 - .date() discards the naive time
-    except ValueError as e:
-        raise ValueError('Le format attendu est "JJ/MM/AAAA", par exemple "24/12/2026".') from e
+    return datetime.strptime(value.strip(), DATE_FORMAT).date()  # noqa: DTZ007 - .date() discards the naive time
 
 
 def parse_time(value: str) -> time:
-    """Parse a "HH:MM" (24h) string.
+    """Parse a 24h time in `TIME_FORMAT`.
+
+    Args:
+        value: The text typed by the member.
+
+    Returns:
+        The parsed time.
 
     Raises:
-        ValueError: If `value` is not in "HH:MM" format.
+        ValueError: If `value` is not in `TIME_FORMAT`.
 
     """
-    try:
-        return datetime.strptime(value.strip(), TIME_FORMAT).time()  # noqa: DTZ007 - .time() discards the naive date
-    except ValueError as e:
-        raise ValueError('Le format attendu est "HH:MM" (24h), par exemple "18:30".') from e
-
-
-def can_send_instant(*, is_admin: bool) -> bool:
-    """Whether a member can post an announcement right away, with no scheduling delay.
-
-    Deliberately admin-only: everyone on staff can schedule an announcement (see
-    `can_schedule`), but bypassing the delay entirely is kept to the people already trusted with
-    every other admin-only action in this bot.
-    """
-    return is_admin
+    return datetime.strptime(value.strip(), TIME_FORMAT).time()  # noqa: DTZ007 - .time() discards the naive date
 
 
 def can_schedule(member_role_ids: Iterable[int], *, is_admin: bool, settings: AnnounceSettings) -> bool:
-    """Whether a member can schedule an announcement for later.
+    """Tell whether a member can schedule an announcement for later.
 
-    Admins always can; everyone else needs one of the roles an admin configured via
-    `/announce-admin config` (same pattern as `absence.logic.can_self_declare`).
+    Args:
+        member_role_ids: The IDs of the member's roles.
+        is_admin: Whether the member is an administrator, who always can.
+        settings: The guild's settings, holding the other roles allowed to.
+
+    Returns:
+        Whether the member can schedule an announcement.
+
     """
     if is_admin:
         return True
-    allowed = set(settings.allowed_role_ids)
-    return bool(allowed.intersection(member_role_ids))
+    return not set(settings.allowed_role_ids).isdisjoint(member_role_ids)
+
+
+def sanitize_image_filename(filename: str) -> str | None:
+    """Turn an uploaded filename into one safe for an `attachment://` reference.
+
+    Args:
+        filename: The filename as uploaded.
+
+    Returns:
+        The sanitized filename, or `None` if its extension is not an accepted image type.
+
+    """
+    path = PurePath(filename.replace("\\", "/"))
+    suffix = path.suffix.lower()
+    if suffix not in IMAGE_EXTENSIONS_ANNOUNCEMENT:
+        return None
+    stem = _UNSAFE_FILENAME_CHARS.sub("_", path.stem).strip("_") or _DEFAULT_IMAGE_STEM
+    return stem[: IMAGE_FILENAME_MAX_LENGTH_ANNOUNCEMENT - len(suffix)] + suffix
 
 
 __all__ = (
     "DATE_FORMAT",
     "TIME_FORMAT",
     "can_schedule",
-    "can_send_instant",
     "parse_date",
     "parse_time",
+    "sanitize_image_filename",
 )

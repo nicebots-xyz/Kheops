@@ -27,6 +27,7 @@ dependencies = [
     "cachetools>=7.0.1",
     "tzdata>=2025.3",
     "tortoise-extensions[s3]~=0.0.2",
+    "python-multipart>=0.0.20",
 ]
 requires-python = "==3.12.*"
 readme = "readme.md"
