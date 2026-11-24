@@ -34,9 +34,7 @@ if TYPE_CHECKING:
     from zoneinfo import ZoneInfo
 
     from src import custom
-    from src.i18n.classes import RawTranslation, TranslationWrapper
-
-    type Strings = TranslationWrapper[dict[str, RawTranslation]]
+    from src.i18n import Strings
     type _Action = Callable[[discord.Interaction], Awaitable[None]]
 
 BUILDER_TIMEOUT = 15 * 60

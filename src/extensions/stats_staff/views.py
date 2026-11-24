@@ -16,8 +16,8 @@ from .stats import get_or_create_settings
 if TYPE_CHECKING:
     from collections.abc import Awaitable, Callable
 
-    from .stats import Strings
     from .tracking import TrackingCog
+    from .translations import ExtensionStrings as Strings
 
     type _Action = Callable[[discord.Interaction], Awaitable[None]]
 
@@ -55,7 +55,9 @@ class QuotaModal(DesignerModal):
         self.mode_select = discord.ui.StringSelect(
             options=[
                 discord.SelectOption(
-                    label=t[f"mode_{mode.value}"], value=mode.value, default=quota is not None and quota.mode == mode
+                    label=getattr(t, f"mode_{mode.value}"),
+                    value=mode.value,
+                    default=quota is not None and quota.mode == mode,
                 )
                 for mode in StaffQuotaMode
             ]
@@ -119,7 +121,7 @@ class _SettingsSelect(discord.ui.Select[DesignerView]):
         current: int | list[int] | None = getattr(panel.settings, field)
         self.many = isinstance(current, list)
         ids = current if isinstance(current, list) else [current] if current else []
-        placeholder = panel.t[f"placeholder_{field}"]
+        placeholder: str = getattr(panel.t, f"placeholder_{field}")
         if channel_type is None:
             defaults = [discord.Object(id=i, type=discord.Role) for i in ids]
             super().__init__(discord.ComponentType.role_select, placeholder=placeholder, default_values=defaults)

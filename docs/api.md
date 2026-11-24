@@ -12,7 +12,15 @@ Reference for extension loading and startup entry points.
     options:
       members:
         - load_extensions
-        - find_translation_file
+      show_submodules: false
+
+## Translations
+
+::: src.i18n.utils
+    options:
+      members:
+        - find_translation_files
+        - load_translation
       show_submodules: false
 
 ## Extension utilities

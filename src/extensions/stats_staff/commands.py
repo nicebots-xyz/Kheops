@@ -8,21 +8,21 @@ from typing import TYPE_CHECKING, final
 
 import discord
 
+from src import i18n
 from src.database.models import StaffRoleQuota, StaffStatsSettings
-from src.i18n.classes import apply_locale
 
 from .logic import EUROPE_PARIS, StatsPeriod, last_completed_week_bounds, previous_week_bounds, week_start
 from .quotas import find_quota
 from .render import render_stats
 from .report import ReportCog, build_report
 from .stats import PERIOD_CHOICES, get_or_create_settings
+from .translations import ExtensionStrings
 from .views import ConfigPanelView
 
 if TYPE_CHECKING:
     from src import custom
     from src.i18n.classes import RawTranslation
 
-    from .stats import Strings
     from .tracking import TrackingCog
 
 
@@ -36,8 +36,8 @@ class CommandsCog(discord.Cog):
         self.report: ReportCog = report
         self.strings: dict[str, RawTranslation] = strings
 
-    def t(self, ctx: custom.ApplicationContext) -> Strings:
-        return apply_locale(self.strings, ctx.locale)
+    def t(self, ctx: custom.ApplicationContext) -> ExtensionStrings:
+        return i18n.typed(i18n.apply_locale(self.strings, ctx.locale), ExtensionStrings)
 
     stats_staff = discord.SlashCommandGroup(
         "stats-staff", "Staff activity statistics", contexts={discord.InteractionContextType.guild}
