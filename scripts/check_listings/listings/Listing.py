@@ -23,6 +23,8 @@ def normalize_soup(soup: BeautifulSoup) -> str:
 class Listing(ABC):
     """Represents a Discord Bot listing website."""
 
+    name: str
+
     def __init__(self, browser: uc.Browser) -> None:
         self.browser = browser
 

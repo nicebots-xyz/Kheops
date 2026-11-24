@@ -195,6 +195,7 @@ class HelpView(DesignerView):
 
     async def category_select_callback(self, interaction: discord.Interaction) -> None:
         """Handle category selection."""
+        assert self.category_select.values  # a select callback always carries its picked value
         self.current_category = self.category_select.values[0]
         self.current_page = 0
         self.total_pages = len(self.categories_data[self.current_category])

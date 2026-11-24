@@ -19,6 +19,7 @@ from .listings import (
     DiscordMe,
     DiscordsCom,
     DisforgeCom,
+    Listing,
     NotFoundError,
     TopGg,
     WumpusStore,
@@ -39,7 +40,7 @@ async def async_main(args: argparse.Namespace) -> None:
     description = normalize_soup(BeautifulSoup(description, "html.parser"))
 
     browser = await uc.start()
-    listings = [
+    listings: list[Listing] = [
         DiscordsCom(browser, application_id),
         WumpusStore(browser, application_id),
         DiscordAppDirectory(browser, application_id),

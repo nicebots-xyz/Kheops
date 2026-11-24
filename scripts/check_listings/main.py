@@ -3,6 +3,7 @@
 
 import argparse
 import asyncio
+from typing import Any
 
 import markdown
 import nodriver as uc
@@ -32,8 +33,8 @@ async def async_main(args: argparse.Namespace) -> None:
     async with open("description.md", encoding="utf-8") as f:
         description: str = await f.read()
     async with open(args.config, encoding="utf-8") as f:
-        config: dict[str, str] = yaml.safe_load(await f.read())
-    application_id = args.application_id or config["application_id"]
+        config: dict[str, Any] = yaml.safe_load(await f.read())  # pyright: ignore[reportExplicitAny]
+    application_id = int(args.application_id or config["application_id"])
 
     description = markdown.markdown(description)
     description = normalize_soup(BeautifulSoup(description, "html.parser"))

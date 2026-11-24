@@ -24,7 +24,7 @@ default: dict[str, Any] = {
 def render_template(template: str, member: discord.Member) -> str:
     guild = member.guild
 
-    class SafeDict(dict):
+    class SafeDict(dict[str, str | int]):
         def __missing__(self, key: str) -> str:
             return "{" + key + "}"
 

@@ -20,5 +20,8 @@ class WumpusStore(Listing):
         description = await page.select(".css-2yutdr")
         html = await description.get_html()
         soup = BeautifulSoup(html, "html.parser")
-        soup.select_one("div").select_one("div").decompose()
+        outer = soup.select_one("div")
+        inner = outer.select_one("div") if outer is not None else None
+        if inner is not None:
+            inner.decompose()
         return self.normalize_soup(soup)

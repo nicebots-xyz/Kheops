@@ -21,7 +21,8 @@ class DiscordBotsGg(Listing):
             len(
                 await page.query_selector_all(
                     ".error__title",
-                ),
+                )
+                or [],
             )
             != 0
         ):
