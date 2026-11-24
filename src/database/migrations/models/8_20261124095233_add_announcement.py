@@ -1,3 +1,6 @@
+# SPDX-License-Identifier: MIT
+# Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
+
 from tortoise import BaseDBAsyncClient
 
 RUN_IN_TRANSACTION = True
