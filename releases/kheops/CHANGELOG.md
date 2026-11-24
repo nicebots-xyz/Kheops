@@ -1,9 +1,6 @@
----
-packages:
-  kheops: minor
----
+## kheops@0.2.0
 
-## Update to Botkit 0.4
+### Update to Botkit 0.4
 
 Kheops now runs on Botkit 0.4, with typed translations checked at startup and in CI.
 
