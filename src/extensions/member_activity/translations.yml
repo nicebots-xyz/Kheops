@@ -1,0 +1,86 @@
+# SPDX-License-Identifier: MIT
+# Copyright: 2024-2026 Communauté Les Frères Poulain, NiceBots.xyz
+commands:
+  member-activity:
+    name:
+      en-US: "member-activity"
+      fr: "member-activity"
+    description:
+      en-US: "Member activity (messages, voice)"
+      fr: "Activité des membres (messages, vocal)"
+    commands:
+      me:
+        name:
+          en-US: "me"
+          fr: "mon-activite"
+        description:
+          en-US: "View my own activity"
+          fr: "Voir ma propre activité"
+        options:
+          periode:
+            name:
+              en-US: "period"
+              fr: "periode"
+            description:
+              en-US: "Period"
+              fr: "Période"
+      view:
+        name:
+          en-US: "view"
+          fr: "voir"
+        description:
+          en-US: "View a member's activity"
+          fr: "Voir l'activité d'un membre"
+        options:
+          membre:
+            name:
+              en-US: "member"
+              fr: "membre"
+            description:
+              en-US: "The member to look up"
+              fr: "Le membre à consulter"
+          periode:
+            name:
+              en-US: "period"
+              fr: "periode"
+            description:
+              en-US: "Period"
+              fr: "Période"
+  member-activity-admin:
+    name:
+      en-US: "member-activity-admin"
+      fr: "member-activity-admin"
+    description:
+      en-US: "Member activity administration"
+      fr: "Administration de l'activité des membres"
+    commands:
+      config:
+        name:
+          en-US: "config"
+          fr: "config"
+        description:
+          en-US: "Configure which channels are tracked"
+          fr: "Configurer les salons suivis"
+
+strings:
+  card_activity:
+    en-US: "📈 Activity"
+    fr: "📈 Activité"
+  card_activity_value:
+    en-US: "**{messages}** messages · **{hours}h** of voice"
+    fr: "**{messages}** messages · **{hours}h** de vocal"
+  config_summary:
+    en-US: "## Member activity configuration\n- Tracked channels (messages): {message_channels}\n- Tracked channels (voice): {voice_channels}\n- Tracked categories (every channel inside): {categories}"
+    fr: "## Configuration de l'activité des membres\n- Salons suivis (messages) : {message_channels}\n- Salons suivis (vocal) : {voice_channels}\n- Catégories suivies (tous les salons à l'intérieur) : {categories}"
+  none:
+    en-US: "none"
+    fr: "aucun"
+  placeholder_message_channel_ids:
+    en-US: "Tracked channels (messages)"
+    fr: "Salons suivis (messages)"
+  placeholder_voice_channel_ids:
+    en-US: "Tracked channels (voice)"
+    fr: "Salons suivis (vocal)"
+  placeholder_tracked_category_ids:
+    en-US: "Tracked categories"
+    fr: "Catégories suivies"

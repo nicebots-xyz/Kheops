@@ -40,6 +40,8 @@ extensions:
     enabled: true
   stats_staff:
     enabled: true
+  member_activity:
+    enabled: true
   poll:
     enabled: true
     timezone: "Europe/Paris"
