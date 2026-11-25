@@ -64,6 +64,11 @@ from .channel_note import (
 )
 from .dormeur import Dormeur
 from .guild import Guild
+from .member_activity import (
+    MemberActivityMessageEvent,
+    MemberActivitySettings,
+    MemberActivityVoiceSession,
+)
 from .staff_stats import (
     DEFAULT_ET_SUBSTITUTION_PENALTY,
     StaffMemberRoleOverride,
@@ -103,6 +108,9 @@ __all__ = [
     "ChannelNoteEvery",
     "Dormeur",
     "Guild",
+    "MemberActivityMessageEvent",
+    "MemberActivitySettings",
+    "MemberActivityVoiceSession",
     "StaffMemberRoleOverride",
     "StaffMessageEvent",
     "StaffQuotaMode",
